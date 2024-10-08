@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  account   String      @unique
+  password  String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  balances      Balance[]
+  holdings      Holding[]
+  settings      Setting?
+  
+}
+
+model Balance {
+  id           Int        @id @default(autoincrement())
+  date         DateTime   // Represents the month this balance refers to
+  holding      Holding    @relation(fields: [holdingId], references: [id])
+  holdingId    Int
+  quantity     Float      // The total amount of the asset/liability for that month
+  price        Float      // The price at the time of the balance
+  value        Float       // Some unique value identifier, if necessary
+  currency     String
+  note         String?    // Optional notes related to this balance
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Holding {
+  id           Int        @id @default(autoincrement())
+  name         String     // Name of the asset/liability (e.g., BTC, TESLA)
+  symbol       String     // Symbol for the asset/liability
+  type         Type       @relation(fields: [typeId], references: [id])
+  typeId       Int
+  category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  balances     Balance[]  // Each holding will have multiple balances over time
+}
+
+model Category {
+  id           Int        @id @default(autoincrement())
+  isHide       Boolean    @default(false)
+  name         String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  holdings     Holding[]
+}
+
+model Type {
+  id           Int        @id @default(autoincrement())
+  name         String     @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  holdings     Holding[]
+}
+
+model Setting {
+  id             Int       @id @default(autoincrement())
+  accountingDate Int
+  userId         Int       @unique
+  user           User      @relation(fields: [userId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
