@@ -23,7 +23,6 @@ model User {
   balances      Balance[]
   holdings      Holding[]
   settings      Setting?
-  
 }
 
 model Balance {
@@ -54,14 +53,14 @@ model Holding {
   userId       Int
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-
   balances     Balance[]  // Each holding will have multiple balances over time
+  @@unique([name, symbol])  // Ensure combination of name and symbol is unique
 }
 
 model Category {
   id           Int        @id @default(autoincrement())
   isHide       Boolean    @default(false)
-  name         String
+  name         String     @unique
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
