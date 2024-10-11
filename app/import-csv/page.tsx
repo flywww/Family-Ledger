@@ -1,6 +1,5 @@
 'use client'
 
-import { log } from "console"
 import { useState } from "react"
 
 const ImportCsvPage = () => {
@@ -23,6 +22,9 @@ const ImportCsvPage = () => {
         const formData = new FormData();
         formData.append('file', file);
 
+        // Log the file name to ensure it is correct
+        console.log('Submitting file:', file.name);    
+
         const res = await fetch('/api/import-csv', {
             method: 'POST',
             body: formData,
@@ -37,14 +39,14 @@ const ImportCsvPage = () => {
     };
 
     return (
-        <div>
+        <>
             <h1> Import CSV File</h1>
             <form onSubmit={handleFormSubmit}>
                 <input type="file" accept=".csv" onChange={handleFileChange} />
                 <button type="submit"> Upload </button>
             </form>
             {message && <p> {message} </p>}
-        </div>
+        </>
     )
 }
 

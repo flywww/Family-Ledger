@@ -1,0 +1,1102 @@
+Date,Name,Symbol,Type,Category,Quantity,Price,TotalValue,Note
+2024/9,盈志 Bank,TWD,Assets,Cash,"129,646",1,"129,646",國泰世華
+2024/9,郁雯 Bank,TWD,Assets,Cash,"637,513",1,"637,513",郵局
+2024/9,Bitcoin,BTC,Assets,Cryptocurrency,0.0631,"1,955,408","123,341",
+2024/9,Ethereum,ETH,Assets,Cryptocurrency,3.34,"75,996","253,825","Sushi(farm), Matamask, Binance(earn)"
+2024/9,Solana,SOL,Assets,Cryptocurrency,11.53,"4,428","51,052",Binance(earn)
+2024/9,Sui,SUI,Assets,Cryptocurrency,591.33,54,"32,164",Binance(earn)
+2024/9,Matic,POL,Assets,Cryptocurrency,"3,824.00",12,"46,200",Binance(earn)
+2024/9,Arbitrum,ARB,Assets,Cryptocurrency,896.84,18,"15,708",Binance(earn)
+2024/9,Optimism,OP,Assets,Cryptocurrency,7.00,49,345,Binance(earn)
+2024/9,Chainlink,LINK,Assets,Cryptocurrency,99.00,349,"34,527",Binance(earn)
+2024/9,The Graph,GRT,Assets,Cryptocurrency,"4,644.00",5,"22,957",MAX
+2024/9,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",10,"24,685",Binance(earn)
+2024/9,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",2,"3,156",Binance(earn)
+2024/9,Filecoin,FIL,Assets,Cryptocurrency,126.49,115,"14,529",
+2024/9,Arweave,AR,Assets,Cryptocurrency,41.52,586,"24,311",
+2024/9,Immutable,IMX,Assets,Cryptocurrency,768.00,49,"37,597","Binance, OKX"
+2024/9,GALA,GALA,Assets,Cryptocurrency,"1,193.00",1,742,
+2024/9,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"19,008",
+2024/9,Ronin,RON,Assets,Cryptocurrency,193.84,52,"10,072",
+2024/9,Xai,XAI,Assets,Cryptocurrency,283.00,6,"1,684",
+2024/9,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,36,"7,470",
+2024/9,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"4,549",
+2024/9,Portal,PORTAL,Assets,Cryptocurrency,508.48,9,"4,354",
+2024/9,Myria,MYRIA,Assets,Cryptocurrency,"82,339.00",0,"7,743",
+2024/9,GamerCoin,GHX,Assets,Cryptocurrency,"1,632.00",3,"4,245",
+2024/9,Ultiverse,ULTI,Assets,Cryptocurrency,"2,114.00",1,"1,096",
+2024/9,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,34,"20,018",
+2024/9,Render,RENDER,Assets,Cryptocurrency,104.06,173,"18,038",
+2024/9,Akash network,AKT,Assets,Cryptocurrency,239.30,78,"18,759",
+2024/9,Nosana,NOS,Assets,Cryptocurrency,66.47,55,"3,637",
+2024/9,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",3,"5,031",
+2024/9,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,3,"1,870",
+2024/9,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,44,"17,578",
+2024/9,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",4,"10,213",
+2024/9,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,15,"8,786",
+2024/9,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,7,0,
+2024/9,Cosmos Hub,ATOM,Assets,Cryptocurrency,55.63,142,"7,899",
+2024/9,Injective,INJ,Assets,Cryptocurrency,30.24,615,"18,605",
+2024/9,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,131,
+2024/9,Celestia,TIA,Assets,Cryptocurrency,95.00,160,"15,228",
+2024/9,Dymension,DYM,Assets,Cryptocurrency,13.98,46,642,
+2024/9,Sei,SEI,Assets,Cryptocurrency,"1,196.50",13,"15,084",
+2024/9,Osmosis,OSMO,Assets,Cryptocurrency,106.86,17,"1,798",
+2024/9,JUNO,JUNO,Assets,Cryptocurrency,117.28,3,364,
+2024/9,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/9,ZKSync,ZK,Assets,Cryptocurrency,"6,529.00",4,"25,486",
+2024/9,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/9,Slerf,SLERF,Assets,Cryptocurrency,655.00,4,"2,892",
+2024/9,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/9,Neon,NEON,Assets,Cryptocurrency,606.84,10,"6,369",
+2024/9,Pendle,PENDLE,Assets,Cryptocurrency,309.49,120,"37,035",
+2024/9,Neutron,NTRN,Assets,Cryptocurrency,335.26,12,"4,108",
+2024/9,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,36,"21,755",
+2024/9,Realio,RIO,Assets,Cryptocurrency,655.84,37,"24,132",
+2024/9,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",41,"65,092",
+2024/9,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",22,"32,077",
+2024/9,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,292,
+2024/9,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",0,348,
+2024/9,Stacks,STX,Assets,Cryptocurrency,284.53,61,"17,216",
+2024/9,Mat1x,MAX,Assets,Cryptocurrency,110.00,10,"1,056",
+2024/9,USDT,USDT,Assets,Cryptocurrency,0.00,32,0,Binance(earn)
+2024/9,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/9,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/9,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/8,盈志 Bank,TWD,Assets,Cash,"262,006",1,"262,006",國泰世華
+2024/8,郁雯 Bank,TWD,Assets,Cash,"602,033",1,"602,033",郵局
+2024/8,Bitcoin,BTC,Assets,Cryptocurrency,0.0631,"2,075,535","130,918",
+2024/8,Ethereum,ETH,Assets,Cryptocurrency,3.34,"86,699","289,574","Sushi(farm), Matamask, Binance(earn)"
+2024/8,Solana,SOL,Assets,Cryptocurrency,11.53,"4,678","53,941",Binance(earn)
+2024/8,Sui,SUI,Assets,Cryptocurrency,591.33,50,"29,464",Binance(earn)
+2024/8,Matic,POL,Assets,Cryptocurrency,"3,824.00",13,"50,368",Binance(earn)
+2024/8,Arbitrum,ARB,Assets,Cryptocurrency,896.84,20,"17,605",Binance(earn)
+2024/8,Optimism,OP,Assets,Cryptocurrency,7.00,55,388,Binance(earn)
+2024/8,Chainlink,LINK,Assets,Cryptocurrency,99.00,375,"37,086",Binance(earn)
+2024/8,The Graph,GRT,Assets,Cryptocurrency,"4,644.00",6,"26,285",MAX
+2024/8,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",11,"26,484",Binance(earn)
+2024/8,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",3,"3,592",Binance(earn)
+2024/8,Filecoin,FIL,Assets,Cryptocurrency,126.49,122,"15,378",
+2024/8,Arweave,AR,Assets,Cryptocurrency,41.52,704,"29,246",
+2024/8,Immutable,IMX,Assets,Cryptocurrency,768.00,59,"45,504","Binance, OKX"
+2024/8,GALA,GALA,Assets,Cryptocurrency,"1,193.00",1,781,
+2024/8,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"21,569",
+2024/8,Ronin,RON,Assets,Cryptocurrency,193.84,54,"10,552",
+2024/8,Xai,XAI,Assets,Cryptocurrency,283.00,7,"1,968",
+2024/8,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,38,"7,843",
+2024/8,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"5,113",
+2024/8,Portal,PORTAL,Assets,Cryptocurrency,508.48,10,"4,956",
+2024/8,Myria,MYRIA,Assets,Cryptocurrency,"82,339.00",0,"7,346",
+2024/8,GamerCoin,GHX,Assets,Cryptocurrency,"1,632.00",2,"4,004",
+2024/8,Ultiverse,ULTI,Assets,Cryptocurrency,"2,114.00",1,"1,280",
+2024/8,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,30,"17,942",
+2024/8,Render,RENDER,Assets,Cryptocurrency,104.06,197,"20,480",
+2024/8,Akash network,AKT,Assets,Cryptocurrency,239.30,94,"22,548",
+2024/8,Nosana,NOS,Assets,Cryptocurrency,66.47,66,"4,393",
+2024/8,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",2,"3,448",
+2024/8,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,4,"2,356",
+2024/8,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,54,"21,876",
+2024/8,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",4,"11,890",
+2024/8,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,16,"9,090",
+2024/8,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,9,0,
+2024/8,Cosmos Hub,ATOM,Assets,Cryptocurrency,55.63,149,"8,290",
+2024/8,Injective,INJ,Assets,Cryptocurrency,30.24,722,"21,843",
+2024/8,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,150,
+2024/8,Celestia,TIA,Assets,Cryptocurrency,95.00,181,"17,219",
+2024/8,Dymension,DYM,Assets,Cryptocurrency,13.98,58,811,
+2024/8,Sei,SEI,Assets,Cryptocurrency,"1,196.50",12,"14,272",
+2024/8,Osmosis,OSMO,Assets,Cryptocurrency,106.86,18,"1,915",
+2024/8,JUNO,JUNO,Assets,Cryptocurrency,117.28,4,418,
+2024/8,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/8,ZKSync,ZK,Assets,Cryptocurrency,"6,529.00",4,"26,637",
+2024/8,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/8,Slerf,SLERF,Assets,Cryptocurrency,655.00,5,"3,232",
+2024/8,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/8,Neon,NEON,Assets,Cryptocurrency,606.84,11,"6,568",
+2024/8,Pendle,PENDLE,Assets,Cryptocurrency,309.49,128,"39,590",
+2024/8,Neutron,NTRN,Assets,Cryptocurrency,335.26,15,"5,061",
+2024/8,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,30,"18,131",
+2024/8,Realio,RIO,Assets,Cryptocurrency,655.84,41,"26,606",
+2024/8,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",38,"60,838",
+2024/8,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",24,"34,306",
+2024/8,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,365,
+2024/8,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",0,356,
+2024/8,Stacks,STX,Assets,Cryptocurrency,284.53,59,"16,737",
+2024/8,Mat1x,MAX,Assets,Cryptocurrency,110.00,11,"1,166",
+2024/8,USDT,USDT,Assets,Cryptocurrency,0.00,33,0,Binance(earn)
+2024/8,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/8,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/8,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/7,盈志 Bank,TWD,Assets,Cash,"46,862",1,"46,862",國泰世華
+2024/7,郁雯 Bank,TWD,Assets,Cash,"799,977",1,"799,977",郵局
+2024/7,Bitcoin,BTC,Assets,Cryptocurrency,0.0631,"1,903,560","120,070",
+2024/7,Ethereum,ETH,Assets,Cryptocurrency,3.34,"82,670","276,118","Sushi(farm), Matamask, Binance(earn)"
+2024/7,Solana,SOL,Assets,Cryptocurrency,11.53,"4,651","53,620",Binance(earn)
+2024/7,Sui,SUI,Assets,Cryptocurrency,591.33,30,"17,885",Binance(earn)
+2024/7,Polygon,POL,Assets,Cryptocurrency,"3,824.00",16,"59,694",Binance(earn)
+2024/7,Arbitrum,ARB,Assets,Cryptocurrency,896.84,18,"16,129",Binance(earn)
+2024/7,Optimism,OP,Assets,Cryptocurrency,7.00,43,299,Binance(earn)
+2024/7,Chainlink,LINK,Assets,Cryptocurrency,99.00,327,"32,422",Binance(earn)
+2024/7,The Graph,GRT,Assets,Cryptocurrency,"4,644.00",4,"20,779",MAX
+2024/7,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",9,"22,875",Binance(earn)
+2024/7,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",3,"4,540",Binance(earn)
+2024/7,Filecoin,FIL,Assets,Cryptocurrency,126.49,114,"14,464",
+2024/7,Arweave,AR,Assets,Cryptocurrency,41.52,655,"27,195",
+2024/7,Immutable,IMX,Assets,Cryptocurrency,768.00,36,"27,724","Binance, OKX"
+2024/7,GALA,GALA,Assets,Cryptocurrency,"1,193.00",1,613,
+2024/7,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",0,"15,805",
+2024/7,Ronin,RON,Assets,Cryptocurrency,193.84,49,"9,456",
+2024/7,Xai,XAI,Assets,Cryptocurrency,283.00,7,"1,924",
+2024/7,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,24,"5,044",
+2024/7,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"7,140",
+2024/7,Portal,PORTAL,Assets,Cryptocurrency,508.48,8,"4,154",
+2024/7,Myria,MYRIA,Assets,Cryptocurrency,"82,339.00",0,"5,219",
+2024/7,GamerCoin,GHX,Assets,Cryptocurrency,"1,632.00",2,"3,694",
+2024/7,Ultiverse,ULTI,Assets,Cryptocurrency,"2,114.00",1,"1,238",
+2024/7,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,18,"10,720",
+2024/7,Render,RENDER,Assets,Cryptocurrency,104.06,147,"15,326",
+2024/7,Akash network,AKT,Assets,Cryptocurrency,239.30,84,"20,001",
+2024/7,Nosana,NOS,Assets,Cryptocurrency,66.47,50,"3,307",
+2024/7,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",2,"3,428",
+2024/7,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,3,"1,561",
+2024/7,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,27,"10,710",
+2024/7,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",3,"9,106",
+2024/7,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,14,"7,878",
+2024/7,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,7,0,
+2024/7,Cosmos Hub,ATOM,Assets,Cryptocurrency,55.63,163,"9,046",
+2024/7,Injective,INJ,Assets,Cryptocurrency,30.24,575,"17,396",
+2024/7,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,215,
+2024/7,Celestia,TIA,Assets,Cryptocurrency,95.00,167,"15,911",
+2024/7,Dymension,DYM,Assets,Cryptocurrency,13.98,41,573,
+2024/7,Sei,SEI,Assets,Cryptocurrency,"1,196.50",9,"10,857",
+2024/7,Osmosis,OSMO,Assets,Cryptocurrency,106.86,12,"1,321",
+2024/7,JUNO,JUNO,Assets,Cryptocurrency,117.28,3,381,
+2024/7,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/7,ZKSync,ZK,Assets,Cryptocurrency,"6,529.00",4,"23,357",
+2024/7,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/7,Slerf,SLERF,Assets,Cryptocurrency,655.00,5,"3,153",
+2024/7,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/7,Neon,NEON,Assets,Cryptocurrency,606.84,12,"7,174",
+2024/7,Pendle,PENDLE,Assets,Cryptocurrency,309.49,81,"25,163",
+2024/7,Neutron,NTRN,Assets,Cryptocurrency,335.26,12,"4,023",
+2024/7,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,22,"12,987",
+2024/7,Realio,RIO,Assets,Cryptocurrency,655.84,28,"18,514",
+2024/7,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",31,"49,673",
+2024/7,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",24,"34,899",
+2024/7,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,396,
+2024/7,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",1,"6,146",
+2024/7,Stacks,STX,Assets,Cryptocurrency,284.53,45,"12,899",
+2024/7,Mat1x,MAX,Assets,Cryptocurrency,110.00,10,"1,073",
+2024/7,USDT,USDT,Assets,Cryptocurrency,0.00,33,0,Binance(earn)
+2024/7,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/7,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/7,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/6,盈志 Bank,TWD,Assets,Cash,"40,611",1,"40,611",國泰世華
+2024/6,郁雯 Bank,TWD,Assets,Cash,"844,955",1,"844,955",郵局
+2024/6,Bitcoin,BTC,Assets,Cryptocurrency,0.0631,"1,806,779","113,966",
+2024/6,Ethereum,ETH,Assets,Cryptocurrency,3.34,"94,634","316,078","Sushi(farm), Matamask, Binance(earn)"
+2024/6,Solana,SOL,Assets,Cryptocurrency,11.53,"4,285","49,408",Binance(earn)
+2024/6,Sui,SUI,Assets,Cryptocurrency,586.64,21,"12,189",Binance(earn)
+2024/6,Polygon,POL,Assets,Cryptocurrency,"3,791.35",16,"59,080",Binance(earn)
+2024/6,Arbitrum,ARB,Assets,Cryptocurrency,896.84,20,"18,343",Binance(earn)
+2024/6,Optimism,OP,Assets,Cryptocurrency,7.00,46,320,Binance(earn)
+2024/6,Chainlink,LINK,Assets,Cryptocurrency,99.00,411,"40,657",Binance(earn)
+2024/6,The Graph,GRT,Assets,Cryptocurrency,"4,466.00",6,"24,648",MAX
+2024/6,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",9,"21,633",Binance(earn)
+2024/6,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",6,"8,333",Binance(earn)
+2024/6,Filecoin,FIL,Assets,Cryptocurrency,126.49,120,"15,149",
+2024/6,Arweave,AR,Assets,Cryptocurrency,41.52,717,"29,789",
+2024/6,Immutable,IMX,Assets,Cryptocurrency,764.00,39,"29,590","Binance, OKX"
+2024/6,GALA,GALA,Assets,Cryptocurrency,"1,193.00",1,813,
+2024/6,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",0,"16,755",
+2024/6,Ronin,RON,Assets,Cryptocurrency,193.84,54,"10,540",
+2024/6,Xai,XAI,Assets,Cryptocurrency,283.00,10,"2,940",
+2024/6,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,35,"7,302",
+2024/6,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"9,990",
+2024/6,Aethir,ATH,Assets,Cryptocurrency,0,0,0,
+2024/6,Portal,PORTAL,Assets,Cryptocurrency,508.48,12,"5,992",
+2024/6,Myria,MYRIA,Assets,Cryptocurrency,"82,339.00",0,"7,511",
+2024/6,GamerCoin,GHX,Assets,Cryptocurrency,"1,632.00",2,"3,391",
+2024/6,Ultiverse,ULTI,Assets,Cryptocurrency,"2,114.00",1,"1,627",
+2024/6,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,17,"10,108",
+2024/6,Render,RENDER,Assets,Cryptocurrency,104.06,204,"21,225",
+2024/6,Akash network,AKT,Assets,Cryptocurrency,223.44,113,"25,243",
+2024/6,Nosana,NOS,Assets,Cryptocurrency,66.47,88,"5,848",
+2024/6,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",3,"4,712",
+2024/6,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,2,"1,227",
+2024/6,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,37,"14,785",
+2024/6,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",6,"15,635",
+2024/6,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,14,"7,864",
+2024/6,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,6,0,
+2024/6,Cosmos Hub,ATOM,Assets,Cryptocurrency,61.73,193,"11,895",
+2024/6,Injective,INJ,Assets,Cryptocurrency,30.24,604,"18,259",
+2024/6,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,211,
+2024/6,Celestia,TIA,Assets,Cryptocurrency,93.75,176,"16,465",
+2024/6,Dymension,DYM,Assets,Cryptocurrency,13.69,39,533,
+2024/6,Sei,SEI,Assets,Cryptocurrency,"1,196.50",9,"10,410",
+2024/6,Osmosis,OSMO,Assets,Cryptocurrency,101.81,15,"1,550",
+2024/6,JUNO,JUNO,Assets,Cryptocurrency,109.96,4,421,
+2024/6,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/6,ZKSync,ZK,Assets,Cryptocurrency,"6,529.00",5,"31,370",
+2024/6,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/6,Slerf,SLERF,Assets,Cryptocurrency,655.00,6,"3,828",
+2024/6,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0,"2,972",
+2024/6,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/6,Neon,NEON,Assets,Cryptocurrency,606.84,12,"7,585",
+2024/6,LayerZero,ZRO,Assets,Cryptocurrency,,0,0,
+2024/6,Pendle,PENDLE,Assets,Cryptocurrency,309.49,110,"34,061",
+2024/6,Neutron,NTRN,Assets,Cryptocurrency,335.26,12,"4,038",
+2024/6,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,18,"10,531",
+2024/6,Realio,RIO,Assets,Cryptocurrency,655.84,33,"21,952",
+2024/6,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",27,"43,549",
+2024/6,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",30,"43,499",
+2024/6,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,470,
+2024/6,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",1,"8,840",
+2024/6,Stacks,STX,Assets,Cryptocurrency,284.53,43,"12,193",
+2024/6,USDT,USDT,Assets,Cryptocurrency,0.00,32,0,Binance(earn)
+2024/6,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/6,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/6,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/5,盈志 Bank,TWD,Assets,Cash,"25,150",1,"25,150",國泰世華
+2024/5,郁雯 Bank,TWD,Assets,Cash,"915,948",1,"915,948",郵局
+2024/5,Bitcoin,BTC,Assets,Cryptocurrency,0.0631,"2,315,864","146,077",
+2024/5,Ethereum,ETH,Assets,Cryptocurrency,3.33,"123,539","411,384","Sushi(farm), Matamask, Binance(earn)"
+2024/5,Solana,SOL,Assets,Cryptocurrency,11.53,"5,553","64,028",Binance(earn)
+2024/5,Sui,SUI,Assets,Cryptocurrency,586.64,37,"21,948",Binance(earn)
+2024/5,Polygon,POL,Assets,Cryptocurrency,"3,791.35",23,"87,975",Binance(earn)
+2024/5,Arbitrum,ARB,Assets,Cryptocurrency,896.84,35,"31,834",Binance(earn)
+2024/5,Optimism,OP,Assets,Cryptocurrency,203.00,82,"16,547",Binance(earn)
+2024/5,Chainlink,LINK,Assets,Cryptocurrency,99.00,568,"56,265",Binance(earn)
+2024/5,The Graph,GRT,Assets,Cryptocurrency,"4,466.00",10,"42,641",MAX
+2024/5,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",15,"38,224",Binance(earn)
+2024/5,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",15,"21,868",Binance(earn)
+2024/5,Filecoin,FIL,Assets,Cryptocurrency,126.49,212,"26,837",
+2024/5,Arweave,AR,Assets,Cryptocurrency,20.53,"1,344","27,588",
+2024/5,Immutable,IMX,Assets,Cryptocurrency,764.00,73,"55,578","Binance, OKX"
+2024/5,GALA,GALA,Assets,Cryptocurrency,"14,353.00",1,"20,883",
+2024/5,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"31,320",
+2024/5,Ronin,RON,Assets,Cryptocurrency,193.84,100,"19,326",
+2024/5,Xai,XAI,Assets,Cryptocurrency,283.00,28,"7,993",
+2024/5,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,50,"10,418",
+2024/5,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"20,211",
+2024/5,Aethir,ATH,Assets,Cryptocurrency,0,0,0,
+2024/5,Portal,PORTAL,Assets,Cryptocurrency,508.48,31,"15,853",
+2024/5,Myria,MYRIA,Assets,Cryptocurrency,"82,339.00",0,"16,659",
+2024/5,GamerCoin,GHX,Assets,Cryptocurrency,"1,632.00",4,"7,166",
+2024/5,Ultiverse,ULTI,Assets,Cryptocurrency,"2,114.00",2,"3,776",
+2024/5,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,34,"19,916",
+2024/5,Render,RENDER,Assets,Cryptocurrency,104.06,335,"34,874",
+2024/5,Akash network,AKT,Assets,Cryptocurrency,223.44,146,"32,581",
+2024/5,Nosana,NOS,Assets,Cryptocurrency,66.47,151,"10,059",
+2024/5,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",5,"9,427",
+2024/5,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,8,"4,864",
+2024/5,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,66,"26,346",
+2024/5,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",12,"32,263",
+2024/5,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,23,"13,349",
+2024/5,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,17,0,
+2024/5,Cosmos Hub,ATOM,Assets,Cryptocurrency,61.73,282,"17,412",
+2024/5,Injective,INJ,Assets,Cryptocurrency,30.24,955,"28,881",
+2024/5,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,348,
+2024/5,Celestia,TIA,Assets,Cryptocurrency,93.75,355,"33,247",
+2024/5,Dymension,DYM,Assets,Cryptocurrency,13.69,102,"1,402",
+2024/5,Sei,SEI,Assets,Cryptocurrency,"1,196.50",18,"21,752",
+2024/5,Osmosis,OSMO,Assets,Cryptocurrency,101.81,27,"2,741",
+2024/5,JUNO,JUNO,Assets,Cryptocurrency,109.96,5,581,
+2024/5,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/5,ZKSync,ZK,Assets,Cryptocurrency,,0,0,
+2024/5,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/5,Slerf,SLERF,Assets,Cryptocurrency,655.00,13,"8,509",
+2024/5,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0,"2,973",
+2024/5,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/5,Neon,NEON,Assets,Cryptocurrency,606.84,25,"15,136",
+2024/5,LayerZero,ZRO,Assets,Cryptocurrency,,0,0,
+2024/5,Pendle,PENDLE,Assets,Cryptocurrency,309.49,189,"58,396",
+2024/5,Neutron,NTRN,Assets,Cryptocurrency,335.26,25,"8,476",
+2024/5,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,34,"20,192",
+2024/5,Realio,RIO,Assets,Cryptocurrency,655.84,63,"41,320",
+2024/5,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",30,"47,332",
+2024/5,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",45,"66,290",
+2024/5,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,987,
+2024/5,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",2,"15,176",
+2024/5,Stacks,STX,Assets,Cryptocurrency,284.53,80,"22,713",
+2024/5,USDT,USDT,Assets,Cryptocurrency,690.87,32,"22,437",Binance(earn)
+2024/5,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/5,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/5,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/4,盈志 Bank,TWD,Assets,Cash,"25,529",1,"25,529",國泰世華
+2024/4,郁雯 Bank,TWD,Assets,Cash,"960,336",1,"960,336",郵局
+2024/4,Bitcoin,BTC,Assets,Cryptocurrency,0.0629,"2,060,421","129,601",
+2024/4,Ethereum,ETH,Assets,Cryptocurrency,3.33,"101,552","338,167","Sushi(farm), Matamask, Binance(earn)"
+2024/4,Solana,SOL,Assets,Cryptocurrency,11.53,"4,736","54,604",Binance(earn)
+2024/4,Sui,SUI,Assets,Cryptocurrency,585.68,36,"21,244",Binance(earn)
+2024/4,Polygon,POL,Assets,Cryptocurrency,"3,790.00",24,"90,262",Binance(earn)
+2024/4,Arbitrum,ARB,Assets,Cryptocurrency,896.84,36,"32,388",Binance(earn)
+2024/4,Optimism,OP,Assets,Cryptocurrency,203.00,95,"19,296",Binance(earn)
+2024/4,Chainlink,LINK,Assets,Cryptocurrency,99.00,469,"46,433",Binance(earn)
+2024/4,The Graph,GRT,Assets,Cryptocurrency,"4,466.00",10,"42,722",MAX
+2024/4,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",18,"44,642",Binance(earn)
+2024/4,Truflation,TRUF,Assets,Cryptocurrency,"1,426.00",17,"24,151",Binance(earn)
+2024/4,Filecoin,FIL,Assets,Cryptocurrency,126.49,201,"25,476",
+2024/4,Arweave,AR,Assets,Cryptocurrency,0.00,"1,264",0,
+2024/4,Immutable,IMX,Assets,Cryptocurrency,764.00,73,"55,890","Binance, OKX"
+2024/4,GALA,GALA,Assets,Cryptocurrency,"14,353.00",2,"21,804",
+2024/4,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"31,237",
+2024/4,Ronin,RON,Assets,Cryptocurrency,193.84,92,"17,816",
+2024/4,Xai,XAI,Assets,Cryptocurrency,283.00,25,"7,013",
+2024/4,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,54,"11,212",
+2024/4,Gaimin,GMRX,Assets,Cryptocurrency,"172,872.00",0,"39,572",
+2024/4,Aethir,ATH,Assets,Cryptocurrency,0,0,0,
+2024/4,Portal,PORTAL,Assets,Cryptocurrency,508.48,28,"14,195",
+2024/4,Myria,MYRIA,Assets,Cryptocurrency,"82,388.00",0,"17,936",
+2024/4,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,32,"19,086",
+2024/4,Render,RENDER,Assets,Cryptocurrency,104.06,323,"33,580",
+2024/4,Akash network,AKT,Assets,Cryptocurrency,223.44,159,"35,624",
+2024/4,Nosana,NOS,Assets,Cryptocurrency,66.47,136,"9,023",
+2024/4,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",7,"12,059",
+2024/4,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,10,"5,743",
+2024/4,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,80,"32,143",
+2024/4,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",13,"35,588",
+2024/4,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,25,"14,659",
+2024/4,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,17,0,
+2024/4,Cosmos Hub,ATOM,Assets,Cryptocurrency,61.73,302,"18,659",
+2024/4,Injective,INJ,Assets,Cryptocurrency,30.24,799,"24,173",
+2024/4,Evmos,EVMOS,Assets,Cryptocurrency,241.19,1,343,
+2024/4,Celestia,TIA,Assets,Cryptocurrency,93.75,335,"31,364",
+2024/4,Dymension,DYM,Assets,Cryptocurrency,13.69,110,"1,511",
+2024/4,Sei,SEI,Assets,Cryptocurrency,"1,196.50",18,"21,949",
+2024/4,Osmosis,OSMO,Assets,Cryptocurrency,101.81,29,"2,999",
+2024/4,JUNO,JUNO,Assets,Cryptocurrency,109.96,7,774,
+2024/4,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/4,ZKSync,ZK,Assets,Cryptocurrency,,0,0,
+2024/4,Pepe,PEPE,Assets,Cryptocurrency,0.00,0,0,
+2024/4,Slerf,SLERF,Assets,Cryptocurrency,655.00,11,"7,339",
+2024/4,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/4,Neon,NEON,Assets,Cryptocurrency,606.84,34,"20,516",
+2024/4,LayerZero,ZRO,Assets,Cryptocurrency,,0,0,
+2024/4,Pendle,PENDLE,Assets,Cryptocurrency,309.49,165,"51,127",
+2024/4,Neutron,NTRN,Assets,Cryptocurrency,335.26,24,"8,157",
+2024/4,Aerodrome Finance,AERO,Assets,Cryptocurrency,599.58,37,"22,420",
+2024/4,Realio,RIO,Assets,Cryptocurrency,655.84,60,"39,474",
+2024/4,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",25,"39,170",
+2024/4,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",28,"41,077",
+2024/4,TRESTLE,TRESTLE,Assets,Cryptocurrency,"7,614.00",0,"1,455",
+2024/4,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",4,"31,021",
+2024/4,Stacks,STX,Assets,Cryptocurrency,284.53,75,"21,288",
+2024/4,USDT,USDT,Assets,Cryptocurrency,"1,470.00",32,"47,062",Binance(earn)
+2024/4,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/4,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/4,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/3,盈志 Bank,TWD,Assets,Cash,"49,168",1,"49,168",國泰世華
+2024/3,郁雯 Bank,TWD,Assets,Cash,"1,090,041",1,"1,090,041",郵局
+2024/3,Bitcoin,BTC,Assets,Cryptocurrency,0.0629,"2,242,130","141,030",
+2024/3,Ethereum,ETH,Assets,Cryptocurrency,3.33,"116,012","386,320","Sushi(farm), Matamask, Binance(earn)"
+2024/3,Solana,SOL,Assets,Cryptocurrency,11.53,"5,586","64,404",Binance(earn)
+2024/3,Sui,SUI,Assets,Cryptocurrency,585.68,52,"30,646",Binance(earn)
+2024/3,Polygon,POL,Assets,Cryptocurrency,"2,761.00",30,"81,454",Binance(earn)
+2024/3,Arbitrum,ARB,Assets,Cryptocurrency,896.84,49,"43,899",Binance(earn)
+2024/3,Optimism,OP,Assets,Cryptocurrency,203.00,104,"21,058",Binance(earn)
+2024/3,Chainlink,LINK,Assets,Cryptocurrency,99.00,564,"55,833",Binance(earn)
+2024/3,The Graph,GRT,Assets,Cryptocurrency,"4,466.00",11,"49,048",MAX
+2024/3,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",26,"64,647",Binance(earn)
+2024/3,Filecoin,FIL,Assets,Cryptocurrency,126.49,286,"36,187",
+2024/3,Arweave,AR,Assets,Cryptocurrency,0.00,"1,062",0,
+2024/3,Immutable,IMX,Assets,Cryptocurrency,764.00,88,"67,512","Binance, OKX"
+2024/3,GALA,GALA,Assets,Cryptocurrency,"14,353.00",2,"29,352",
+2024/3,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"38,045",
+2024/3,Ronin,RON,Assets,Cryptocurrency,193.84,124,"24,084",
+2024/3,Xai,XAI,Assets,Cryptocurrency,283.00,35,"10,003",
+2024/3,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,63,"13,091",
+2024/3,Gaimin,GMRX,Assets,Cryptocurrency,0.00,0,0,
+2024/3,Aethir,ATH,Assets,Cryptocurrency,0,0,0,
+2024/3,Portal,PORTAL,Assets,Cryptocurrency,508.48,53,"26,799",
+2024/3,Myria,MYRIA,Assets,Cryptocurrency,"82,388.00",0,"24,441",
+2024/3,SuperVerse,SUPER,Assets,Cryptocurrency,589.67,38,"22,518",
+2024/3,Render,RENDER,Assets,Cryptocurrency,104.06,317,"33,036",
+2024/3,Akash network,AKT,Assets,Cryptocurrency,223.44,134,"30,040",
+2024/3,Nosana,NOS,Assets,Cryptocurrency,66.47,97,"6,440",
+2024/3,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",8,"13,633",
+2024/3,AIT Portocol,AIT,Assets,Cryptocurrency,600.00,16,"9,468",
+2024/3,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,86,"34,575",
+2024/3,RSS3,RSS3,Assets,Cryptocurrency,"2,800.00",15,"41,002",
+2024/3,AIOZ Network,AIOZ,Assets,Cryptocurrency,578.12,27,"15,417",
+2024/3,PAAL AI,PAAL,Assets,Cryptocurrency,0.00,20,0,
+2024/3,Cosmos Hub,ATOM,Assets,Cryptocurrency,61.73,351,"21,682",
+2024/3,Injective,INJ,Assets,Cryptocurrency,30.24,"1,105","33,419",
+2024/3,Evmos,EVMOS,Assets,Cryptocurrency,241.19,2,577,
+2024/3,Celestia,TIA,Assets,Cryptocurrency,93.75,386,"36,184",
+2024/3,Dymension,DYM,Assets,Cryptocurrency,13.69,170,"2,324",
+2024/3,Sei,SEI,Assets,Cryptocurrency,"1,196.50",23,"27,414",
+2024/3,Osmosis,OSMO,Assets,Cryptocurrency,101.81,42,"4,273",
+2024/3,JUNO,JUNO,Assets,Cryptocurrency,109.96,9,"1,041",
+2024/3,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/3,ZKSync,ZK,Assets,Cryptocurrency,,0,0,
+2024/3,Pepe,PEPE,Assets,Cryptocurrency,"101,754,913.00",0,"24,085",
+2024/3,Slerf,SLERF,Assets,Cryptocurrency,466.00,13,"6,128",
+2024/3,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/3,Neon,NEON,Assets,Cryptocurrency,606.84,44,"26,812",
+2024/3,LayerZero,ZRO,Assets,Cryptocurrency,,0,0,
+2024/3,Pendle,PENDLE,Assets,Cryptocurrency,309.49,204,"62,999",
+2024/3,Neutron,NTRN,Assets,Cryptocurrency,335.26,36,"11,956",
+2024/3,Realio,RIO,Assets,Cryptocurrency,655.84,82,"53,814",
+2024/3,MANTRA,OM,Assets,Cryptocurrency,"1,589.37",25,"39,870",
+2024/3,Ondo,ONDO,Assets,Cryptocurrency,"1,458.00",25,"36,745",
+2024/3,Truflation,TRUF,Assets,Cryptocurrency,"7,614.00",0,"3,420",
+2024/3,Ordiswap,ORDS,Assets,Cryptocurrency,"8,590.00",6,"51,508",
+2024/3,Stacks,STX,Assets,Cryptocurrency,284.53,106,"30,252",
+2024/3,USDT,USDT,Assets,Cryptocurrency,290.00,32,"9,152",Binance(earn)
+2024/3,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/3,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/3,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/2,盈志 Bank,TWD,Assets,Cash,"45,466",1,"45,466",國泰世華
+2024/2,郁雯 Bank,TWD,Assets,Cash,"1,094,808",1,"1,094,808",郵局
+2024/2,Bitcoin,BTC,Assets,Cryptocurrency,0.0629,"2,096,895","131,895",
+2024/2,Ethereum,ETH,Assets,Cryptocurrency,5.18,"121,844","630,577","Sushi(farm), Matamask, Binance(earn)"
+2024/2,Solana,SOL,Assets,Cryptocurrency,13.38,"4,529","60,597",Binance(earn)
+2024/2,Sui,SUI,Assets,Cryptocurrency,168.00,50,"8,469",Binance(earn)
+2024/2,Polygon,POL,Assets,Cryptocurrency,"2,454.93",31,"76,677",Binance(earn)
+2024/2,Arbitrum,ARB,Assets,Cryptocurrency,685.00,68,"46,642",Binance(earn)
+2024/2,Optimism,OP,Assets,Cryptocurrency,215.00,145,"31,159",Binance(earn)
+2024/2,Chainlink,LINK,Assets,Cryptocurrency,99.00,625,"61,843",Binance(earn)
+2024/2,The Graph,GRT,Assets,Cryptocurrency,"4,466.00",10,"46,869",MAX
+2024/2,Pyth Network,PYTH,Assets,Cryptocurrency,"2,468.00",21,"52,395",Binance(earn)
+2024/2,Filecoin,FIL,Assets,Cryptocurrency,126.49,247,"31,290",
+2024/2,Arweave,AR,Assets,Cryptocurrency,0.00,405,0,
+2024/2,Immutable,IMX,Assets,Cryptocurrency,764.00,104,"79,463","Binance, OKX"
+2024/2,GALA,GALA,Assets,Cryptocurrency,"11,356.00",1,"15,607",
+2024/2,Beam,BEAM,Assets,Cryptocurrency,"37,672.00",1,"45,889",
+2024/2,Ronin,RON,Assets,Cryptocurrency,99.00,98,"9,672",
+2024/2,Xai,XAI,Assets,Cryptocurrency,283.00,44,"12,375",
+2024/2,Nakamoto Games,NAKA,Assets,Cryptocurrency,208.45,75,"15,691",
+2024/2,SuperVerse,SUPER,Assets,Cryptocurrency,328.67,47,"15,604",
+2024/2,Render,RENDER,Assets,Cryptocurrency,104.06,300,"31,201",
+2024/2,Akash network,AKT,Assets,Cryptocurrency,221.98,181,"40,075",
+2024/2,Nosana,NOS,Assets,Cryptocurrency,66.47,226,"14,989",
+2024/2,Clore.ai,CLORE,Assets,Cryptocurrency,"1,727.90",9,"15,273",
+2024/2,AIT Portocol,AIT,Assets,Cryptocurrency,0.00,27,0,
+2024/2,Artificial Superintelligence Alliance,FET,Assets,Cryptocurrency,401.60,77,"31,108",
+2024/2,RSS3,RSS3,Assets,Cryptocurrency,"2,005.97",8,"15,601",
+2024/2,Cosmos Hub,ATOM,Assets,Cryptocurrency,61.36,426,"26,116",
+2024/2,Injective,INJ,Assets,Cryptocurrency,22.00,"1,345","29,586",
+2024/2,Evmos,EVMOS,Assets,Cryptocurrency,239.30,3,747,
+2024/2,Celestia,TIA,Assets,Cryptocurrency,91.26,512,"46,736",
+2024/2,Dymension,DYM,Assets,Cryptocurrency,12.29,209,"2,572",
+2024/2,Osmosis,OSMO,Assets,Cryptocurrency,101.81,53,"5,438",
+2024/2,JUNO,JUNO,Assets,Cryptocurrency,109.96,13,"1,477",
+2024/2,Scroll,SCR,Assets,Cryptocurrency,,0,0,
+2024/2,ZKSync,ZK,Assets,Cryptocurrency,,0,0,
+2024/2,Starknet,STRK,Assets,Cryptocurrency,,0,0,
+2024/2,Silly Dragon,SILLY,Assets,Cryptocurrency,957.36,2,"1,824",Binance(earn)
+2024/2,Pepe,PEPE,Assets,Cryptocurrency,"101,377,890.00",0,"25,015",
+2024/2,Shiba Inu,SHIB,Assets,Cryptocurrency,"14,702,919.00",0,"15,614",
+2024/2,ArbDoge,AIDOGE,Assets,Cryptocurrency,"569,646,174,451.00",0,"9,307",
+2024/2,Parcl,PRCL,Assets,Cryptocurrency,,0,0,
+2024/2,Neon,NEON,Assets,Cryptocurrency,606.84,58,"35,444",
+2024/2,LayerZero,ZRO,Assets,Cryptocurrency,,0,0,
+2024/2,Pendle,PENDLE,Assets,Cryptocurrency,309.49,101,"31,126",
+2024/2,Neutron,NTRN,Assets,Cryptocurrency,335.26,47,"15,603",
+2024/2,Realio,RIO,Assets,Cryptocurrency,455.38,34,"15,503",
+2024/2,USDT,USDT,Assets,Cryptocurrency,506.00,31,"15,804",Binance(earn)
+2024/2,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/2,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/2,Installment,TWD,Liabilities,Cash,1.00,"136,541","136,541",
+2024/1,盈志 Bank,TWD,Assets,Cash,"210,926",1,"210,926",國泰世華
+2024/1,郁雯 Bank,TWD,Assets,Cash,"1,023,866",1,"1,023,866",郵局
+2024/1,Bitcoin,BTC,Assets,Cryptocurrency,0.1583,"1,319,609","208,894",
+2024/1,Ethereum,ETH,Assets,Cryptocurrency,5.41,"71,541","387,226","Sushi(farm), Matamask, Binance(earn)"
+2024/1,Chainlink,LINK,Assets,Cryptocurrency,145.81,588,"85,708",Binance(earn)
+2024/1,Polygon,POL,Assets,Cryptocurrency,"2,454.93",24,"59,780",Binance(earn)
+2024/1,Fantom,FTM,Assets,Cryptocurrency,300.00,11,"3,325",Binance(earn)
+2024/1,Gains Network,GNS,Assets,Cryptocurrency,99.85,165,"16,426",Binance(earn)
+2024/1,Arbitrum,ARB,Assets,Cryptocurrency,996.91,56,"55,644",Binance(earn)
+2024/1,Optimism,OP,Assets,Cryptocurrency,823.00,101,"82,914",Binance(earn)
+2024/1,Sui,SUI,Assets,Cryptocurrency,377.70,48,"18,070",Binance(earn)
+2024/1,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"1,632",Binance(earn)
+2024/1,The Graph,GRT,Assets,Cryptocurrency,"5,887.56",5,"28,114",MAX
+2024/1,Immutable,IMX,Assets,Cryptocurrency,253.57,69,"17,420","Binance, OKX"
+2024/1,Solana,SOL,Assets,Cryptocurrency,1.47,"2,950","4,342",Binance(earn)
+2024/1,Silly Dragon,SILLY,Assets,Cryptocurrency,957.36,1,"1,174",Binance(earn)
+2024/1,Pyth Network,PYTH,Assets,Cryptocurrency,44.46,14,641,Binance(earn)
+2024/1,Toncoin,TON,Assets,Cryptocurrency,201.01,63,"12,699",Binance(earn)
+2024/1,Chia,XCH,Assets,Cryptocurrency,4.00,934,"3,735",Chia wallet
+2024/1,AltLayer,ALT,Assets,Cryptocurrency,91.58,10,871,Chia wallet
+2024/1,USDT,USDT,Assets,Cryptocurrency,62.67,31,"1,922",Binance(earn)
+2024/1,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2024/1,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2024/1,Installment,TWD,Liabilities,Cash,1.00,"38,647","38,647",
+2023/12,盈志 Bank,TWD,Assets,Cash,"48,358",1,"48,358",國泰世華
+2023/12,郁雯 Bank,TWD,Assets,Cash,"1,071,402",1,"1,071,402",郵局
+2023/12,Bitcoin,BTC,Assets,Cryptocurrency,0.2085,"1,368,105","285,250",
+2023/12,Ethereum,ETH,Assets,Cryptocurrency,5.90,"70,269","414,277","Sushi(farm), Matamask, Binance(earn)"
+2023/12,Chainlink,LINK,Assets,Cryptocurrency,145.83,450,"65,631",Binance(earn)
+2023/12,Polygon,POL,Assets,Cryptocurrency,"2,705.77",27,"72,230",Binance(earn)
+2023/12,Fantom,FTM,Assets,Cryptocurrency,300.00,14,"4,097",Binance(earn)
+2023/12,Gains Network,GNS,Assets,Cryptocurrency,99.85,172,"17,159",Binance(earn)
+2023/12,Arbitrum,ARB,Assets,Cryptocurrency,996.00,60,"59,643",Binance(earn)
+2023/12,Optimism,OP,Assets,Cryptocurrency,757.11,110,"83,592",Binance(earn)
+2023/12,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",3,"7,858",Binance(earn)
+2023/12,Sui,SUI,Assets,Cryptocurrency,377.70,25,"9,365",Binance(earn)
+2023/12,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"2,150",Binance(earn)
+2023/12,The Graph,GRT,Assets,Cryptocurrency,"5,887.56",6,"34,522",MAX
+2023/12,Immutable,IMX,Assets,Cryptocurrency,253.57,65,"16,529","Binance, OKX"
+2023/12,GMX,GMX,Assets,Cryptocurrency,3.17,"1,749","5,549",Binance(earn)
+2023/12,Solana,SOL,Assets,Cryptocurrency,1.47,"3,171","4,661",Binance(earn)
+2023/12,Silly Dragon,SILLY,Assets,Cryptocurrency,957.36,2,"2,389",Binance(earn)
+2023/12,Pyth Network,PYTH,Assets,Cryptocurrency,44.46,9,385,Binance(earn)
+2023/12,Sleepless AI,AI,Assets,Cryptocurrency,41.16,40,"1,630",Binance(earn)
+2023/12,Toncoin,TON,Assets,Cryptocurrency,201.01,67,"13,479",Binance(earn)
+2023/12,Chia,XCH,Assets,Cryptocurrency,4.00,"1,190","4,761",Chia wallet
+2023/12,USDT,USDT,Assets,Cryptocurrency,61.00,31,"1,903",Binance(earn)
+2023/12,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/12,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/12,Installment,TWD,Liabilities,Cash,1.00,"38,647","38,647",
+2023/11,盈志 Bank,TWD,Assets,Cash,"84,813",1,"84,813",國泰世華
+2023/11,郁雯 Bank,TWD,Assets,Cash,"1,048,826",1,"1,048,826",郵局
+2023/11,Bitcoin,BTC,Assets,Cryptocurrency,0.2085,"1,422,734","296,640",
+2023/11,Ethereum,ETH,Assets,Cryptocurrency,5.90,"72,783","429,100","Sushi(farm), Matamask, Binance(earn)"
+2023/11,Chainlink,LINK,Assets,Cryptocurrency,133.69,497,"66,399",Binance(earn)
+2023/11,Polygon,POL,Assets,Cryptocurrency,"2,705.77",27,"72,326",Binance(earn)
+2023/11,Fantom,FTM,Assets,Cryptocurrency,300.00,11,"3,216",Binance(earn)
+2023/11,Gains Network,GNS,Assets,Cryptocurrency,99.85,124,"12,382",Binance(earn)
+2023/11,Arbitrum,ARB,Assets,Cryptocurrency,996.00,35,"34,472",Binance(earn)
+2023/11,Optimism,OP,Assets,Cryptocurrency,800.82,56,"44,855",Binance(earn)
+2023/11,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",3,"9,544",Binance(earn)
+2023/11,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"2,192",Binance(earn)
+2023/11,Sui,SUI,Assets,Cryptocurrency,401.00,20,"8,079",Binance(earn)
+2023/11,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"1,050",Binance(earn)
+2023/11,The Graph,GRT,Assets,Cryptocurrency,"5,887.56",5,"31,062",MAX
+2023/11,Immutable,IMX,Assets,Cryptocurrency,230.36,47,"10,740","Binance, OKX"
+2023/11,GMX,GMX,Assets,Cryptocurrency,3.17,"1,627","5,162",Binance(earn)
+2023/11,USDT,USDT,Assets,Cryptocurrency,61.00,32,"1,975",Binance(earn)
+2023/11,Chia,XCH,Assets,Cryptocurrency,4.00,"1,037","4,148",Chia wallet
+2023/11,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/11,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/11,Installment,TWD,Liabilities,Cash,1.00,"38,647","38,647",
+2023/10,盈志 Bank,TWD,Assets,Cash,"50,109",1,"50,109",國泰世華
+2023/10,郁雯 Bank,TWD,Assets,Cash,"1,034,804",1,"1,034,804",郵局
+2023/10,Bitcoin,BTC,Assets,Cryptocurrency,0.2085,"1,126,544","234,884",
+2023/10,Ethereum,ETH,Assets,Cryptocurrency,5.89,"60,621","356,905","Sushi(farm), Matamask, Binance(earn)"
+2023/10,Chainlink,LINK,Assets,Cryptocurrency,89.32,393,"35,137",Binance(earn)
+2023/10,Polygon,POL,Assets,Cryptocurrency,"2,325.70",23,"52,472",Binance(earn)
+2023/10,Fantom,FTM,Assets,Cryptocurrency,300.00,9,"2,561",Binance(earn)
+2023/10,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"6,417","57,751",國泰世華
+2023/10,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"14,510","14,510",國泰世華
+2023/10,Gains Network,GNS,Assets,Cryptocurrency,99.85,130,"13,007",Binance(earn)
+2023/10,Arbitrum,ARB,Assets,Cryptocurrency,996.00,35,"34,782",Binance(earn)
+2023/10,Optimism,OP,Assets,Cryptocurrency,793.47,49,"39,146",Binance(earn)
+2023/10,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"6,957",Binance(earn)
+2023/10,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"1,907",Binance(earn)
+2023/10,Sui,SUI,Assets,Cryptocurrency,"1,035.00",16,"16,587",Binance(earn)
+2023/10,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"1,157",Binance(earn)
+2023/10,The Graph,GRT,Assets,Cryptocurrency,"5,887.56",4,"24,727",MAX
+2023/10,GMX,GMX,Assets,Cryptocurrency,3.17,"1,516","4,809",Binance(earn)
+2023/10,USDT,USDT,Assets,Cryptocurrency,61.00,32,"1,967",Binance(earn)
+2023/10,Chia,XCH,Assets,Cryptocurrency,4.00,688,"2,754",Chia wallet
+2023/10,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/10,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/10,Installment,TWD,Liabilities,Cash,1.00,"38,647","38,647",
+2023/9,盈志 Bank,TWD,Assets,Cash,"40,109",1,"40,109",國泰世華
+2023/9,郁雯 Bank,TWD,Assets,Cash,"1,022,395",1,"1,022,395",郵局
+2023/9,Bitcoin,BTC,Assets,Cryptocurrency,0.1904,"863,971","164,500",
+2023/9,Ethereum,ETH,Assets,Cryptocurrency,5.10,"49,860","254,157","Sushi(farm), Matamask, Binance(earn)"
+2023/9,Chainlink,LINK,Assets,Cryptocurrency,42.26,230,"9,736",Binance(earn)
+2023/9,Polygon,POL,Assets,Cryptocurrency,"2,325.70",16,"38,312",Binance(earn)
+2023/9,Fantom,FTM,Assets,Cryptocurrency,300.00,6,"1,721",Binance(earn)
+2023/9,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"8,400","75,598",國泰世華
+2023/9,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"14,593","14,593",國泰世華
+2023/9,Gains Network,GNS,Assets,Cryptocurrency,99.85,97,"9,672",Binance(earn)
+2023/9,Arbitrum,ARB,Assets,Cryptocurrency,996.00,26,"25,738",Binance(earn)
+2023/9,Optimism,OP,Assets,Cryptocurrency,469.47,40,"18,699",Binance(earn)
+2023/9,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"5,713",Binance(earn)
+2023/9,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,997,Binance(earn)
+2023/9,Sui,SUI,Assets,Cryptocurrency,"1,035.00",13,"13,521",Binance(earn)
+2023/9,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,882,Binance(earn)
+2023/9,GMX,GMX,Assets,Cryptocurrency,3.17,"1,141","3,619",Binance(earn)
+2023/9,USDT,USDT,Assets,Cryptocurrency,61.00,32,"1,944",Binance(earn)
+2023/9,Chia,XCH,Assets,Cryptocurrency,4.00,680,"2,721",Chia wallet
+2023/9,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/9,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/9,Installment,TWD,Liabilities,Cash,1.00,"38,647","38,647",
+2023/8,盈志 Bank,TWD,Assets,Cash,"33,672",1,"33,672",國泰世華
+2023/8,郁雯 Bank,TWD,Assets,Cash,"1,027,258",1,"1,027,258",郵局
+2023/8,Bitcoin,BTC,Assets,Cryptocurrency,0.1680,"814,266","136,797",
+2023/8,Ethereum,ETH,Assets,Cryptocurrency,4.72,"51,721","244,123","Sushi(farm), Matamask, Binance(earn)"
+2023/8,Chainlink,LINK,Assets,Cryptocurrency,42.26,199,"8,425",Binance(earn)
+2023/8,Polygon,POL,Assets,Cryptocurrency,"2,325.70",18,"41,296",Binance(earn)
+2023/8,Fantom,FTM,Assets,Cryptocurrency,300.00,6,"1,915",Binance(earn)
+2023/8,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"7,959","71,635",國泰世華
+2023/8,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"14,869","14,869",國泰世華
+2023/8,Gains Network,GNS,Assets,Cryptocurrency,99.85,102,"10,158",Binance(earn)
+2023/8,Arbitrum,ARB,Assets,Cryptocurrency,996.00,29,"28,479",Binance(earn)
+2023/8,Optimism,OP,Assets,Cryptocurrency,469.47,42,"19,728",Binance(earn)
+2023/8,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"6,049",Binance(earn)
+2023/8,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,867,Binance(earn)
+2023/8,Sui,SUI,Assets,Cryptocurrency,"1,035.00",15,"15,827",Binance(earn)
+2023/8,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,679,Binance(earn)
+2023/8,GMX,GMX,Assets,Cryptocurrency,3.17,"1,091","3,461",Binance(earn)
+2023/8,USDT,USDT,Assets,Cryptocurrency,15.92,32,503,Binance(earn)
+2023/8,Chia,XCH,Assets,Cryptocurrency,4.00,897,"3,589",Chia wallet
+2023/8,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/8,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/8,Installment,TWD,Liabilities,Cash,1.00,"25,496","25,496",
+2023/7,盈志 Bank,TWD,Assets,Cash,1.00,"114,066","114,066",國泰世華
+2023/7,郁雯 Bank,TWD,Assets,Cash,"1,005,912",1,"1,005,912",郵局
+2023/7,Bitcoin,BTC,Assets,Cryptocurrency,0.1794,"928,596","166,590",
+2023/7,Ethereum,ETH,Assets,Cryptocurrency,4.38,"57,932","253,743","Sushi(farm), Matamask, Binance(earn)"
+2023/7,Chia,XCH,Assets,Cryptocurrency,4.00,967,"3,867",Chia wallet
+2023/7,USDT,USDT,Assets,Cryptocurrency,14.72,31,458,Binance(earn)
+2023/7,Polygon,POL,Assets,Cryptocurrency,"2,325.70",22,"50,213",Binance(earn)
+2023/7,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"7,099",Binance(earn)
+2023/7,Fantom,FTM,Assets,Cryptocurrency,300.00,7,"2,233",Binance(earn)
+2023/7,Gains Network,GNS,Assets,Cryptocurrency,99.85,160,"15,985",Binance(earn)
+2023/7,GMX,GMX,Assets,Cryptocurrency,3.17,"1,571","4,984",Binance(earn)
+2023/7,Arbitrum,ARB,Assets,Cryptocurrency,996.00,37,"36,606",Binance(earn)
+2023/7,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"1,161",Binance(earn)
+2023/7,Sui,SUI,Assets,Cryptocurrency,"1,035.00",19,"19,313",Binance(earn)
+2023/7,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"1,907",Binance(earn)
+2023/7,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"7,777","69,995",國泰世華
+2023/7,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"13,911","13,911",國泰世華
+2023/7,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/7,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/7,Installment,TWD,Liabilities,Cash,1.00,"29,444","29,444",
+2023/6,盈志 Bank,TWD,Assets,Cash,"25,380",1,"25,380",國泰世華
+2023/6,郁雯 Bank,TWD,Assets,Cash,"974,886",1,"974,886",郵局
+2023/6,Bitcoin,BTC,Assets,Cryptocurrency,0.1710,"937,485","160,310",
+2023/6,Ethereum,ETH,Assets,Cryptocurrency,4.70,"57,618","270,805","Sushi(farm), Matamask, Binance(earn)"
+2023/6,Chia,XCH,Assets,Cryptocurrency,4.00,"1,024","4,097",Chia wallet
+2023/6,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.000,22,Matamask
+2023/6,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.000,1,Phantom
+2023/6,Saber,SBR,Assets,Cryptocurrency,103.51,0,2,Phantom
+2023/6,USDT,USDT,Assets,Cryptocurrency,0.00,31,0,Binance(earn)
+2023/6,Polygon,POL,Assets,Cryptocurrency,"2,325.70",23,"52,918",Binance(earn)
+2023/6,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"6,041",Binance(earn)
+2023/6,Fantom,FTM,Assets,Cryptocurrency,300.00,8,"2,505",Binance(earn)
+2023/6,Gains Network,GNS,Assets,Cryptocurrency,99.85,142,"14,200",Binance(earn)
+2023/6,GMX,GMX,Assets,Cryptocurrency,3.17,"1,706","5,414",Binance(earn)
+2023/6,Arbitrum,ARB,Assets,Cryptocurrency,996.00,35,"34,420",Binance(earn)
+2023/6,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"1,704",Binance(earn)
+2023/6,Sui,SUI,Assets,Cryptocurrency,"1,035.00",20,"20,828",Binance(earn)
+2023/6,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"2,730",Binance(earn)
+2023/6,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"8,252","74,269",國泰世華
+2023/6,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"12,973","12,973",國泰世華
+2023/6,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/6,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/6,Installment,TWD,Liabilities,Cash,1.00,"29,444","29,444",
+2023/5,盈志 Bank,TWD,Assets,Cash,"123,780",1,"123,780",國泰世華
+2023/5,郁雯 Bank,TWD,Assets,Cash,"958,975",1,"958,975",郵局
+2023/5,Bitcoin,BTC,Assets,Cryptocurrency,0.1519,"790,744","120,114",
+2023/5,Ethereum,ETH,Assets,Cryptocurrency,3.94,"55,711","219,419","Sushi(farm), Matamask, Binance(earn)"
+2023/5,Chia,XCH,Assets,Cryptocurrency,4.00,989,"3,958",Chia wallet
+2023/5,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.000,22,Matamask
+2023/5,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.000,1,Phantom
+2023/5,Saber,SBR,Assets,Cryptocurrency,103.51,0,2,Phantom
+2023/5,USDT,USDT,Assets,Cryptocurrency,0.00,31,0,Binance(earn)
+2023/5,Polygon,POL,Assets,Cryptocurrency,"1,910.00",25,"48,480",Binance(earn)
+2023/5,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"6,211",Binance(earn)
+2023/5,Fantom,FTM,Assets,Cryptocurrency,300.00,9,"2,696",Binance(earn)
+2023/5,Gains Network,GNS,Assets,Cryptocurrency,99.85,134,"13,353",Binance(earn)
+2023/5,GMX,GMX,Assets,Cryptocurrency,3.17,"1,611","5,111",Binance(earn)
+2023/5,Arbitrum,ARB,Assets,Cryptocurrency,996.00,35,"34,891",Binance(earn)
+2023/5,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"2,265",Binance(earn)
+2023/5,Sui,SUI,Assets,Cryptocurrency,"1,035.00",25,"25,475",Binance(earn)
+2023/5,Cheems,CHEEMS,Assets,Cryptocurrency,"3,441,000,000.00",0,"7,614",Binance(earn)
+2023/5,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"6,657","59,914",國泰世華
+2023/5,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"11,954","11,954",國泰世華
+2023/5,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/5,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/5,Installment,TWD,Liabilities,Cash,1.00,"49,700","49,700",
+2023/4,盈志 Bank,TWD,Assets,Cash,"164,662",1,"164,662",國泰世華
+2023/4,郁雯 Bank,TWD,Assets,Cash,"931,325",1,"931,325",郵局
+2023/4,Bitcoin,BTC,Assets,Cryptocurrency,0.1230,"880,008","108,241",
+2023/4,Ethereum,ETH,Assets,Cryptocurrency,3.61,"58,089","209,554","Sushi(farm), Matamask, Binance(earn)"
+2023/4,Chia,XCH,Assets,Cryptocurrency,4.00,"1,139","4,557",Chia wallet
+2023/4,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.000,22,Matamask
+2023/4,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.000,1,Phantom
+2023/4,Saber,SBR,Assets,Cryptocurrency,103.51,0,3,Phantom
+2023/4,USDT,USDT,Assets,Cryptocurrency,0.00,31,0,Binance(earn)
+2023/4,Polygon,POL,Assets,Cryptocurrency,"1,910.00",30,"56,962",Binance(earn)
+2023/4,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"7,124",Binance(earn)
+2023/4,Fantom,FTM,Assets,Cryptocurrency,948.05,13,"11,865",Binance(earn)
+2023/4,Gains Network,GNS,Assets,Cryptocurrency,99.85,165,"16,489",Binance(earn)
+2023/4,GMX,GMX,Assets,Cryptocurrency,3.17,"2,085","6,614",Binance(earn)
+2023/4,Arbitrum,ARB,Assets,Cryptocurrency,996.00,38,"37,700",Binance(earn)
+2023/4,ArbDoge,AIDOGE,Assets,Cryptocurrency,"428,551,351,129.00",0,"6,672",Binance(earn)
+2023/4,Sui,SUI,Assets,Cryptocurrency,"1,035.00",40,"41,387",Binance(earn)
+2023/4,"Tesla, Inc.",TSLA,Assets,Listed stock,9.00,"5,189","46,701",國泰世華
+2023/4,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"8,730","8,730",國泰世華
+2023/4,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/4,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/4,Installment,TWD,Liabilities,Cash,1.00,"49,700","49,700",
+2023/3,盈志 Bank,TWD,Assets,Cash,"60,205",1,"60,205",國泰世華
+2023/3,郁雯 Bank,TWD,Assets,Cash,"886,397",1,"886,397",郵局
+2023/3,Bitcoin,BTC,Assets,Cryptocurrency,0.0880,"920,366","80,992",
+2023/3,Ethereum,ETH,Assets,Cryptocurrency,2.98,"58,585","174,583","Sushi(farm), Matamask, Binance(earn)"
+2023/3,Chia,XCH,Assets,Cryptocurrency,4.00,"1,165","4,659",Chia wallet
+2023/3,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.000,22,Matamask
+2023/3,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.000,1,Phantom
+2023/3,Saber,SBR,Assets,Cryptocurrency,103.51,0,3,Phantom
+2023/3,USDT,USDT,Assets,Cryptocurrency,380.00,31,"11,613",Binance(earn)
+2023/3,Polygon,POL,Assets,Cryptocurrency,"1,910.00",34,"65,492",Binance(earn)
+2023/3,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",3,"7,894",Binance(earn)
+2023/3,Fantom,FTM,Assets,Cryptocurrency,948.05,15,"14,197",Binance(earn)
+2023/3,Gains Network,GNS,Assets,Cryptocurrency,99.85,208,"20,732",Binance(earn)
+2023/3,Arbitrum,ARB,Assets,Cryptocurrency,963.36,38,"36,153",Binance(earn)
+2023/3,GMX,GMX,Assets,Cryptocurrency,3.17,"2,420","7,679",Binance(earn)
+2023/3,"Tesla, Inc.",TSLA,Assets,Listed stock,8.00,"5,639","45,110",國泰世華
+2023/3,NVIDIA Corporation,NVDA,Assets,Listed stock,5.00,"8,428","42,142",國泰世華
+2023/3,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/3,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/3,Installment,TWD,Liabilities,Cash,1.00,"60,832","60,832",
+2023/2,盈志 Bank,TWD,Assets,Cash,"141,452",1,"141,452",國泰世華
+2023/2,郁雯 Bank,TWD,Assets,Cash,"881,993",1,"881,993",郵局
+2023/2,Bitcoin,BTC,Assets,Cryptocurrency,0.0728,"661,244","48,139",
+2023/2,Ethereum,ETH,Assets,Cryptocurrency,2.10,"46,171","96,821","Sushi(farm), Matamask, Binance(earn)"
+2023/2,Chia,XCH,Assets,Cryptocurrency,4.00,"1,074","4,296",Chia wallet
+2023/2,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,876,Matamask
+2023/2,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.003,36,Phantom
+2023/2,Saber,SBR,Assets,Cryptocurrency,103.51,0,3,Phantom
+2023/2,USDT,USDT,Assets,Cryptocurrency,0.00,30,0,Binance(earn)
+2023/2,USDT,USDT,Assets,Cryptocurrency,0.00,30,0,Binance(earn)
+2023/2,Polygon,POL,Assets,Cryptocurrency,"1,910.00",33,"63,121",Binance(earn)
+2023/2,Dogecoin,DOGE,Assets,Cryptocurrency,"3,039.00",2,"6,624",Binance(earn)
+2023/2,Fantom,FTM,Assets,Cryptocurrency,948.00,12,"11,311",Binance(earn)
+2023/2,Gains Network,GNS,Assets,Cryptocurrency,99.85,215,"21,459",Binance(earn)
+2023/2,"Tesla, Inc.",TSLA,Assets,Listed stock,6.00,"5,848","35,085",國泰世華
+2023/2,NVIDIA Corporation,NVDA,Assets,Listed stock,3.00,"7,029","21,087",國泰世華
+2023/2,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/2,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/2,Installment,TWD,Liabilities,Cash,1.00,"64,151","64,151",
+2023/1,盈志 Bank,TWD,Assets,Cash,"144,883",1,"144,883",國泰世華
+2023/1,郁雯 Bank,TWD,Assets,Cash,"872,144",1,"872,144",郵局
+2023/1,Bitcoin,BTC,Assets,Cryptocurrency,0.0590,"699,934","41,296",
+2023/1,Chia,XCH,Assets,Cryptocurrency,4.00,"1,306","5,224",Chia wallet
+2023/1,Ethereum,ETH,Assets,Cryptocurrency,2.06,"49,956","102,809","Sushi(farm), Matamask, Binance(earn)"
+2023/1,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"5,000.00",0.002,11,Matamask
+2023/1,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.003,26,Phantom
+2023/1,Saber,SBR,Assets,Cryptocurrency,103.51,0,4,Phantom
+2023/1,USDT,USDT,Assets,Cryptocurrency,"1,000.00",31,"30,648",Binance(earn)
+2023/1,USDT,USDT,Assets,Cryptocurrency,"1,000.00",31,"30,648",Binance(earn)
+2023/1,Polygon,POL,Assets,Cryptocurrency,"1,131.00",31,"34,663",Binance(earn)
+2023/1,Dogecoin,DOGE,Assets,Cryptocurrency,"3,038.00",3,"7,658",Binance(earn)
+2023/1,Fantom,FTM,Assets,Cryptocurrency,948.00,17,"16,221",Binance(earn)
+2023/1,"Tesla, Inc.",TSLA,Assets,Listed stock,2.00,"5,822","11,645",國泰世華
+2023/1,TWINBEANS stock,,Assets,Unlisted stock,"451,500.00",10,"4,515,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2023/1,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2023/1,Installment,TWD,Liabilities,Cash,1.00,"64,151","64,151",
+2022/12,盈志 Bank,TWD,Assets,Cash,"52,018",1,"52,018",國泰世華
+2022/12,郁雯 Bank,TWD,Assets,Cash,"771,251",1,"771,251",郵局
+2022/12,Bitcoin,BTC,Assets,Cryptocurrency,0.0550,"649,318","35,712",
+2022/12,Chia,XCH,Assets,Cryptocurrency,4.00,"1,105","4,419",Chia wallet
+2022/12,Ethereum,ETH,Assets,Cryptocurrency,1.96,"48,268","94,604","Sushi(farm), Matamask, Binance(earn)"
+2022/12,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,938,Matamask
+2022/12,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.003,36,Phantom
+2022/12,Saber,SBR,Assets,Cryptocurrency,103.51,0,9,Phantom
+2022/12,USDT,USDT,Assets,Cryptocurrency,"1,005.00",31,"30,741",Binance(earn)
+2022/12,USDT,USDT,Assets,Cryptocurrency,"1,195.00",31,"36,552",Binance(earn)
+2022/12,Polygon,POL,Assets,Cryptocurrency,"1,131.00",31,"34,595",Binance(earn)
+2022/12,Dogecoin,DOGE,Assets,Cryptocurrency,"3,038.00",3,"7,992",Binance(earn)
+2022/12,"Tesla, Inc.",TSLA,Assets,Listed stock,2.00,"4,007","8,014",國泰世華
+2022/12,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/12,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/12,Installment,TWD,Liabilities,Cash,1.00,"81,813","81,813",
+2022/11,盈志 Bank,TWD,Assets,Cash,"36,430",1,"36,430",國泰世華
+2022/11,郁雯 Bank,TWD,Assets,Cash,"760,884",1,"760,884",郵局
+2022/11,Bitcoin,BTC,Assets,Cryptocurrency,0.0550,"536,085","29,485",
+2022/11,Chia,XCH,Assets,Cryptocurrency,4.00,"1,102","4,407",Chia wallet
+2022/11,Ethereum,ETH,Assets,Cryptocurrency,1.96,"37,818","74,123","Sushi(farm), Matamask, Binance(earn)"
+2022/11,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,985,Matamask
+2022/11,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.004,38,Phantom
+2022/11,Saber,SBR,Assets,Cryptocurrency,103.51,0,9,Phantom
+2022/11,USDT,USDT,Assets,Cryptocurrency,"2,191.00",32,"70,384",Binance(earn)
+2022/11,"Tesla, Inc.",TSLA,Assets,Listed stock,1.00,"4,819","4,819",國泰世華
+2022/11,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/11,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/11,Installment,TWD,Liabilities,Cash,1.00,"81,813","81,813",
+2022/10,盈志 Bank,TWD,Assets,Cash,"66,338",1,"66,338",國泰世華
+2022/10,郁雯 Bank,TWD,Assets,Cash,"722,111",1,"722,111",郵局
+2022/10,Bitcoin,BTC,Assets,Cryptocurrency,0.1525,"580,874","88,607",
+2022/10,Chia,XCH,Assets,Cryptocurrency,4.00,"1,091","4,363",Chia wallet
+2022/10,Ethereum,ETH,Assets,Cryptocurrency,11.13,"40,548","451,230","Sushi(farm), Matamask, Binance(earn)"
+2022/10,Solana,SOL,Assets,Cryptocurrency,35.06,618,"21,650","Phantom ,Binance(earn)"
+2022/10,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,975,Matamask
+2022/10,Moonbeam,GLMR,Assets,Cryptocurrency,522.81,13,"6,872",Binance(earn)
+2022/10,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.004,37,Phantom
+2022/10,Saber,SBR,Assets,Cryptocurrency,103.51,0,9,Phantom
+2022/10,Polkdot,DOT,Assets,Cryptocurrency,186.25,199,"37,139",Binance(earn)
+2022/10,Avalanche,AVAX,Assets,Cryptocurrency,63.81,490,"31,270",Binance(earn)
+2022/10,Astar,ASTR,Assets,Cryptocurrency,"20,745.79",1,"26,391",Binance(earn)
+2022/10,Chainlink,LINK,Assets,Cryptocurrency,82.60,225,"18,574",Binance(earn)
+2022/10,The Graph,GRT,Assets,Cryptocurrency,"2,586.03",2,"5,938",Binance(earn)
+2022/10,BNB,BNB,Assets,Cryptocurrency,0.30,"10,043","2,985",Binance(earn)
+2022/10,Optimism,OP,Assets,Cryptocurrency,222.27,29,"6,503",Binance(earn)
+2022/10,Cardano,ADA,Assets,Cryptocurrency,"1,947.36",12,"22,915",Binance(earn)
+2022/10,USDT,USDT,Assets,Cryptocurrency,311.12,32,"9,894",Binance(earn)
+2022/10,USDT,USDT,Assets,Cryptocurrency,911.60,32,"28,991",Binance(earn)
+2022/10,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/10,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/10,Installment,TWD,Liabilities,Cash,1.00,"85,700","85,700",
+2022/9,盈志 Bank,TWD,Assets,Cash,"105,704",1,"105,704",國泰世華
+2022/9,郁雯 Bank,TWD,Assets,Cash,"772,925",1,"772,925",郵局
+2022/9,Bitcoin,BTC,Assets,Cryptocurrency,0.1525,"622,175","94,907",
+2022/9,Chia,XCH,Assets,Cryptocurrency,4.00,"1,048","4,191",Chia wallet
+2022/9,Ethereum,ETH,Assets,Cryptocurrency,8.17,"41,973","342,753","Sushi(farm), Matamask, Binance(earn)"
+2022/9,Solana,SOL,Assets,Cryptocurrency,37.44,"1,049","39,285","Phantom ,Binance(earn)"
+2022/9,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,"1,247",Matamask
+2022/9,Moonbeam,GLMR,Assets,Cryptocurrency,522.81,15,"7,666",Binance(earn)
+2022/9,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,567.00",0.004,47,Phantom
+2022/9,Saber,SBR,Assets,Cryptocurrency,103.51,0,9,Phantom
+2022/9,Polkdot,DOT,Assets,Cryptocurrency,186.25,199,"37,040",Binance(earn)
+2022/9,Avalanche,AVAX,Assets,Cryptocurrency,63.81,537,"34,246",Binance(earn)
+2022/9,Astar,ASTR,Assets,Cryptocurrency,"20,745.79",1,"23,765",Binance(earn)
+2022/9,Chainlink,LINK,Assets,Cryptocurrency,82.60,241,"19,933",Binance(earn)
+2022/9,The Graph,GRT,Assets,Cryptocurrency,"2,586.03",3,"8,085",Binance(earn)
+2022/9,BNB,BNB,Assets,Cryptocurrency,0.30,"9,064","2,693",Binance(earn)
+2022/9,Optimism,OP,Assets,Cryptocurrency,222.27,27,"5,934",Binance(earn)
+2022/9,USDT,USDT,Assets,Cryptocurrency,"2,605.92",31,"79,606",Binance(earn)
+2022/9,USDT,USDT,Assets,Cryptocurrency,"1,005.32",31,"30,711",Binance(earn)
+2022/9,USD,USD,Assets,Cash,143.23,31,"4,375",FTX
+2022/9,NVIDIA Corporation,NVDA,Assets,Listed stock,1.01,"4,075","4,096",FTX
+2022/9,"Tesla, Inc.",TSLA,Assets,Listed stock,10.01,"7,438","74,452",FTX
+2022/9,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/9,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/9,Installment,TWD,Liabilities,Cash,1.00,"106,244","106,244",
+2022/8,盈志 Bank,TWD,Assets,Cash,"111,564",1,"111,564",國泰世華
+2022/8,郁雯 Bank,TWD,Assets,Cash,"691,385",1,"691,385",郵局
+2022/8,Bitcoin,BTC,Assets,Cryptocurrency,0.1214,"575,304","69,842",
+2022/8,Chia,XCH,Assets,Cryptocurrency,4.00,"1,038","4,152",Chia wallet
+2022/8,Ethereum,ETH,Assets,Cryptocurrency,6.73,"48,329","325,255","Sushi(farm), Matamask, Binance(earn)"
+2022/8,Solana,SOL,Assets,Cryptocurrency,37.16,969,"36,024","Phantom ,Binance(earn)"
+2022/8,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.003,"1,748",Matamask
+2022/8,Moonbeam,GLMR,Assets,Cryptocurrency,494.09,15,"7,244",Binance(earn)
+2022/8,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,564.00",0.005,54,Phantom
+2022/8,Saber,SBR,Assets,Cryptocurrency,103.51,0,9,Phantom
+2022/8,Polkdot,DOT,Assets,Cryptocurrency,137.07,215,"29,524",Binance(earn)
+2022/8,Avalanche,AVAX,Assets,Cryptocurrency,63.43,564,"35,747",Binance(earn)
+2022/8,Astar,ASTR,Assets,Cryptocurrency,"18,502.00",1,"19,257",Binance(earn)
+2022/8,Chainlink,LINK,Assets,Cryptocurrency,53.30,213,"11,349",Binance(earn)
+2022/8,The Graph,GRT,Assets,Cryptocurrency,"1,112.52",3,"3,435",Binance(earn)
+2022/8,BNB,BNB,Assets,Cryptocurrency,0.27,"8,359","2,254",Binance(earn)
+2022/8,Optimism,OP,Assets,Cryptocurrency,211.00,35,"7,365",Binance(earn)
+2022/8,USDT,USDT,Assets,Cryptocurrency,"5,008.00",30,"151,081",Binance(earn)
+2022/8,USDT,USDT,Assets,Cryptocurrency,"2,025.39",30,"61,102",Binance(earn)
+2022/8,USD,USD,Assets,Cash,"1,131.00",30,"34,120",FTX
+2022/8,NVIDIA Corporation,NVDA,Assets,Listed stock,1.01,"4,187","4,229",FTX
+2022/8,"Tesla, Inc.",TSLA,Assets,Listed stock,3.53,"8,572","30,259",FTX
+2022/8,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/8,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/8,Installment,TWD,Liabilities,Cash,1.00,"125,354","125,354",
+2022/7,盈志 Bank,TWD,Assets,Cash,"99,443",1,"99,443",國泰世華
+2022/7,郁雯 Bank,TWD,Assets,Cash,"651,314",1,"651,314",郵局
+2022/7,Bitcoin,BTC,Assets,Cryptocurrency,0.0873,"687,741","60,067",
+2022/7,Chia,XCH,Assets,Cryptocurrency,4.00,"1,272","5,089",Chia wallet
+2022/7,Ethereum,ETH,Assets,Cryptocurrency,5.32,"50,183","266,971","Sushi(farm), Matamask, Binance(earn)"
+2022/7,Solana,SOL,Assets,Cryptocurrency,36.77,"1,191","43,810","Phantom ,Binance(earn)"
+2022/7,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.003,"1,724",Matamask
+2022/7,Moonbeam,GLMR,Assets,Cryptocurrency,494.09,21,"10,484",Binance(earn)
+2022/7,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,564.00",0.007,76,Phantom
+2022/7,Saber,SBR,Assets,Cryptocurrency,103.51,0,13,Phantom
+2022/7,Polkdot,DOT,Assets,Cryptocurrency,137.07,260,"35,635",Binance(earn)
+2022/7,Avalanche,AVAX,Assets,Cryptocurrency,62.89,822,"51,686",Binance(earn)
+2022/7,Astar,ASTR,Assets,Cryptocurrency,"18,502.00",1,"25,978",Binance(earn)
+2022/7,Chainlink,LINK,Assets,Cryptocurrency,53.30,251,"13,358",Binance(earn)
+2022/7,The Graph,GRT,Assets,Cryptocurrency,"1,112.52",4,"4,560",Binance(earn)
+2022/7,BNB,BNB,Assets,Cryptocurrency,0.27,"9,412","2,538",Binance(earn)
+2022/7,Optimism,OP,Assets,Cryptocurrency,211.00,51,"10,658",Binance(earn)
+2022/7,USDT,USDT,Assets,Cryptocurrency,"5,608.00",30,"166,819",Binance(earn)
+2022/7,USDT,USDT,Assets,Cryptocurrency,"2,011.00",30,"59,820",Binance(earn)
+2022/7,USD,USD,Assets,Cash,"5,359.00",30,"159,412",FTX
+2022/7,NVIDIA Corporation,NVDA,Assets,Listed stock,1.01,"4,473","4,517",FTX
+2022/7,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/7,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/7,Installment,TWD,Liabilities,Cash,1.00,"64,691","64,691",
+2022/6,盈志 Bank,TWD,Assets,Cash,"82,238",1,"82,238",國泰世華
+2022/6,郁雯 Bank,TWD,Assets,Cash,"605,123",1,"605,123",郵局
+2022/6,Chia,XCH,Assets,Cryptocurrency,4.00,"1,367","5,467",Chia wallet
+2022/6,Ethereum,ETH,Assets,Cryptocurrency,4.22,"29,594","124,767","Sushi(farm), Matamask, Binance(earn)"
+2022/6,Solana,SOL,Assets,Cryptocurrency,32.84,909,"29,852","Phantom ,Binance(earn)"
+2022/6,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.002,"1,035",Matamask
+2022/6,Moonbeam,GLMR,Assets,Cryptocurrency,494.09,17,"8,536",Binance(earn)
+2022/6,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,564.00",0.007,70,Phantom
+2022/6,Saber,SBR,Assets,Cryptocurrency,103.51,0,10,Phantom
+2022/6,Polkdot,DOT,Assets,Cryptocurrency,137.07,196,"26,818",Binance(earn)
+2022/6,Avalanche,AVAX,Assets,Cryptocurrency,62.12,468,"29,041",Binance(earn)
+2022/6,Astar,ASTR,Assets,Cryptocurrency,"18,502.00",1,"22,977",Binance(earn)
+2022/6,Chainlink,LINK,Assets,Cryptocurrency,52.84,174,"9,204",Binance(earn)
+2022/6,The Graph,GRT,Assets,Cryptocurrency,"1,105.37",3,"2,930",Binance(earn)
+2022/6,BNB,BNB,Assets,Cryptocurrency,0.27,"6,093","1,643",Binance(earn)
+2022/6,Optimism,OP,Assets,Cryptocurrency,200.00,16,"3,128",Binance(earn)
+2022/6,FTX,FTT,Assets,Cryptocurrency,155.00,696,"107,955",FTX
+2022/6,USDT,USDT,Assets,Cryptocurrency,5608,29,"163,352",Binance(earn)
+2022/6,USDT,USDT,Assets,Cryptocurrency,"2,008.00",29,"58,490",Binance(earn)
+2022/6,USD,USD,Assets,Cash,"4,334.84",29,"126,267",FTX
+2022/6,"Tesla, Inc.",TSLA,Assets,Listed stock,0.15,"19,166","2,875",FTX
+2022/6,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"5,006","5,005",FTX
+2022/6,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/6,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/6,Installment,TWD,Liabilities,Cash,1.00,"64,691","64,691",
+2022/5,盈志 Bank,TWD,Assets,Cash,"84,120",1,"84,120",國泰世華
+2022/5,郁雯 Bank,TWD,Assets,Cash,"607,015",1,"607,015",郵局
+2022/5,Chia,XCH,Assets,Cryptocurrency,4.00,"1,012","4,047",Chia wallet
+2022/5,Ethereum,ETH,Assets,Cryptocurrency,2.37,"57,632","136,414","Sushi(farm), Matamask, Binance(earn)"
+2022/5,Solana,SOL,Assets,Cryptocurrency,32.84,"1,346","44,190","Phantom ,Binance(earn)"
+2022/5,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.004,"2,092",Matamask
+2022/5,Moonbeam,GLMR,Assets,Cryptocurrency,494.09,39,"19,299",Binance(earn)
+2022/5,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,564.00",0.016,171,Phantom
+2022/5,Saber,SBR,Assets,Cryptocurrency,103.51,0,30,Phantom
+2022/5,Polkdot,DOT,Assets,Cryptocurrency,137.07,300,"41,111",Binance(earn)
+2022/5,Avalanche,AVAX,Assets,Cryptocurrency,25.87,775,"20,040",Binance(earn)
+2022/5,Astar,ASTR,Assets,Cryptocurrency,"18,284.46",2,"35,090",Binance(earn)
+2022/5,Chainlink,LINK,Assets,Cryptocurrency,52.99,405,"21,476",Binance(earn)
+2022/5,The Graph,GRT,Assets,Cryptocurrency,"1,101.52",5,"4,967",Binance(earn)
+2022/5,BNB,BNB,Assets,Cryptocurrency,0.27,"9,363","2,525",Binance(earn)
+2022/5,USDT,USDT,Assets,Cryptocurrency,"6,331.59",29,"186,364",Binance(earn)
+2022/5,USDT,USDT,Assets,Cryptocurrency,"2,410.77",29,"70,959",Binance(earn)
+2022/5,USD,USD,Assets,Cash,"1,887.40",29,"55,554",FTX
+2022/5,"Tesla, Inc.",TSLA,Assets,Listed stock,10.33,"22,546","232,824",FTX
+2022/5,NVIDIA Corporation,NVDA,Assets,Listed stock,1.00,"5,563","5,562",FTX
+2022/5,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/5,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/5,Installment,TWD,Liabilities,Cash,1.00,"74,051","74,051",
+2022/4,盈志 Bank,TWD,Assets,Cash,"72,910",1,"72,910",國泰世華
+2022/4,郁雯 Bank,TWD,Assets,Cash,"527,459.00",1,"527,459",郵局
+2022/4,Chia,XCH,Assets,Cryptocurrency,4.00,"1,874","7,495",Chia wallet
+2022/4,Bitcoin,BTC,Assets,Cryptocurrency,0.035,"1,161,145","40,640",Binance(earn)
+2022/4,Ethereum,ETH,Assets,Cryptocurrency,2.10,"86,258","181,177","Sushi(farm), Matamask, Binance(earn)"
+2022/4,Solana,SOL,Assets,Cryptocurrency,15.82,"2,924","46,277","Phantom ,Binance(earn)"
+2022/4,AssangeDAO,JUSTIC,Assets,Cryptocurrency,"500,000.00",0.012,"6,240",Matamask
+2022/4,Moonbeam,GLMR,Assets,Cryptocurrency,485.81,112,"54,174",Binance(earn)
+2022/4,Sunny Aggregator,SUNNY,Assets,Cryptocurrency,"10,564.00",0.056,587,Phantom
+2022/4,BitDAO,BIT,Assets,Cryptocurrency,"1,238.71",36,"45,097",In Sushi(farm)
+2022/4,Saber,SBR,Assets,Cryptocurrency,103.51,1,66,Phantom
+2022/4,Polkdot,DOT,Assets,Cryptocurrency,89.60,529,"47,414",Binance(earn)
+2022/4,Avalanche,AVAX,Assets,Cryptocurrency,15.13,"2,170","32,830",Binance(earn)
+2022/4,Polygon,POL,Assets,Cryptocurrency,92.18,42,"3,842",Binance(earn)
+2022/4,Astar,ASTR,Assets,Cryptocurrency,"14,587.81",6,"90,788",Binance(earn)
+2022/4,Chainlink,LINK,Assets,Cryptocurrency,52.99,395,"20,916",Binance(earn)
+2022/4,USDT,USDT,Assets,Cryptocurrency,"6,928.41",29,"198,615",Binance(earn)
+2022/4,USD,USD,Assets,Cash,"2,032.10",29,"58,254",FTX
+2022/4,Acala,ACA,Assets,Cryptocurrency,15.39,43,657,Binance(earn)
+2022/4,"Tesla, Inc.",TSLA,Assets,Listed stock,12.00,"29,154","349,848",FTX
+2022/4,NVIDIA Corporation,NVDA,Assets,Listed stock,3.00,"5,791","17,371",FTX
+2022/4,TWINBEANS stock,,Assets,Unlisted stock,"151,500.00",20,"3,030,000","12 NT/share: 500K(盈志)+850K(爸)+150K(廷)
+20 NT/share: 780K(盈志)
+Share(盈志)：41,667+39,000 = 80667
+Share(爸)：70,833
+Share(廷)：12,500"
+2022/4,Atom stock,,Assets,Unlisted stock,"5,000.00",24,"120,000",
+2022/4,Installment,TWD,Liabilities,Cash,1.00,"95,412","95,412",
