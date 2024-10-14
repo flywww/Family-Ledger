@@ -40,7 +40,6 @@ export async function POST(req: Request){
                             row.Price = row.Price? parseFloat(row.Price.replace(/,/g,'')) : 0;
                             row.TotalValue = row.TotalValue? parseFloat(row.TotalValue.replace(/,/g,'')) : 0;
 
-
                             await limit(async () => {
                                 let user = await prisma.user.findUnique({
                                     where:{
@@ -106,8 +105,6 @@ export async function POST(req: Request){
                                     }
                                 })
                             })
-
-                            //results.push(row)
                         })
                         .on('end', () => {
                             console.log(results);
