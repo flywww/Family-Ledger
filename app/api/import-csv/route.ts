@@ -55,7 +55,7 @@ export async function POST(req: Request){
                                     })
                                 }
     
-                                let category = await prisma.category.findUnique({
+                                let category = await prisma.category.findFirst({
                                     where:{ name: row.Category as string}
                                 })
                                 if (!category) {
