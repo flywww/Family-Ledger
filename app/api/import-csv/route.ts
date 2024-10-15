@@ -78,19 +78,23 @@ export async function POST(req: Request){
                                     })
                                 }
     
-                                let holding = await prisma.holding.upsert({
+                                let holding = await prisma.holding.findFirst({
                                     where:{
-                                        name_symbol: { name: row.Name, symbol: row.Symbol },
+                                        name: row.Name, 
+                                        symbol: row.Symbol,
                                     },
-                                    update:{},
-                                    create:{
+                                });
+                                if(!holding){
+                                    holding = await prisma.holding.create({
+                                        data:{
                                             name: row.Name,
                                             symbol: row.Symbol,
                                             typeId: type.id,
                                             categoryId: category.id,
                                             userId: user.id,
-                                    }
-                                });
+                                        }
+                                    })
+                                }
                                 
                                 await prisma.balance.create({
                                     data:{
