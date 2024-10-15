@@ -56,7 +56,7 @@ export async function POST(req: Request){
                                 }
     
                                 let category = await prisma.category.findUnique({
-                                    where:{ name: row.Category }
+                                    where:{ name: row.Category as string}
                                 })
                                 if (!category) {
                                     category = await prisma.category.create({
