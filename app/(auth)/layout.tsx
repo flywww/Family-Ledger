@@ -6,7 +6,7 @@ export default function Layout({children}: { children: React.ReactNode}){
             <div className="w-full h-20">
                 <NavBar/>
             </div>
-            <div className="flex-grow p-6">
+            <div className="flex-grow p-8">
                 {children}
             </div>
         </div>
