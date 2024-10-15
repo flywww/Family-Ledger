@@ -21,7 +21,7 @@ export default function NavLinks(){
                         className={clsx(
                             "flex items-center justify-start h-8 px-8 rounded-full hover:text-white hover:text-opacity-80",
                             {
-                                'bg-white bg-opacity-10': pathname === link.href,
+                                'bg-slate-200 dark:bg-slate-900': pathname === link.href,
                             },
                         )}
                     >

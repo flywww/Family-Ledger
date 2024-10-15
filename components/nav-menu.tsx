@@ -2,13 +2,54 @@
 
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    DropdownMenuSubTrigger,
+    DropdownMenuPortal,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuItem,
+    
+} from "@/components/ui/dropdown-menu"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export default function NavMenu(){
-    const { setTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
 
 
     return(
-        <div>
-        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline">Menu</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Display</DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                                <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                </DropdownMenuSub>
+                <DropdownMenuItem>
+                    <Link key='Setting' href='/setting' > Settings </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     )
 }
