@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import fs, { link } from 'fs';
+import fs from 'fs';
 import path from "path";
 import prisma from "@/lib/prisma";
 import pLimit from 'p-limit';
 import csvParser from 'csv-parser'
-import { log } from "console";
 
 
 export async function POST(req: Request){
