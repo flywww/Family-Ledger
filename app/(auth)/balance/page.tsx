@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { fetchBalance } from "@/lib/actions";
 import { format } from "date-fns";
 import Search from "@/components/balance/search";
 import { monthList } from "@/lib/data";
