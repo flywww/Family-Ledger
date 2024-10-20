@@ -13,18 +13,19 @@ export default function Search(){
     const currentYear = new Date().getFullYear().toString();
     const currentMonth = monthList[new Date().getMonth()].toString();
 
-    console.log('search component timezone:')
-    console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
-
+    console.log('search component timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
+    
     const handleYearSearch = (value:string) => {
         const params = new URLSearchParams(searchParams);
         params.set('year',value)
+        if(!params.get('month')) params.set('month',monthList[new Date().getMonth()].toString());
         replace(`${pathname}?${params.toString()}`);   
     }
 
     const handleMonthSearch = (value:string) => {
         const params = new URLSearchParams(searchParams);
         params.set('month',value)
+        if(!params.get('year')) params.set('year',new Date().getFullYear().toString());
         replace(`${pathname}?${params.toString()}`);   
     }
 

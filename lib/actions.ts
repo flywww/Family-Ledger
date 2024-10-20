@@ -13,12 +13,11 @@ export async function fetchMonthlyBalance( year:string, month:string  ){
     const UTCStartDate = new Date(localStartDate).toUTCString();
     const UTCEndDate = new Date(localEndDate).toUTCString();
     
-    console.log('fetch function timezone:')
-    console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    console.log('fetch function timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
     
     console.log('Fetching monthly balance from');
-    console.log(UTCStartDate);
-    console.log(UTCEndDate);
+    console.log(localStartDate);
+    console.log(localEndDate);
 
     try {
         const data = await prisma.balance.findMany({

@@ -7,8 +7,7 @@ export default async function BalanceTable({
     month:string;
     year:string;
 }){
-    console.log('balance table timezone:')
-    console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    console.log('balance table timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
 
     console.log('Table check');
     console.log(month);
@@ -16,7 +15,8 @@ export default async function BalanceTable({
     
     const balanceData = await fetchMonthlyBalance(year, month);
     console.log('BalanceData');
-    //console.log(balanceData);
+    console.log(JSON.stringify(balanceData[0]));
+    console.log(JSON.stringify(balanceData[1]));
     
     
     

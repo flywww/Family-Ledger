@@ -17,8 +17,7 @@ export default async function Page({
     
     //TODO: Check localized date 
 
-    console.log('balance page timezone:')
-    console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    console.log('balance page timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
 
     let queryMonth:string = "";
     let queryYear:string = "";
