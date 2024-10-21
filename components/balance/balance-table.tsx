@@ -1,26 +1,13 @@
 import { fetchMonthlyBalance } from "@/lib/actions";
 
 export default async function BalanceTable({
-    month,
-    year,
+    date,
 }:{
-    month:string;
-    year:string;
+    date:Date;
 }){
-    console.log('balance table timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
-
-    console.log('Table check');
-    console.log(month);
-    console.log(year);
+    console.log('balance table query date:', date);
+    const balanceData = await fetchMonthlyBalance(date);
     
-    const balanceData = await fetchMonthlyBalance(year, month);
-    console.log('BalanceData');
-    console.log(JSON.stringify(balanceData[0]));
-    console.log(JSON.stringify(balanceData[1]));
-    
-    
-    
-
     return(
         <>
             <div>Table</div>

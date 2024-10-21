@@ -2,7 +2,6 @@
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select";
-import { useState, useEffect } from "react";
 import { getYearList, monthList } from "@/lib/data";
 
 export default function Search(){
@@ -10,28 +9,33 @@ export default function Search(){
     const pathname = usePathname();
     const { replace } = useRouter();
     const yearList = getYearList();
-    const currentYear = new Date().getFullYear().toString();
-    const currentMonth = monthList[new Date().getMonth()].toString();
+    const UTCDateString: string|null = searchParams.get('date') || new Date().toUTCString();
+    const queryDate = new Date(UTCDateString);
 
+    console.log('search component - queryDate: ', queryDate);
+    console.log('search component - UTCDateString: ', UTCDateString);
     console.log('search component timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
-    
+
     const handleYearSearch = (value:string) => {
         const params = new URLSearchParams(searchParams);
-        params.set('year',value)
-        if(!params.get('month')) params.set('month',monthList[new Date().getMonth()].toString());
+        const newQueryDate = new Date(Number(value), queryDate.getMonth(), 1)
+        params.set('date', newQueryDate.toUTCString())
         replace(`${pathname}?${params.toString()}`);   
     }
 
     const handleMonthSearch = (value:string) => {
         const params = new URLSearchParams(searchParams);
-        params.set('month',value)
-        if(!params.get('year')) params.set('year',new Date().getFullYear().toString());
+        const newQueryDate = new Date(queryDate.getFullYear(), Number(value)-1, 1)
+        params.set('date', newQueryDate.toUTCString());
         replace(`${pathname}?${params.toString()}`);   
     }
 
     return(
         <div>
-            <Select name="year" value={searchParams.get('year')||currentYear} onValueChange={(value)=>{handleYearSearch(value)}}>
+            <Select 
+                name="year" 
+                value={ queryDate.getFullYear().toString() } 
+                onValueChange={ (value)=>{handleYearSearch(value)} }>
                 <SelectTrigger>
                     <SelectValue/>
                 </SelectTrigger>
@@ -42,7 +46,10 @@ export default function Search(){
                     </SelectContent>
             </Select>
 
-            <Select name="month" value={searchParams.get('month')||currentMonth } onValueChange={(value)=>{handleMonthSearch(value)}}>
+            <Select 
+                name="month" 
+                value={ monthList[queryDate.getMonth()] } 
+                onValueChange={(value)=>{handleMonthSearch(value)}}>
                 <SelectTrigger>
                     <SelectValue/>
                 </SelectTrigger>
