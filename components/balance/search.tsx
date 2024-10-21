@@ -1,12 +1,12 @@
 'use client'
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getYearList, monthList, minYear } from "@/lib/data";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns/format";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MonthPicker } from "../ui/month-picker";
 
@@ -17,10 +17,6 @@ export default function Search(){
     const yearList = getYearList();
     const UTCDateString: string|null = searchParams.get('date') || new Date().toUTCString();
     const queryDate = new Date(UTCDateString);
-
-    console.log('search component - queryDate: ', queryDate);
-    console.log('search component - UTCDateString: ', UTCDateString);
-    console.log('search component timezone:',Intl.DateTimeFormat().resolvedOptions().timeZone)
 
     const handleYearSearch = (value:string) => {
         const params = new URLSearchParams(searchParams);
@@ -87,7 +83,6 @@ export default function Search(){
                         minDate={new Date(minYear,1,1)} />
                 </PopoverContent>
             </Popover>
-
 
         </div>
     )
