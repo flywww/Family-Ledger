@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-//import { MonthPicker } from "../ui/month-picker";
+import { MonthPicker } from "../ui/month-picker";
 
 export default function Search(){
     const searchParams = useSearchParams();
@@ -68,7 +68,7 @@ export default function Search(){
                     </SelectContent>
             </Select>
 
-            {/*<Popover>
+            <Popover>
                 <PopoverTrigger asChild>
                     <Button variant={"outline"} className={cn("w-[280px] justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -82,7 +82,7 @@ export default function Search(){
                         maxDate={new Date()}
                         minDate={new Date(minYear,1,1)} />
                 </PopoverContent>
-            </Popover>*/}
+            </Popover>
 
         </div>
     )
