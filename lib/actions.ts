@@ -1,16 +1,13 @@
 import prisma from "./prisma";
 import { firstDateOfMonth } from "./utils";
 
-export async function fetchMonthlyBalance( date: Date  ){
+export async function fetchMonthlyBalance( queryDate: Date  ){
     
-    const queryDate = firstDateOfMonth(date);
-    console.log('Fetching monthly balance with date', date);
+    console.log('Fetching monthly balance with date', queryDate);
 
     try {
         const data = await prisma.balance.findMany({
-            where:{
-                date: date
-            }
+            where:{ date: queryDate }
         })
         return data;
     } catch (error) {
