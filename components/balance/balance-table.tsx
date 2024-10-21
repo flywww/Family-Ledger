@@ -1,5 +1,5 @@
 import { fetchMonthlyBalance } from "@/lib/actions";
-import { Balance } from "@/lib/data";
+import { Balance } from "@/lib/definitions";
 
 export default async function BalanceTable({
     date,
