@@ -20,7 +20,7 @@ export default async function Page({
       <div>
         <h1> balance page</h1>
         <Search/>
-        <BalanceTable date={ queryDate }/>
+        {/*<BalanceTable date={ queryDate }/>*/}
       </div>
     )
   }
