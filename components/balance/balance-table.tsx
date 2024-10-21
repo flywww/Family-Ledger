@@ -8,7 +8,9 @@ export default async function BalanceTable({
 }){
     console.log('balance table query date:', date);
     const balanceData = await fetchMonthlyBalance(date);
-    
+    console.log('balance table query result:', balanceData[0]);
+    console.log('balance table query result:', balanceData[1]);
+
     return(
         <>
             <div>Table</div>
