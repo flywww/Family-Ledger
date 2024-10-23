@@ -14,7 +14,6 @@ export default async function Page({
 
     let queryDate = firstDateOfMonth(new Date());
     if(searchParams?.date) queryDate = new Date(searchParams.date);
-    console.log('balance page queryDate:', queryDate);
 
     return (
       <div>

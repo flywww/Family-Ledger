@@ -1,20 +1,23 @@
 import { fetchMonthlyBalance } from "@/lib/actions";
-import { Balance } from "@/lib/definitions";
+import { BalanceRecord } from "@/lib/definitions";
+import { DataTable } from "../data-table";
+import { columns } from "./balance-columns";
+import { ColumnDef } from "@tanstack/react-table";
 
 export default async function BalanceTable({
     date,
 }:{
     date:Date;
 }){
-    console.log('balance table query date:', date);
+
+    //TODO: fetch with user id
     const balanceData = await fetchMonthlyBalance(date);
-    console.log('balance table query result:', balanceData[0]);
-    console.log('balance table query result:', balanceData[1]);
+    
 
     return(
         <>
             <div>Table</div>
-            <div>{JSON.stringify(balanceData)}</div>
+            <DataTable columns={columns as ColumnDef<BalanceRecord | null, any>[]} data={balanceData}></DataTable>
         </>
     )
 }
