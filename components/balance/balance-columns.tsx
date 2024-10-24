@@ -33,6 +33,11 @@ const moneyCellFormatter = (row: Row<BalanceRecord>, key: string) => {
     return <div className="text-right font-medium">{formattedPrice}</div>
 }
 
+const numberCellFormatter = (row: Row<BalanceRecord>, key: string) => {
+    const recordNumber = parseInt(row.getValue(key))
+    return <div className="text-right font-medium">{recordNumber}</div>
+}
+
 const getSortedHeader = ( column: Column<BalanceRecord>, headerName:string ) => {
     return(
         <Button
@@ -66,6 +71,7 @@ export const columns: ColumnDef<BalanceRecord>[] = [
     {
         accessorKey: "quantity",
         header: ({column}) => getSortedHeader(column, "Quantity"),
+        cell:({row}) => numberCellFormatter(row, 'quantity')
     },
     {
         accessorKey: "price",
