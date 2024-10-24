@@ -19,3 +19,5 @@ export const BalanceRecordSchema = z.object({
 })
 
 export type BalanceRecord = z.infer<typeof BalanceRecordSchema>
+
+export type currencyType = 'TWD' | 'USD';
