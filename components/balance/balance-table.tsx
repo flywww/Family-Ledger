@@ -3,6 +3,7 @@ import { BalanceRecord } from "@/lib/definitions";
 import { DataTable } from "../data-table";
 import { columns } from "./balance-columns";
 import { ColumnDef } from "@tanstack/react-table";
+import { Button } from "../ui/button";
 
 export default async function BalanceTable({
     date,
@@ -16,7 +17,7 @@ export default async function BalanceTable({
 
     return(
         <>
-            <div>Table</div>
+            
             <DataTable columns={columns as ColumnDef<BalanceRecord | null, any>[]} data={balanceData}></DataTable>
         </>
     )

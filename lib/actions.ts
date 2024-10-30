@@ -1,5 +1,9 @@
+'use server'
+
 import prisma from "./prisma";
-import { BalanceRecord, BalanceRecordSchema } from "./definitions";
+import { BalanceRecord, BalanceRecordSchema, CategoryForm, CategoryFormSchema, TypeForm, TypeFormSchema } from "./definitions";
+import { Category, Type } from "@prisma/client";
+import { log } from "console";
 
 
 export async function fetchMonthlyBalance( queryDate: Date  ){
@@ -74,10 +78,95 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
     }
 }
 
+export async function createBalance( balance: BalanceRecord ){
+    
+}
+
+export async function createMonthBalance( balances: BalanceRecord[] ){
+
+}
+
+export async function deleteBalance( id: number ){
+
+}
+
+export async function updateBalance( id: number ){
+
+}
+
+
+//User
 export async function fetchUserWithId( id:number ){
 
 }
 
+
+//Holding
 export async function fetchHoldingWithId( id:number ){
 
+}
+
+
+//Category
+export async function fetchCategories(){
+    try {
+        const data = await prisma.category.findMany({
+            select:{
+                id: true,
+                name: true,
+                isHide: true,
+            },
+            orderBy:{
+                id:'asc'
+            }
+        });
+
+        const categoryList = data.map( (category) => {
+            const parsed = CategoryFormSchema.safeParse({
+                id: category.id,
+                name: category.name,
+                isHide: category.isHide
+            })
+            if(!parsed.success){
+                console.error("Invalid category data", parsed.error)
+                return null;
+            }
+            return parsed.data;
+        }).filter( (category): category is CategoryForm => category !== null )
+        return categoryList;
+
+    } catch (error) {
+        console.error("Failed to fetch categories", error)
+        return [];
+    }
+}
+
+//Type
+export async function fetchTypes(){
+    try {
+        const data = await prisma.type.findMany({
+            select:{
+                name: true,
+                id: true,
+            },
+            orderBy:{
+                id: 'desc'
+            }
+        });
+        const typeList = data.map( (type) => {
+            const parsed = TypeFormSchema.safeParse({
+                id: type.id,
+                name: type.name
+            })
+            if(!parsed.success){
+                console.error("Invalid type data", parsed.error);
+                return null;
+            }
+            return parsed.data;
+        }).filter( (type): type is TypeForm => type !== null)
+        return typeList;
+    } catch (error) {
+        console.log('Failed to fetch types', error);
+        return [];
+    }
 }
