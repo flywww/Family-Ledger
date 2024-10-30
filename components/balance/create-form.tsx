@@ -1,6 +1,6 @@
 'use client'
 
-import { BalanceFormSchema, BalanceRecord, CategoryForm, CategoryFormSchema, TypeForm } from "@/lib/definitions";
+import { BalanceFormSchema, BalanceRecord, CategoryForm, CategoryFormSchema, HoldingForm, TypeForm } from "@/lib/definitions";
 import {
     Form,
     FormControl,
@@ -10,6 +10,19 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import { 
+    Popover, 
+    PopoverContent, 
+    PopoverTrigger 
+} from "../ui/popover";
 
 import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
@@ -17,15 +30,15 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { cn, firstDateOfMonth } from "@/lib/utils";
 import { Input } from "../ui/input";
 import { useRouter } from "next/navigation";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, CheckIcon } from "lucide-react";
 import { MonthPicker } from "../ui/month-picker";
 import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { SelectContent, SelectTrigger, SelectValue, Select, SelectItem } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useState } from "react";
-import { fetchCategories, fetchTypes } from "@/lib/actions";
+import { fetchCategories, fetchTypes, fetchHoldings } from "@/lib/actions";
+import { CaretSortIcon } from "@radix-ui/react-icons";
 
 export default function CreateBalanceForm({ 
     initialDate, 
@@ -51,7 +64,10 @@ export default function CreateBalanceForm({
     });
     const [categoryList, setCategoryList] = useState<CategoryForm[]>([]);
     const [typeList, setTypeList] = useState<TypeForm[]>([]);
-    const [holdingList, setHoldingList] = useState<{ name: string, symbol: string}[]>([]); 
+    const [holdingList, setHoldingList] = useState<HoldingForm[]>([]); 
+    const [selectedCategory, setSelectedCategory] = useState<CategoryForm>();
+    const [selectedType, setSelectedType] = useState<TypeForm>();
+    const [selectedHolding, setSelectedHolding] = useState<HoldingForm>();
 
     useEffect(() => {
         const getCategories = async () => {
@@ -62,9 +78,18 @@ export default function CreateBalanceForm({
             const typeData = await fetchTypes();
             setTypeList(typeData);
         }
+        const getHoldings = async () => {
+            const holdingData = await fetchHoldings();
+            setHoldingList(holdingData);
+        }
+        getHoldings();
         getCategories();
         getTypes();
     },[])
+
+    useEffect(() => {
+        console.log("Current field value:", form.getValues("holdingName"));
+      }, [form.watch("holdingName")]);
 
     function onSubmit(values: BalanceRecord){
         
@@ -139,30 +164,91 @@ export default function CreateBalanceForm({
                         )}
                     />
 
+{/*
                     <FormField
                         control={form.control}
                         name="holdingName"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Name </FormLabel>
-                                <FormControl>
-                                    <Input className="w-80" placeholder="Name" {...field}/>
-                                </FormControl>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="w-80">
+                                                <SelectValue/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="w-80">
+                                            { holdingList.map( (holding) => (
+                                                <SelectItem
+                                                    key={ holding.id } 
+                                                    value={ holding.id.toString() }
+                                                > 
+                                                    {`${holding.name}(${holding.symbol})`} 
+                                                </SelectItem> 
+                                            ))}
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage/>
                             </FormItem>
                         )}
                     />
+*/}
 
                     <FormField
                         control={form.control}
-                        name="holdingSymbol"
+                        name="holdingName"
                         render={({field}) => (
-                            <FormItem>
-                                <FormLabel> Symbol </FormLabel>
-                                <FormControl>
-                                    <Input className="w-80" placeholder="Symbol" {...field}/>
-                                </FormControl>
-                                <FormMessage/>
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Name</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button 
+                                                variant="outline"
+                                                role="combobox"
+                                                className={cn(
+                                                    "w-[200px] justify-between",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value
+                                                    ? holdingList.find( (holding) => holding.name === field.value )?.name
+                                                    : "Select Holding"}
+                                                <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[200px] p-0">
+                                        <Command>
+                                            <CommandInput
+                                                placeholder="Search holdings"
+                                                className="h-9"
+                                            />
+                                            <CommandList>
+                                                <CommandEmpty>No holding found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {holdingList.map( (holding) => (
+                                                        <CommandItem
+                                                            value={holding.name}
+                                                            key={holding.name}
+                                                            onSelect={() => {
+                                                                form.setValue("holdingName", holding.name)
+                                                            }}
+                                                        >
+                                                            {holding.name}
+                                                            <CheckIcon
+                                                                className={cn(
+                                                                    "ml-auto h-4 w-4",
+                                                                    holding.name === field.value ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                        </CommandItem>    
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             </FormItem>
                         )}
                     />

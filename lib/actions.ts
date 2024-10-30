@@ -1,7 +1,7 @@
 'use server'
 
 import prisma from "./prisma";
-import { BalanceRecord, BalanceRecordSchema, CategoryForm, CategoryFormSchema, TypeForm, TypeFormSchema } from "./definitions";
+import { BalanceRecord, BalanceRecordSchema, CategoryForm, CategoryFormSchema, HoldingForm, HoldingsFormSchema, TypeForm, TypeFormSchema } from "./definitions";
 import { Category, Type } from "@prisma/client";
 import { log } from "console";
 
@@ -106,6 +106,38 @@ export async function fetchHoldingWithId( id:number ){
 
 }
 
+export async function fetchHoldings(){
+    try {
+        const data = await prisma.holding.findMany({
+            select:{
+                id: true,
+                name: true,
+                symbol: true,
+                typeId: true,
+                userId: true,
+                categoryId: true,
+                updatedAt: true,
+                createdAt: true,
+            }, orderBy:{
+                id:'asc'
+            }
+        })
+        
+        const parsed = HoldingsFormSchema.safeParse(data);
+        if(!parsed.success){
+            //console.error("Invalid holding data", parsed.error)
+            return [];
+        }
+        return parsed.data;
+    } catch (error) {
+        console.error('Fail to fetch Holdings', error);
+        return [];
+    }
+}
+
+export async function fetchHoldingsFromAPI(keywords: string){
+
+}
 
 //Category
 export async function fetchCategories(){
@@ -115,17 +147,19 @@ export async function fetchCategories(){
                 id: true,
                 name: true,
                 isHide: true,
+                updatedAt: true,
+                createdAt: true,
             },
             orderBy:{
                 id:'asc'
             }
         });
-
+        
         const categoryList = data.map( (category) => {
             const parsed = CategoryFormSchema.safeParse({
                 id: category.id,
                 name: category.name,
-                isHide: category.isHide
+                isHide: category.isHide,
             })
             if(!parsed.success){
                 console.error("Invalid category data", parsed.error)
