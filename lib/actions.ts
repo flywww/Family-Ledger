@@ -135,9 +135,118 @@ export async function fetchHoldings(){
     }
 }
 
-export async function fetchHoldingsFromAPI(keywords: string){
-
+export async function fetchHoldingsWithHoldingId( categoryId: number ){
+    try {
+        const data = await prisma.holding.findMany({
+            where:{
+                categoryId: categoryId,
+            },
+            select:{
+                id: true,
+                name: true,
+                symbol: true,
+                typeId: true,
+                userId: true,
+                categoryId: true,
+                updatedAt: true,
+                createdAt: true,
+            }, orderBy:{
+                id:'asc'
+            }
+        })
+        
+        const parsed = HoldingsFormSchema.safeParse(data);
+        if(!parsed.success){
+            //console.error("Invalid holding data", parsed.error)
+            return [];
+        }
+        return parsed.data;
+    } catch (error) {
+        console.error('Fail to fetch Holdings', error);
+        return [];
+    }
 }
+
+export async function fetchCryptosFromAPI(query: string) {
+    const API_KEY = process.env.CMC_API_KEY;
+    const fetchURL = "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?"
+
+    if (!API_KEY) {
+        throw new Error("API key is missing");
+    }
+
+    const header = {
+        headers:{
+            "X-CMC_PRO_API_KEY": API_KEY,
+        }
+    }
+
+    const [slugResponse, symbolResponse] = await Promise.all([
+        fetch(`${fetchURL}slug=${query}`,header).then(response => response.json()),
+        fetch(`${fetchURL}symbol=${query}`,header).then(response => response.json())
+    ])
+
+    const cryptosFromSlug = slugResponse.data 
+        ? Object.values(slugResponse.data).map((crypto: any) => ({
+            name: crypto.name,
+            symbol: crypto.symbol,
+        }))  
+        : [];
+    const cryptosFromSymbol = symbolResponse.data?.[query]?.map((crypto: any) => ({
+        name: crypto.name,
+        symbol: crypto.symbol,
+    })) || [];
+    const cryptoData = [...cryptosFromSlug, ...cryptosFromSymbol].filter( crypto => crypto !== undefined);
+
+    return cryptoData;
+}
+
+export async function fetchListedStocksFromAPI(query: string){
+    const API_KEY = process.env.ALPHA_VANTAGE_STOCK_API_KEY;
+    const fetchURL = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
+
+    if (!API_KEY) {
+        throw new Error("API key is missing");
+    }    
+    try {
+        const response = await fetch(fetchURL);
+        const data = await response.json();
+        if(!data.bestMatches){
+            return [];
+        }
+
+        const listedStocks = data.bestMatches.map((stock: any) => ({
+            symbol: stock["1. symbol"],
+            name: stock["2. name"],
+        }))
+
+        return listedStocks;
+    
+    } catch (error) {
+        console.error("Failed to fetch or parse stocks data:", error);
+        return [];    
+    }
+}
+
+export async function fetchCryptoHoldingsPriceFromAPI(symbol: string, name: string){
+    const query = "BT"
+    const API_KEY = "3ff2d93b-0a0f-45e5-a37a-281f433380c4"
+    const response = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${query}`,
+        {
+            headers:{
+                "X-CMC_PRO_API_KEY": API_KEY,
+            }
+        }
+    )
+    if (!response.ok) {
+        console.log("Failed to fetch cryptocurrency data");
+    }
+    const data = await response.json();
+    
+    
+    return data
+}
+
 
 //Category
 export async function fetchCategories(){

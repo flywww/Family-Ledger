@@ -1,6 +1,13 @@
 'use client'
 
-import { BalanceFormSchema, BalanceRecord, CategoryForm, CategoryFormSchema, HoldingForm, TypeForm } from "@/lib/definitions";
+import { 
+    BalanceFormSchema, 
+    BalanceRecord, 
+    CategoryForm, 
+    CategoryFormSchema, 
+    HoldingForm, 
+    TypeForm } 
+from "@/lib/definitions";
 import {
     Form,
     FormControl,
@@ -23,22 +30,31 @@ import {
     PopoverContent, 
     PopoverTrigger 
 } from "../ui/popover";
-
+import { 
+    SelectContent, 
+    SelectTrigger,
+    SelectValue, 
+    Select, 
+    SelectItem } 
+from "../ui/select";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { MonthPicker } from "../ui/month-picker";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import { CalendarIcon, CheckIcon } from "lucide-react";
+import CreateHoldingForm from "./holding-create-form";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { cn, firstDateOfMonth } from "@/lib/utils";
-import { Input } from "../ui/input";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, CheckIcon } from "lucide-react";
-import { MonthPicker } from "../ui/month-picker";
 import { format } from "date-fns";
 import { minYear } from "@/lib/data";
-import { SelectContent, SelectTrigger, SelectValue, Select, SelectItem } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { useEffect, useState } from "react";
-import { fetchCategories, fetchTypes, fetchHoldings } from "@/lib/actions";
-import { CaretSortIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef, useState } from "react";
+import { fetchCategories, fetchTypes, fetchHoldings, fetchHoldingsWithHoldingId } from "@/lib/actions";
+
+
 
 export default function CreateBalanceForm({ 
     initialDate, 
@@ -65,9 +81,11 @@ export default function CreateBalanceForm({
     const [categoryList, setCategoryList] = useState<CategoryForm[]>([]);
     const [typeList, setTypeList] = useState<TypeForm[]>([]);
     const [holdingList, setHoldingList] = useState<HoldingForm[]>([]); 
+    const [holdingDBIsUpdated, setHoldingDBIsUpdated] = useState<boolean>(true)
     const [selectedCategory, setSelectedCategory] = useState<CategoryForm>();
     const [selectedType, setSelectedType] = useState<TypeForm>();
     const [selectedHolding, setSelectedHolding] = useState<HoldingForm>();
+    const categoryId = form.watch('categoryName');
 
     useEffect(() => {
         const getCategories = async () => {
@@ -78,18 +96,29 @@ export default function CreateBalanceForm({
             const typeData = await fetchTypes();
             setTypeList(typeData);
         }
-        const getHoldings = async () => {
-            const holdingData = await fetchHoldings();
-            setHoldingList(holdingData);
-        }
-        getHoldings();
         getCategories();
         getTypes();
     },[])
 
     useEffect(() => {
-        console.log("Current field value:", form.getValues("holdingName"));
-      }, [form.watch("holdingName")]);
+        if(holdingDBIsUpdated || categoryId){
+            const getHoldings = async () => {
+                let holdingData;
+                if(categoryId !== ""){
+                    holdingData = await fetchHoldingsWithHoldingId(Number(categoryId));
+                }else{
+                    holdingData = await fetchHoldings();
+                }
+                setHoldingList(holdingData);
+                setHoldingDBIsUpdated(false)
+            }
+            getHoldings();
+        }
+    },[holdingDBIsUpdated, categoryId])
+
+    useEffect(()=>{
+        console.log(`holdingDBIsUpdated: ${holdingDBIsUpdated}`);
+    }, [holdingDBIsUpdated])
 
     function onSubmit(values: BalanceRecord){
         
@@ -102,7 +131,7 @@ export default function CreateBalanceForm({
         <div>
             Create Balance Form
             <Form {...form}>
-                <form 
+                <form   
                     onSubmit={form.handleSubmit(onSubmit, (errors) => { 
                         console.log('Validation Errors:', errors)})
                     } 
@@ -114,14 +143,21 @@ export default function CreateBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Category </FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select 
+                                    onValueChange={(value) => {
+                                        field.onChange(value);
+                                        setSelectedCategory(categoryList.find((category) => category.id.toString() === value));
+                                    }} 
+                                    defaultValue={field.value}
+                                    
+                                >
                                     <FormControl>
                                         <SelectTrigger className="w-80">
                                             <SelectValue/>
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="w-80">
-                                        { categoryList.map( (category) => (
+                                        {categoryList.map( (category) => (
                                             <SelectItem
                                                 key={ category.id } 
                                                 value={ category.id.toString() }
@@ -164,36 +200,6 @@ export default function CreateBalanceForm({
                         )}
                     />
 
-{/*
-                    <FormField
-                        control={form.control}
-                        name="holdingName"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel> Name </FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-80">
-                                                <SelectValue/>
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent className="w-80">
-                                            { holdingList.map( (holding) => (
-                                                <SelectItem
-                                                    key={ holding.id } 
-                                                    value={ holding.id.toString() }
-                                                > 
-                                                    {`${holding.name}(${holding.symbol})`} 
-                                                </SelectItem> 
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
-*/}
-
                     <FormField
                         control={form.control}
                         name="holdingName"
@@ -207,18 +213,18 @@ export default function CreateBalanceForm({
                                                 variant="outline"
                                                 role="combobox"
                                                 className={cn(
-                                                    "w-[200px] justify-between",
+                                                    "w-80 justify-between",
                                                     !field.value && "text-muted-foreground"
                                                 )}
                                             >
                                                 {field.value
                                                     ? holdingList.find( (holding) => holding.name === field.value )?.name
-                                                    : "Select Holding"}
+                                                    : "Select a holding"}
                                                 <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-[200px] p-0">
+                                    <PopoverContent className="w-80 p-0">
                                         <Command>
                                             <CommandInput
                                                 placeholder="Search holdings"
@@ -251,6 +257,13 @@ export default function CreateBalanceForm({
                                 </Popover>
                             </FormItem>
                         )}
+                    />
+
+                    <CreateHoldingForm 
+                        holdingDBIsUpdated={holdingDBIsUpdated}
+                        setHoldingDBIsUpdated={setHoldingDBIsUpdated}
+                        selectedCategory={selectedCategory}
+                        selectedType={selectedType}
                     />
 
                     <FormField

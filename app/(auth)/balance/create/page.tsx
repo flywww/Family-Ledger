@@ -1,4 +1,4 @@
-import  CreateBalanceForm  from "@/components/balance/create-form"
+import  CreateBalanceForm  from "@/components/balance/balance-create-form"
 import { firstDateOfMonth } from "@/lib/utils";
 
 
