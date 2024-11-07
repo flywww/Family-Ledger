@@ -201,7 +201,7 @@ export async function fetchCryptosFromAPI(query: string) {
     return cryptoData;
 }
 
-export async function fetchListedStocksFromAPI(query: string){
+export async function fetchListedStocksFromAVSAPI(query: string){
     const API_KEY = process.env.ALPHA_VANTAGE_STOCK_API_KEY;
     const fetchURL = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
 
@@ -218,6 +218,34 @@ export async function fetchListedStocksFromAPI(query: string){
         const listedStocks = data.bestMatches.map((stock: any) => ({
             symbol: stock["1. symbol"],
             name: stock["2. name"],
+        }))
+
+        return listedStocks;
+    
+    } catch (error) {
+        console.error("Failed to fetch or parse stocks data:", error);
+        return [];    
+    }
+}
+
+export async function fetchListedStocksFromAPI(query: string){
+    const API_KEY = process.env.FMP_STOCK_API_KEY;
+    const fetchURL = `https://financialmodelingprep.com/api/v3/search?query=${query}&limit=10&apikey=${API_KEY}`
+
+    if (!API_KEY) {
+        throw new Error("API key is missing");
+    }    
+    try {
+        const response = await fetch(fetchURL);
+        if(!response.ok){
+            console.log(`Using backup API to fetch listed stock list`);
+            const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
+            return backupFetchedData;
+        }
+        const data = await response.json();
+        const listedStocks = data.map((stock: any) => ({
+            symbol: stock["symbol"],
+            name: stock["name"],
         }))
 
         return listedStocks;
@@ -246,7 +274,6 @@ export async function fetchCryptoHoldingsPriceFromAPI(symbol: string, name: stri
     
     return data
 }
-
 
 //Category
 export async function fetchCategories(){
