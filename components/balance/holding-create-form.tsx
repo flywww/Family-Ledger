@@ -60,12 +60,15 @@ export default function CreateHoldingForm({
 }){
     const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingForm[]>([]);
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
+    
+    console.log(`type and category id: ${selectedType?.id}, ${selectedCategory?.id}`);
+    console.log(`id numbering: ${Number(selectedType?.id)}`);
+    console.log(`id numbering: ${Number(selectedCategory?.id)}`);
+    
     const form = useForm<HoldingForm>({
         resolver: zodResolver(HoldingFormSchema),
         defaultValues:{
             name: "",
-            typeId: selectedType?.id,
-            categoryId: selectedCategory?.id,
             userId: 3, //TODO: should load user id
             symbol: "",
         }
@@ -85,9 +88,12 @@ export default function CreateHoldingForm({
         console.log(`query "${query}" and get result: ${data}`);   
     },300)
     
-    const handleFormSubmit = () => {
+    const handleFormSubmit = (data: any) => {
+        console.log('Form data:', data);
         setHoldingDBIsUpdated(true);
-        //TODO: create new holding
+        console.log(`submitted`);
+        
+        //TODO: create a new holding
     }
 
     return(
@@ -106,10 +112,14 @@ export default function CreateHoldingForm({
                 <Form {...form}>
                     <form 
                         className="space-y-1"
-                        onSubmit={form.handleSubmit(handleFormSubmit, (errors) => {
-                            console.log('validation errors: ', errors);
-                            
-                        })}
+                        onSubmit={(event) => {
+                            event.stopPropagation(); // Prevent submit balance form
+                            form.handleSubmit((data) => {                
+                                handleFormSubmit(data)
+                            }, (errors) => {
+                                console.log('holding validation errors: ', errors);
+                            })(event);
+                        }}
                     >
                         <FormField
                             control={form.control}
@@ -153,7 +163,9 @@ export default function CreateHoldingForm({
                                                                 onSelect={() => {
                                                                     form.setValue("name", holding.name);
                                                                     form.setValue("symbol", holding.symbol);
-                                                                    console.log(`form value set: ${form.getValues().name}(${form.getValues().symbol})`); 
+                                                                    form.setValue("categoryId", selectedCategory?.id || 0);
+                                                                    form.setValue("typeId", selectedType?.id || 0);
+                                                                    console.log(`form value: ${JSON.stringify(form.getValues())}`); 
                                                                 }}
                                                             >
                                                                 {`${holding.name}(${holding.symbol})`}

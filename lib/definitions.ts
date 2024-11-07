@@ -13,7 +13,7 @@ export const UserFormSchema = z.object({
 export type UserForm = z.infer<typeof UserFormSchema>
 
 export const SettingFormSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     accountingDate: z.date(),
     userId: z.number(),
     updateAt: z.date().optional(),
@@ -23,7 +23,7 @@ export const SettingFormSchema = z.object({
 export type SettingForm = z.infer<typeof SettingFormSchema>
 
 export const CategoryFormSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     name: z.string(),
     isHide: z.boolean(),
     updateAt: z.date().optional(),
@@ -34,7 +34,7 @@ export type CategoryForm = z.infer<typeof CategoryFormSchema>
 
 
 export const TypeFormSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     name: z.string(),
     updateAt: z.date().optional(),
     createdAt: z.date().optional(),
@@ -43,7 +43,7 @@ export const TypeFormSchema = z.object({
 export type TypeForm = z.infer<typeof TypeFormSchema>
 
 export const HoldingFormSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     name: z.string(),
     symbol: z.string().optional(),
     typeId: z.number(),
@@ -57,7 +57,7 @@ export type HoldingForm = z.infer<typeof HoldingFormSchema>;
 export type HoldingsForm = z.infer<typeof HoldingsFormSchema>;
 
 export const BalanceRecordSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     date: z.date(),
     holdingId: z.number(),
     holdingName: z.string().optional(),
@@ -80,7 +80,7 @@ export const BalanceRecordSchema = z.object({
 export type BalanceRecord = z.infer<typeof BalanceRecordSchema>
 
 export const BalanceFormSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     date: z.date(),
     holdingId: z.number(),
     holding: HoldingFormSchema,

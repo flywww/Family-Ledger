@@ -133,7 +133,7 @@ export default function CreateBalanceForm({
             <Form {...form}>
                 <form   
                     onSubmit={form.handleSubmit(onSubmit, (errors) => { 
-                        console.log('Validation Errors:', errors)})
+                        console.log('Validation Errors?????:', errors)})
                     } 
                     className="space-y-1"
                 >
@@ -178,7 +178,13 @@ export default function CreateBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Type </FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select 
+                                        onValueChange={(value) => { 
+                                            field.onChange(value);
+                                            setSelectedType(typeList.find((type) => value === type.id?.toString()));
+                                        }} 
+                                        defaultValue={field.value}
+                                    >
                                         <FormControl>
                                             <SelectTrigger className="w-80">
                                                 <SelectValue/>
@@ -188,7 +194,7 @@ export default function CreateBalanceForm({
                                             { typeList.map( (type) => (
                                                 <SelectItem
                                                     key={ type.id } 
-                                                    value={ type.id.toString() }
+                                                    value={ type.id?.toString() ?? "undefined" }
                                                 > 
                                                     {type.name} 
                                                 </SelectItem> 
