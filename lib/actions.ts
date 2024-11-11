@@ -1,8 +1,7 @@
 'use server'
 
 import prisma from "./prisma";
-import { BalanceRecord, BalanceRecordSchema, CategoryForm, CategoryFormSchema, HoldingForm, HoldingsFormSchema, TypeForm, TypeFormSchema } from "./definitions";
-import { Category, Type } from "@prisma/client";
+import { BalanceRecord, BalanceRecordSchema, Category, CategorySchema, Holding, HoldingArraySchema, HoldingCreateSchema, HoldingCreateType, Type, TypeSchema } from "./definitions";
 import { log } from "console";
 
 
@@ -26,17 +25,26 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
                 updatedAt: true,
                 holding:{
                     select:{
+                        id: true,
                         name: true,
                         symbol: true,
+                        createdAt: true,
+                        updatedAt: true,
                         type:{
                             select:{
+                                id: true,
                                 name: true,
+                                createdAt: true,
+                                updatedAt: true,
                             }
                         },
                         category:{
                             select:{
+                                id: true,
                                 name: true,
                                 isHide: true,
+                                createdAt: true,
+                                updatedAt: true,  
                             }
                         }
                     }
@@ -51,6 +59,7 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
             const parsed = BalanceRecordSchema.safeParse({
                 id: balance.id,
                 date: balance.date,
+                holdingId: balance.holding.id,
                 holdingName: balance.holding.name,
                 holdingSymbol: balance.holding.symbol,
                 categoryName: balance.holding.category.name,
@@ -62,7 +71,7 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
                 currency: balance.currency as 'TWD' | 'USD',
                 note: balance.note ?? undefined,
                 userId: balance.userId,
-                updateAt: balance.updatedAt,
+                updatedAt: balance.updatedAt,
                 createdAt: balance.createdAt,
             })
             if(!parsed.success){
@@ -102,6 +111,16 @@ export async function fetchUserWithId( id:number ){
 
 
 //Holding
+export async function createHolding( holding: HoldingCreateType ){    
+    try {
+        const data = await prisma.holding.create({
+            data: holding
+        })
+    } catch (error) {
+        console.error('Fail to create the Holding', error);
+    }
+}
+
 export async function fetchHoldingWithId( id:number ){
 
 }
@@ -123,9 +142,9 @@ export async function fetchHoldings(){
             }
         })
         
-        const parsed = HoldingsFormSchema.safeParse(data);
+        const parsed = HoldingArraySchema.safeParse(data);
         if(!parsed.success){
-            //console.error("Invalid holding data", parsed.error)
+            console.error("Invalid holding data", parsed.error)
             return [];
         }
         return parsed.data;
@@ -136,6 +155,8 @@ export async function fetchHoldings(){
 }
 
 export async function fetchHoldingsWithHoldingId( categoryId: number ){
+    console.log(`fetchHoldingsWithHoldingId, id: ${categoryId}`);
+    
     try {
         const data = await prisma.holding.findMany({
             where:{
@@ -155,9 +176,9 @@ export async function fetchHoldingsWithHoldingId( categoryId: number ){
             }
         })
         
-        const parsed = HoldingsFormSchema.safeParse(data);
+        const parsed = HoldingArraySchema.safeParse(data);
         if(!parsed.success){
-            //console.error("Invalid holding data", parsed.error)
+            console.error("Invalid holding data", parsed.error)
             return [];
         }
         return parsed.data;
@@ -292,17 +313,19 @@ export async function fetchCategories(){
         });
         
         const categoryList = data.map( (category) => {
-            const parsed = CategoryFormSchema.safeParse({
+            const parsed = CategorySchema.safeParse({
                 id: category.id,
                 name: category.name,
                 isHide: category.isHide,
+                updatedAt: category.updatedAt,
+                createdAt: category.createdAt
             })
             if(!parsed.success){
                 console.error("Invalid category data", parsed.error)
                 return null;
             }
             return parsed.data;
-        }).filter( (category): category is CategoryForm => category !== null )
+        }).filter( (category): category is Category => category !== null )
         return categoryList;
 
     } catch (error) {
@@ -316,24 +339,28 @@ export async function fetchTypes(){
     try {
         const data = await prisma.type.findMany({
             select:{
-                name: true,
                 id: true,
+                name: true,
+                updatedAt: true,
+                createdAt: true,
             },
             orderBy:{
                 id: 'desc'
             }
         });
         const typeList = data.map( (type) => {
-            const parsed = TypeFormSchema.safeParse({
+            const parsed = TypeSchema.safeParse({
                 id: type.id,
-                name: type.name
+                name: type.name,
+                updatedAt: type.updatedAt,
+                createdAt: type.createdAt
             })
             if(!parsed.success){
                 console.error("Invalid type data", parsed.error);
                 return null;
             }
             return parsed.data;
-        }).filter( (type): type is TypeForm => type !== null)
+        }).filter( (type): type is Type => type !== null)
         return typeList;
     } catch (error) {
         console.log('Failed to fetch types', error);

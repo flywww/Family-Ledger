@@ -3,10 +3,10 @@
 import { 
     BalanceFormSchema, 
     BalanceRecord, 
-    CategoryForm, 
-    CategoryFormSchema, 
-    HoldingForm, 
-    TypeForm } 
+    Category, 
+    CategorySchema, 
+    Holding, 
+    Type } 
 from "@/lib/definitions";
 import {
     Form,
@@ -74,17 +74,17 @@ export default function CreateBalanceForm({
             value: 0,
             currency: 'TWD',
             userId: 1, //TODO: Should load user
-            updateAt: new Date(),
+            updatedAt: new Date(),
             createdAt: new Date(),
         },
     });
-    const [categoryList, setCategoryList] = useState<CategoryForm[]>([]);
-    const [typeList, setTypeList] = useState<TypeForm[]>([]);
-    const [holdingList, setHoldingList] = useState<HoldingForm[]>([]); 
+    const [categoryList, setCategoryList] = useState<Category[]>([]);
+    const [typeList, setTypeList] = useState<Type[]>([]);
+    const [holdingList, setHoldingList] = useState<Holding[]>([]); 
     const [holdingDBIsUpdated, setHoldingDBIsUpdated] = useState<boolean>(true)
-    const [selectedCategory, setSelectedCategory] = useState<CategoryForm>();
-    const [selectedType, setSelectedType] = useState<TypeForm>();
-    const [selectedHolding, setSelectedHolding] = useState<HoldingForm>();
+    const [selectedCategory, setSelectedCategory] = useState<Category>();
+    const [selectedType, setSelectedType] = useState<Type>();
+    const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const categoryId = form.watch('categoryName');
 
     useEffect(() => {
@@ -104,7 +104,7 @@ export default function CreateBalanceForm({
         if(holdingDBIsUpdated || categoryId){
             const getHoldings = async () => {
                 let holdingData;
-                if(categoryId !== ""){
+                if(categoryId){
                     holdingData = await fetchHoldingsWithHoldingId(Number(categoryId));
                 }else{
                     holdingData = await fetchHoldings();
@@ -121,8 +121,6 @@ export default function CreateBalanceForm({
     }, [holdingDBIsUpdated])
 
     function onSubmit(values: BalanceRecord){
-        
-        console.log('!!!!');
         console.log(values);
         router.push(decodeURIComponent(backURL))        
     }
@@ -133,7 +131,7 @@ export default function CreateBalanceForm({
             <Form {...form}>
                 <form   
                     onSubmit={form.handleSubmit(onSubmit, (errors) => { 
-                        console.log('Validation Errors?????:', errors)})
+                        console.log('create balance form validation Errors:', errors)})
                     } 
                     className="space-y-1"
                 >
@@ -194,7 +192,7 @@ export default function CreateBalanceForm({
                                             { typeList.map( (type) => (
                                                 <SelectItem
                                                     key={ type.id } 
-                                                    value={ type.id?.toString() ?? "undefined" }
+                                                    value={ type.id.toString() }
                                                 > 
                                                     {type.name} 
                                                 </SelectItem> 
@@ -265,12 +263,12 @@ export default function CreateBalanceForm({
                         )}
                     />
 
-                    <CreateHoldingForm 
+                    { (selectedType && selectedCategory) && <CreateHoldingForm 
                         holdingDBIsUpdated={holdingDBIsUpdated}
                         setHoldingDBIsUpdated={setHoldingDBIsUpdated}
                         selectedCategory={selectedCategory}
                         selectedType={selectedType}
-                    />
+                    />}
 
                     <FormField
                         control={form.control}

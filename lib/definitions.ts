@@ -2,59 +2,83 @@ import { z } from 'zod';
 
 export type currencyType = 'TWD' | 'USD';
 
-export const UserFormSchema = z.object({
+export const UserSchema = z.object({
     id: z.number(),
     account: z.string(),
     password: z.string(),
-    updateAt: z.date().optional(),
+    updatedAt: z.date().optional(),
     createdAt: z.date().optional(),
 })
 
-export type UserForm = z.infer<typeof UserFormSchema>
+export type User = z.infer<typeof UserSchema>
 
-export const SettingFormSchema = z.object({
-    id: z.number().optional(),
+export const SettingSchema = z.object({
+    id: z.number(),
     accountingDate: z.date(),
     userId: z.number(),
-    updateAt: z.date().optional(),
-    createdAt: z.date().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
 })
 
-export type SettingForm = z.infer<typeof SettingFormSchema>
+export type Setting = z.infer<typeof SettingSchema>
 
-export const CategoryFormSchema = z.object({
-    id: z.number().optional(),
+export const CategorySchema = z.object({
+    id: z.number(),
     name: z.string(),
     isHide: z.boolean(),
-    updateAt: z.date().optional(),
-    createdAt: z.date().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
 })
 
-export type CategoryForm = z.infer<typeof CategoryFormSchema>
+export type Category = z.infer<typeof CategorySchema>
 
-
-export const TypeFormSchema = z.object({
-    id: z.number().optional(),
-    name: z.string(),
-    updateAt: z.date().optional(),
-    createdAt: z.date().optional(),
+export const CategoryCreateSchema = CategorySchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
 })
 
-export type TypeForm = z.infer<typeof TypeFormSchema>
+export type CategoryCreateType = z.infer<typeof CategoryCreateSchema>
 
-export const HoldingFormSchema = z.object({
-    id: z.number().optional(),
+export const TypeSchema = z.object({
+    id: z.number(),
     name: z.string(),
-    symbol: z.string().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+
+export type Type = z.infer<typeof TypeSchema>
+
+export const TypeCreateSchema = TypeSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+
+export type TypeCreateType = z.infer<typeof TypeCreateSchema>
+
+export const HoldingSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    symbol: z.string(),
     typeId: z.number(),
     categoryId: z.number(),
     userId: z.number(),
-    updateAt: z.date().optional(),
-    createdAt: z.date().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
 })
-export const HoldingsFormSchema = z.array(HoldingFormSchema);
-export type HoldingForm = z.infer<typeof HoldingFormSchema>;
-export type HoldingsForm = z.infer<typeof HoldingsFormSchema>;
+
+export type Holding = z.infer<typeof HoldingSchema>;
+export const HoldingArraySchema = z.array(HoldingSchema);
+export type HoldingsArray = z.infer<typeof HoldingArraySchema>;
+
+export const HoldingCreateSchema = HoldingSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+
+export type HoldingCreateType = z.infer<typeof HoldingCreateSchema>
 
 export const BalanceRecordSchema = z.object({
     id: z.number().optional(),
@@ -73,7 +97,7 @@ export const BalanceRecordSchema = z.object({
     currency: z.enum(['TWD' , 'USD']).default('TWD'),
     note: z.string().optional(),
     userId: z.number(),
-    updateAt: z.date().optional(),
+    updatedAt: z.date().optional(),
     createdAt: z.date().optional(),
 })
 
@@ -83,14 +107,14 @@ export const BalanceFormSchema = z.object({
     id: z.number().optional(),
     date: z.date(),
     holdingId: z.number(),
-    holding: HoldingFormSchema,
+    holding: HoldingSchema,
     quantity: z.number(),
     price: z.number(),
     value: z.number(),
     currency: z.enum(['TWD' , 'USD']).default('TWD'),
     note: z.string().optional(),
     userId: z.number(),
-    updateAt: z.date().optional(),
+    updatedAt: z.date().optional(),
     createdAt: z.date().optional(),
 })
 

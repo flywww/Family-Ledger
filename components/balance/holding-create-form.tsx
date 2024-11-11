@@ -36,12 +36,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 
-import { CategoryForm, HoldingForm, HoldingFormSchema, TypeForm } from "@/lib/definitions"
+import { Category, HoldingCreateType, HoldingCreateSchema, Type } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { symbol } from "zod"
-import { fetchCryptosFromAPI, fetchListedStocksFromAPI } from "@/lib/actions"
+import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/lib/actions"
 import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
 
@@ -55,18 +55,18 @@ export default function CreateHoldingForm({
 }: {
     holdingDBIsUpdated: boolean, 
     setHoldingDBIsUpdated: (updated: boolean) => void,
-    selectedCategory: CategoryForm | undefined,
-    selectedType: TypeForm | undefined,
+    selectedCategory: Category | undefined,
+    selectedType: Type | undefined,
 }){
-    const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingForm[]>([]);
+    const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingCreateType[]>([]);
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
     
     console.log(`type and category id: ${selectedType?.id}, ${selectedCategory?.id}`);
     console.log(`id numbering: ${Number(selectedType?.id)}`);
     console.log(`id numbering: ${Number(selectedCategory?.id)}`);
     
-    const form = useForm<HoldingForm>({
-        resolver: zodResolver(HoldingFormSchema),
+    const form = useForm<HoldingCreateType>({
+        resolver: zodResolver(HoldingCreateSchema),
         defaultValues:{
             name: "",
             userId: 3, //TODO: should load user id
@@ -90,10 +90,9 @@ export default function CreateHoldingForm({
     
     const handleFormSubmit = (data: any) => {
         console.log('Form data:', data);
+        createHolding(data);
         setHoldingDBIsUpdated(true);
         console.log(`submitted`);
-        
-        //TODO: create a new holding
     }
 
     return(
