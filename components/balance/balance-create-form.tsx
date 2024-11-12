@@ -52,7 +52,14 @@ import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useRef, useState } from "react";
-import { fetchCategories, fetchTypes, fetchHoldings, fetchHoldingsWithHoldingId } from "@/lib/actions";
+import { 
+    fetchCategories, 
+    fetchTypes, 
+    fetchHoldings, 
+    fetchHoldingsWithHoldingId,
+    fetchCryptoPriceFromAPI,
+    fetchListedStockPriceFromAPI
+} from "@/lib/actions";
 
 
 
@@ -86,6 +93,7 @@ export default function CreateBalanceForm({
     const [selectedType, setSelectedType] = useState<Type>();
     const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const categoryId = form.watch('categoryName');
+    const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
     useEffect(() => {
         const getCategories = async () => {
@@ -116,9 +124,17 @@ export default function CreateBalanceForm({
         }
     },[holdingDBIsUpdated, categoryId])
 
-    useEffect(()=>{
-        console.log(`holdingDBIsUpdated: ${holdingDBIsUpdated}`);
-    }, [holdingDBIsUpdated])
+    const fetchAndUpdatePrice = async (holdingName: string) => {
+        if(isListedStockOrCrypto){
+            if(selectedCategory.name === 'Cryptocurrency'){
+                const price = await fetchCryptoPriceFromAPI(holdingName)
+                form.setValue('price', price);
+            }else if(selectedCategory.name === 'Listed stock'){
+                const price = await fetchListedStockPriceFromAPI(holdingName)
+                form.setValue('price', price);
+            }
+        }
+    }
 
     function onSubmit(values: BalanceRecord){
         console.log(values);
@@ -242,7 +258,8 @@ export default function CreateBalanceForm({
                                                             value={holding.name}
                                                             key={holding.name}
                                                             onSelect={() => {
-                                                                form.setValue("holdingName", holding.name)
+                                                                form.setValue("holdingName", holding.name);
+                                                                fetchAndUpdatePrice(holding.name);
                                                             }}
                                                         >
                                                             {holding.name}
@@ -263,7 +280,8 @@ export default function CreateBalanceForm({
                         )}
                     />
 
-                    { (selectedType && selectedCategory) && <CreateHoldingForm 
+                    { (selectedType && selectedCategory) && <CreateHoldingForm
+                        isListedStockOrCrypto={isListedStockOrCrypto} 
                         holdingDBIsUpdated={holdingDBIsUpdated}
                         setHoldingDBIsUpdated={setHoldingDBIsUpdated}
                         selectedCategory={selectedCategory}

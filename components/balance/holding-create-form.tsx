@@ -38,12 +38,13 @@ import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 
 import { Category, HoldingCreateType, HoldingCreateSchema, Type } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { symbol } from "zod"
 import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/lib/actions"
 import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
+import { DialogClose } from "@radix-ui/react-dialog"
 
 
 
@@ -51,19 +52,17 @@ export default function CreateHoldingForm({
     holdingDBIsUpdated,
     setHoldingDBIsUpdated,
     selectedCategory,
-    selectedType, 
+    selectedType,
+    isListedStockOrCrypto, 
 }: {
     holdingDBIsUpdated: boolean, 
     setHoldingDBIsUpdated: (updated: boolean) => void,
     selectedCategory: Category | undefined,
     selectedType: Type | undefined,
+    isListedStockOrCrypto: boolean,
 }){
     const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingCreateType[]>([]);
-    const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
-    
-    console.log(`type and category id: ${selectedType?.id}, ${selectedCategory?.id}`);
-    console.log(`id numbering: ${Number(selectedType?.id)}`);
-    console.log(`id numbering: ${Number(selectedCategory?.id)}`);
+    const [dialogOpen, setDialogOpen] = useState(false)
     
     const form = useForm<HoldingCreateType>({
         resolver: zodResolver(HoldingCreateSchema),
@@ -75,7 +74,6 @@ export default function CreateHoldingForm({
     })
 
     const handleSearch = useDebouncedCallback(async (query: string) => {
-
         let data;
         if(selectedCategory?.name === "Cryptocurrency"){
             data = await fetchCryptosFromAPI(query);
@@ -88,17 +86,18 @@ export default function CreateHoldingForm({
         console.log(`query "${query}" and get result: ${data}`);   
     },300)
     
-    const handleFormSubmit = (data: any) => {
-        console.log('Form data:', data);
+    const handleFormSubmit = (data: HoldingCreateType) => {
+        console.log(`on holding form submit: ${data}`);
+        
         createHolding(data);
         setHoldingDBIsUpdated(true);
-        console.log(`submitted`);
+        setDialogOpen(false);
     }
 
     return(
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Add</Button>
+                <Button variant="outline" onClick={() => setDialogOpen(true)}>Add</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -112,6 +111,8 @@ export default function CreateHoldingForm({
                     <form 
                         className="space-y-1"
                         onSubmit={(event) => {
+                            form.setValue("categoryId", selectedCategory?.id || 0);
+                            form.setValue("typeId", selectedType?.id || 0); 
                             event.stopPropagation(); // Prevent submit balance form
                             form.handleSubmit((data) => {                
                                 handleFormSubmit(data)
@@ -162,9 +163,6 @@ export default function CreateHoldingForm({
                                                                 onSelect={() => {
                                                                     form.setValue("name", holding.name);
                                                                     form.setValue("symbol", holding.symbol);
-                                                                    form.setValue("categoryId", selectedCategory?.id || 0);
-                                                                    form.setValue("typeId", selectedType?.id || 0);
-                                                                    console.log(`form value: ${JSON.stringify(form.getValues())}`); 
                                                                 }}
                                                             >
                                                                 {`${holding.name}(${holding.symbol})`}
@@ -224,6 +222,9 @@ export default function CreateHoldingForm({
                             )}
                         />
                         <DialogFooter className="pt-4">
+                            <DialogClose asChild>
+                                <Button variant="secondary">Cancel</Button>
+                            </DialogClose>
                             <Button type="submit">Add</Button>
                         </DialogFooter>
                     </form>

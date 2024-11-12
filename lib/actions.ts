@@ -112,10 +112,21 @@ export async function fetchUserWithId( id:number ){
 
 //Holding
 export async function createHolding( holding: HoldingCreateType ){    
+    console.log(`\n\n\n\ncreate holding: ${holding}\n\n\n\n`);
+    
     try {
-        const data = await prisma.holding.create({
-            data: holding
+        const data = await prisma.holding.findFirst({
+            where:{
+                name: holding.name,
+                symbol: holding.symbol,
+            }
         })
+
+        if(!data){
+            const data = await prisma.holding.create({
+                data: holding
+            })
+        }
     } catch (error) {
         console.error('Fail to create the Holding', error);
     }
@@ -222,6 +233,37 @@ export async function fetchCryptosFromAPI(query: string) {
     return cryptoData;
 }
 
+export async function fetchCryptoPriceFromAPI(name: string){
+    const API_KEY = process.env.CMC_API_KEY
+    const fetchURL = "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?"
+    if (!API_KEY) {
+        throw new Error("API key is missing");
+    }
+    const header = {
+        headers:{
+            "X-CMC_PRO_API_KEY": API_KEY,
+        }
+    }
+    console.log(`fetch URL: ${fetchURL}slug=${name}`);
+    console.log(`fetch header: ${header}`);
+    
+    const response = await fetch(`${fetchURL}slug=${name}`, header)
+    if (!response.ok) {
+        console.log("Failed to fetch cryptocurrency data");
+        return 99999999
+    }
+
+    const data = await response.json();
+    const price = Object.values(data['data']).map((crypto:any) => ({
+        name: crypto.name,
+        symbol: crypto.price,
+        slug: crypto.slug,
+        price: crypto.quote.USD.price,
+    }))[0].price
+    
+    return price
+}
+
 export async function fetchListedStocksFromAVSAPI(query: string){
     const API_KEY = process.env.ALPHA_VANTAGE_STOCK_API_KEY;
     const fetchURL = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
@@ -267,7 +309,8 @@ export async function fetchListedStocksFromAPI(query: string){
         const listedStocks = data.map((stock: any) => ({
             symbol: stock["symbol"],
             name: stock["name"],
-        }))
+            stockExchange: stock['stockExchange']
+        })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
 
         return listedStocks;
     
@@ -277,23 +320,25 @@ export async function fetchListedStocksFromAPI(query: string){
     }
 }
 
-export async function fetchCryptoHoldingsPriceFromAPI(symbol: string, name: string){
-    const query = "BT"
-    const API_KEY = "3ff2d93b-0a0f-45e5-a37a-281f433380c4"
-    const response = await fetch(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${query}`,
-        {
-            headers:{
-                "X-CMC_PRO_API_KEY": API_KEY,
-            }
-        }
-    )
-    if (!response.ok) {
-        console.log("Failed to fetch cryptocurrency data");
+export async function fetchListedStockPriceFromAPI( symbol: string ){
+    const API_KEY = process.env.FMP_STOCK_API_KEY;
+    
+    const fetchURL = `https://financialmodelingprep.com/api/v3/otc/real-time-price/${Symbol}?apikey=${API_KEY}`
+    try {
+        const response = await fetch(fetchURL);
+        const data = await response.json();
+        console.log(data);
+        
+        const price = data.map((stock: any) => ({
+            symbol: stock["symbol"],
+            lastSalePrice: stock["lastSalePrice"],
+        }))[0].lastSalePrice;
+
+        return price;
+    } catch (error) {
+        console.error("Fail to fetch listed stock price", error);
+        return 999999
     }
-    const data = await response.json();
-    
-    
-    return data
 }
 
 //Category
