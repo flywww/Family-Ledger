@@ -3,7 +3,8 @@
 import prisma from "./prisma";
 import { BalanceRecord, BalanceRecordSchema, Category, CategorySchema, Holding, HoldingArraySchema, HoldingCreateSchema, HoldingCreateType, Type, TypeSchema } from "./definitions";
 import { log } from "console";
-
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export async function fetchMonthlyBalance( queryDate: Date  ){
     //TODO: fetch with user id
@@ -20,9 +21,16 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
                 value: true,
                 currency: true,
                 note: true,
-                userId: true,
                 createdAt: true,
                 updatedAt: true,
+                user:{
+                    select:{
+                        id: true,
+                        account: true, 
+                        createdAt: true,
+                        updatedAt: true,
+                    }
+                },
                 holding:{
                     select:{
                         id: true,
@@ -70,7 +78,7 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
                 value: balance.value,
                 currency: balance.currency as 'TWD' | 'USD',
                 note: balance.note ?? undefined,
-                userId: balance.userId,
+                userId: balance.user.id,
                 updatedAt: balance.updatedAt,
                 createdAt: balance.createdAt,
             })
@@ -88,7 +96,20 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
 }
 
 export async function createBalance( balance: BalanceRecord ){
-    
+    try {
+
+        //TODO: update if it has have same holding in current month
+        
+        console.log(`create balance: ${JSON.stringify(balance)}`);
+        
+        const data = await prisma.balance.create({
+            data: balance   
+        })
+    } catch (error) {
+        console.error('Fail to create the balance', error);
+    }
+    revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
+    redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
 export async function createMonthBalance( balances: BalanceRecord[] ){
@@ -112,8 +133,6 @@ export async function fetchUserWithId( id:number ){
 
 //Holding
 export async function createHolding( holding: HoldingCreateType ){    
-    console.log(`\n\n\n\ncreate holding: ${holding}\n\n\n\n`);
-    
     try {
         const data = await prisma.holding.findFirst({
             where:{
@@ -146,6 +165,8 @@ export async function fetchHoldings(){
                 typeId: true,
                 userId: true,
                 categoryId: true,
+                sourceId: true,
+                sourceURL: true,
                 updatedAt: true,
                 createdAt: true,
             }, orderBy:{
@@ -180,6 +201,8 @@ export async function fetchHoldingsWithHoldingId( categoryId: number ){
                 typeId: true,
                 userId: true,
                 categoryId: true,
+                sourceId: true,
+                sourceURL: true,
                 updatedAt: true,
                 createdAt: true,
             }, orderBy:{
@@ -222,18 +245,22 @@ export async function fetchCryptosFromAPI(query: string) {
         ? Object.values(slugResponse.data).map((crypto: any) => ({
             name: crypto.name,
             symbol: crypto.symbol,
+            sourceURL: fetchURL,
+            sourceId: crypto.id,
         }))  
         : [];
     const cryptosFromSymbol = symbolResponse.data?.[query]?.map((crypto: any) => ({
         name: crypto.name,
         symbol: crypto.symbol,
+        sourceURL: fetchURL,
+        sourceId: crypto.id,
     })) || [];
     const cryptoData = [...cryptosFromSlug, ...cryptosFromSymbol].filter( crypto => crypto !== undefined);
 
     return cryptoData;
 }
 
-export async function fetchCryptoPriceFromAPI(name: string){
+export async function fetchCryptoPriceFromAPI(id: number){
     const API_KEY = process.env.CMC_API_KEY
     const fetchURL = "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?"
     if (!API_KEY) {
@@ -244,23 +271,18 @@ export async function fetchCryptoPriceFromAPI(name: string){
             "X-CMC_PRO_API_KEY": API_KEY,
         }
     }
-    console.log(`fetch URL: ${fetchURL}slug=${name}`);
+    console.log(`fetch URL: ${fetchURL}id=${id}`);
     console.log(`fetch header: ${header}`);
     
-    const response = await fetch(`${fetchURL}slug=${name}`, header)
+    const response = await fetch(`${fetchURL}id=${id}`, header)
     if (!response.ok) {
         console.log("Failed to fetch cryptocurrency data");
         return 99999999
     }
 
     const data = await response.json();
-    const price = Object.values(data['data']).map((crypto:any) => ({
-        name: crypto.name,
-        symbol: crypto.price,
-        slug: crypto.slug,
-        price: crypto.quote.USD.price,
-    }))[0].price
-    
+    const price = data['data'][id.toString()].quote.USD.price
+        
     return price
 }
 
@@ -309,7 +331,8 @@ export async function fetchListedStocksFromAPI(query: string){
         const listedStocks = data.map((stock: any) => ({
             symbol: stock["symbol"],
             name: stock["name"],
-            stockExchange: stock['stockExchange']
+            stockExchange: stock['stockExchange'],
+            
         })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
 
         return listedStocks;

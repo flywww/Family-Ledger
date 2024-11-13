@@ -64,6 +64,8 @@ export const HoldingSchema = z.object({
     typeId: z.number(),
     categoryId: z.number(),
     userId: z.number(),
+    sourceURL: z.string().nullable().optional(),
+    sourceId: z.number().nullable().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })
@@ -107,7 +109,6 @@ export const BalanceFormSchema = z.object({
     id: z.number().optional(),
     date: z.date(),
     holdingId: z.number(),
-    holding: HoldingSchema,
     quantity: z.number(),
     price: z.number(),
     value: z.number(),

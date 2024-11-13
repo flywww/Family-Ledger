@@ -38,9 +38,8 @@ import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 
 import { Category, HoldingCreateType, HoldingCreateSchema, Type } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { symbol } from "zod"
 import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/lib/actions"
 import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
@@ -83,12 +82,9 @@ export default function CreateHoldingForm({
             data = [];
         }
         setQueriedHoldingList(data);
-        console.log(`query "${query}" and get result: ${data}`);   
     },300)
     
     const handleFormSubmit = (data: HoldingCreateType) => {
-        console.log(`on holding form submit: ${data}`);
-        
         createHolding(data);
         setHoldingDBIsUpdated(true);
         setDialogOpen(false);
@@ -163,6 +159,8 @@ export default function CreateHoldingForm({
                                                                 onSelect={() => {
                                                                     form.setValue("name", holding.name);
                                                                     form.setValue("symbol", holding.symbol);
+                                                                    form.setValue("sourceId", holding.sourceId);
+                                                                    form.setValue("sourceURL", holding.sourceURL);
                                                                 }}
                                                             >
                                                                 {`${holding.name}(${holding.symbol})`}
@@ -194,7 +192,7 @@ export default function CreateHoldingForm({
                                             type="text" 
                                             className="w-80" 
                                             placeholder="Input name of assets/liability"
-                                            disabled={isListedStockOrCrypto} 
+                                            readOnly={isListedStockOrCrypto} 
                                             {...field}
                                         />
                                     </FormControl>
@@ -214,7 +212,7 @@ export default function CreateHoldingForm({
                                             type="text"
                                             className="w-80"
                                             placeholder="Input symbol of assets/liability"
-                                            disabled={isListedStockOrCrypto}     
+                                            readOnly={isListedStockOrCrypto}     
                                             {...field}
                                         />
                                     </FormControl>

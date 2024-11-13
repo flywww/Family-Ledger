@@ -58,7 +58,8 @@ import {
     fetchHoldings, 
     fetchHoldingsWithHoldingId,
     fetchCryptoPriceFromAPI,
-    fetchListedStockPriceFromAPI
+    fetchListedStockPriceFromAPI,
+    createBalance
 } from "@/lib/actions";
 
 
@@ -79,8 +80,8 @@ export default function CreateBalanceForm({
             quantity: 0,
             price: 0,
             value: 0,
-            currency: 'TWD',
-            userId: 1, //TODO: Should load user
+            currency: 'USD',
+            userId: 3, //TODO: Should load user
             updatedAt: new Date(),
             createdAt: new Date(),
         },
@@ -92,7 +93,10 @@ export default function CreateBalanceForm({
     const [selectedCategory, setSelectedCategory] = useState<Category>();
     const [selectedType, setSelectedType] = useState<Type>();
     const [selectedHolding, setSelectedHolding] = useState<Holding>();
+    const [selectedDate, setSelectedDate] = useState<Date>(initialDate)
     const categoryId = form.watch('categoryName');
+    const price = form.watch('price');
+    const quantity = form.watch('quantity');
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
     useEffect(() => {
@@ -124,21 +128,24 @@ export default function CreateBalanceForm({
         }
     },[holdingDBIsUpdated, categoryId])
 
-    const fetchAndUpdatePrice = async (holdingName: string) => {
-        if(isListedStockOrCrypto){
+    useEffect(() => {
+        form.setValue('value', price*quantity)
+    }, [price, quantity])
+
+    const fetchAndUpdatePrice = async (holding: Holding) => {
+        if(isListedStockOrCrypto && holding.sourceId){
             if(selectedCategory.name === 'Cryptocurrency'){
-                const price = await fetchCryptoPriceFromAPI(holdingName)
+                const price = await fetchCryptoPriceFromAPI(holding.sourceId)
                 form.setValue('price', price);
             }else if(selectedCategory.name === 'Listed stock'){
-                const price = await fetchListedStockPriceFromAPI(holdingName)
+                const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
                 form.setValue('price', price);
             }
         }
     }
 
     function onSubmit(values: BalanceRecord){
-        console.log(values);
-        router.push(decodeURIComponent(backURL))        
+        createBalance(values);
     }
     
     return(
@@ -259,7 +266,8 @@ export default function CreateBalanceForm({
                                                             key={holding.name}
                                                             onSelect={() => {
                                                                 form.setValue("holdingName", holding.name);
-                                                                fetchAndUpdatePrice(holding.name);
+                                                                form.setValue("holdingId", holding.id);
+                                                                fetchAndUpdatePrice(holding);
                                                             }}
                                                         >
                                                             {holding.name}
@@ -295,7 +303,13 @@ export default function CreateBalanceForm({
                             <FormItem>
                                 <FormLabel> Quantity </FormLabel>
                                 <FormControl>
-                                    <Input type="number" className="w-80" placeholder="Category" {...field}/>
+                                    <Input 
+                                        type="number" 
+                                        className="w-80" 
+                                        placeholder="Category"
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
@@ -309,7 +323,13 @@ export default function CreateBalanceForm({
                             <FormItem>
                                 <FormLabel> Price </FormLabel>
                                 <FormControl>
-                                    <Input type="number" className="w-80" placeholder="Price" {...field}/>
+                                    <Input 
+                                        type="number" 
+                                        className="w-80" 
+                                        placeholder="Price" 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
@@ -323,7 +343,14 @@ export default function CreateBalanceForm({
                             <FormItem>
                                 <FormLabel> Value </FormLabel>
                                 <FormControl>
-                                    <Input type="number" className="w-80" placeholder="Value" {...field}/>
+                                    <Input 
+                                        type="number" 
+                                        className="w-80" 
+                                        placeholder="Value" 
+                                        readOnly={true} 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
@@ -363,12 +390,15 @@ export default function CreateBalanceForm({
                                         <PopoverTrigger asChild>
                                             <Button variant={"outline"} className={cn("w-80 justify-start text-left font-normal", !initialDate && "text-muted-foreground")}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {initialDate ? format(initialDate, "MMM yyyy") : <span>Pick a month</span>}
+                                                {selectedDate ? format(selectedDate, "MMM yyyy") : <span>Pick a month</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <MonthPicker 
-                                                onMonthSelect={field.onChange} 
+                                                onMonthSelect={(date:Date ) => {
+                                                    setSelectedDate(date);
+                                                    field.onChange(date);
+                                                }} 
                                                 selectedMonth={field.value}
                                                 maxDate={new Date()}
                                                 minDate={new Date(minYear,1,1)} />
