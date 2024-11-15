@@ -127,7 +127,7 @@ export const BalanceSchema = z.object({
     price: z.number(),
     value: z.number(),
     currency: z.enum(['TWD' , 'USD']).default('TWD'),
-    note: z.string().optional().nullable(),
+    note: z.preprocess((val) => val ?? "", z.string().optional()),
     userId: z.number(),
     user: UserSchema.optional(),
     updatedAt: z.date(),

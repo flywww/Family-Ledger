@@ -1,12 +1,13 @@
 'use client'
 
 import { 
-    BalanceFormSchema, 
-    BalanceRecord, 
+    BalanceCreateType, 
+    Balance, 
     Category, 
     CategorySchema, 
     Holding, 
-    Type } 
+    Type, 
+    BalanceCreateSchema} 
 from "@/lib/definitions";
 import {
     Form,
@@ -72,18 +73,15 @@ export default function CreateBalanceForm({
     backURL: string
 }){
     const router = useRouter()
-    const form = useForm<BalanceRecord>({
-        resolver: zodResolver(BalanceFormSchema),
+    const form = useForm<Balance>({
+        resolver: zodResolver(BalanceCreateSchema),
         defaultValues:{
-            holdingId: 1,
             date: firstDateOfMonth(initialDate), 
             quantity: 0,
             price: 0,
             value: 0,
             currency: 'USD',
             userId: 3, //TODO: Should load user
-            updatedAt: new Date(),
-            createdAt: new Date(),
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);
@@ -94,7 +92,7 @@ export default function CreateBalanceForm({
     const [selectedType, setSelectedType] = useState<Type>();
     const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const [selectedDate, setSelectedDate] = useState<Date>(initialDate)
-    const categoryId = form.watch('categoryName');
+    const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');
     const quantity = form.watch('quantity');
     //TODO: if it's float?
@@ -145,7 +143,7 @@ export default function CreateBalanceForm({
         }
     }
 
-    function onSubmit(values: BalanceRecord){
+    function onSubmit(values: BalanceCreateType){
         createBalance(values);
         //TODO: Add transition UI
     }
@@ -162,7 +160,7 @@ export default function CreateBalanceForm({
                 >
                     <FormField
                         control={form.control}
-                        name="categoryName"
+                        name="holding.category.id"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Category </FormLabel>
@@ -171,8 +169,6 @@ export default function CreateBalanceForm({
                                         field.onChange(value);
                                         setSelectedCategory(categoryList.find((category) => category.id.toString() === value));
                                     }} 
-                                    defaultValue={field.value}
-                                    
                                 >
                                     <FormControl>
                                         <SelectTrigger className="w-80">
@@ -197,7 +193,7 @@ export default function CreateBalanceForm({
 
                     <FormField
                         control={form.control}
-                        name="typeName"
+                        name="holding.type"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Type </FormLabel>
@@ -206,7 +202,6 @@ export default function CreateBalanceForm({
                                             field.onChange(value);
                                             setSelectedType(typeList.find((type) => value === type.id?.toString()));
                                         }} 
-                                        defaultValue={field.value}
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-80">
@@ -231,7 +226,7 @@ export default function CreateBalanceForm({
 
                     <FormField
                         control={form.control}
-                        name="holdingName"
+                        name="holding.name"
                         render={({field}) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel>Name</FormLabel>
@@ -267,7 +262,7 @@ export default function CreateBalanceForm({
                                                             value={holding.name}
                                                             key={holding.name}
                                                             onSelect={() => {
-                                                                form.setValue("holdingName", holding.name);
+                                                                form.setValue("holding.name", holding.name);
                                                                 form.setValue("holdingId", holding.id);
                                                                 fetchAndUpdatePrice(holding);
                                                             }}
@@ -306,10 +301,10 @@ export default function CreateBalanceForm({
                                 <FormLabel> Quantity </FormLabel>
                                 <FormControl>
                                     <Input 
+                                        {...field}
                                         type="number" 
                                         className="w-80" 
                                         placeholder="Category"
-                                        {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
@@ -326,10 +321,10 @@ export default function CreateBalanceForm({
                                 <FormLabel> Price </FormLabel>
                                 <FormControl>
                                     <Input 
+                                        {...field}
                                         type="number" 
                                         className="w-80" 
                                         placeholder="Price" 
-                                        {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
@@ -346,11 +341,11 @@ export default function CreateBalanceForm({
                                 <FormLabel> Value </FormLabel>
                                 <FormControl>
                                     <Input 
+                                        {...field}
                                         type="number" 
                                         className="w-80" 
                                         placeholder="Value" 
                                         readOnly={true} 
-                                        {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                 </FormControl>
@@ -365,7 +360,7 @@ export default function CreateBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Currency </FormLabel>
-                                    <Select>
+                                    <Select {...field}>
                                         <FormControl>
                                             <SelectTrigger className="w-80">
                                                 <SelectValue/>
@@ -385,7 +380,7 @@ export default function CreateBalanceForm({
                         control={form.control}
                         name="date"
                         render={({field}) => (
-                            <FormItem>
+                            <FormItem {...field}>
                                 <FormLabel> Date </FormLabel>
                                 <FormControl>
                                     <Popover>
@@ -419,7 +414,11 @@ export default function CreateBalanceForm({
                             <FormItem>
                                 <FormLabel> Note </FormLabel>
                                 <FormControl>
-                                    <Textarea className="w-80" placeholder="add some note" {...field}/>
+                                    <Textarea 
+                                        {...field}
+                                        className="w-80" 
+                                        placeholder="add some note" 
+                                        />
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
