@@ -97,6 +97,7 @@ export default function CreateBalanceForm({
     const categoryId = form.watch('categoryName');
     const price = form.watch('price');
     const quantity = form.watch('quantity');
+    //TODO: if it's float?
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
     useEffect(() => {
@@ -146,6 +147,7 @@ export default function CreateBalanceForm({
 
     function onSubmit(values: BalanceRecord){
         createBalance(values);
+        //TODO: Add transition UI
     }
     
     return(

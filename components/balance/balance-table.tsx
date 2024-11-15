@@ -1,5 +1,5 @@
 import { fetchMonthlyBalance } from "@/lib/actions";
-import { BalanceRecord } from "@/lib/definitions";
+import { Balance } from "@/lib/definitions";
 import { DataTable } from "../data-table";
 import { columns } from "./balance-columns";
 import { ColumnDef } from "@tanstack/react-table";
@@ -18,7 +18,7 @@ export default async function BalanceTable({
     return(
         <>
             
-            <DataTable columns={columns as ColumnDef<BalanceRecord | null, any>[]} data={balanceData}></DataTable>
+            <DataTable columns={columns as ColumnDef<Balance | null, any>[]} data={balanceData}></DataTable>
         </>
     )
 }

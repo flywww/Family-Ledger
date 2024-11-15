@@ -1,10 +1,43 @@
 'use server'
 
 import prisma from "./prisma";
-import { BalanceRecord, BalanceRecordSchema, Category, CategorySchema, Holding, HoldingArraySchema, HoldingCreateSchema, HoldingCreateType, Type, TypeSchema } from "./definitions";
+import { BalanceCreateType, Balance, BalanceSchema, Category, CategorySchema, Holding, HoldingArraySchema, HoldingCreateSchema, HoldingCreateType, Type, TypeSchema } from "./definitions";
 import { log } from "console";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+
+
+export async function fetchBalance( id: number ){
+    try {
+        const data = await prisma.balance.findFirst({
+            where:{ id: id },
+            include: { 
+                holding: {
+                    include:{
+                        category: true,
+                        type: true,
+                    }
+                }, 
+                user: true 
+            },            
+            orderBy:{ id: 'asc' }
+        })
+
+        if(!data){
+            throw new Error('Failed to fetch balance. Can not find balance for this id!');
+        }
+
+        const parsed = BalanceSchema.safeParse({ data })
+        if(!parsed.success){
+            console.error("Invalid balance record:", parsed.error);
+            throw new Error('Failed to parse fetched balance. ');
+        }
+        return parsed.data;
+
+    } catch (error) {
+        throw new Error('Failed to fetch balance.');
+    }
+}
 
 export async function fetchMonthlyBalance( queryDate: Date  ){
     //TODO: fetch with user id
@@ -13,95 +46,37 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
     try {
         const data = await prisma.balance.findMany({
             where:{ date: queryDate },
-            select:{
-                id: true,
-                date: true,
-                quantity: true,
-                price: true,
-                value: true,
-                currency: true,
-                note: true,
-                createdAt: true,
-                updatedAt: true,
-                user:{
-                    select:{
-                        id: true,
-                        account: true, 
-                        createdAt: true,
-                        updatedAt: true,
+            include: { 
+                holding: {
+                    include:{
+                        category: true,
+                        type: true,
                     }
-                },
-                holding:{
-                    select:{
-                        id: true,
-                        name: true,
-                        symbol: true,
-                        createdAt: true,
-                        updatedAt: true,
-                        type:{
-                            select:{
-                                id: true,
-                                name: true,
-                                createdAt: true,
-                                updatedAt: true,
-                            }
-                        },
-                        category:{
-                            select:{
-                                id: true,
-                                name: true,
-                                isHide: true,
-                                createdAt: true,
-                                updatedAt: true,  
-                            }
-                        }
-                    }
-                }
+                }, 
+                user: true 
             },
-            orderBy:{
-                id: 'asc'
-            }
+            orderBy:{ id: 'asc' }
         })
 
-        const balanceRecords = data.map( (balance) => {
-            const parsed = BalanceRecordSchema.safeParse({
-                id: balance.id,
-                date: balance.date,
-                holdingId: balance.holding.id,
-                holdingName: balance.holding.name,
-                holdingSymbol: balance.holding.symbol,
-                categoryName: balance.holding.category.name,
-                categoryIsHide: balance.holding.category.isHide,
-                typeName: balance.holding.type.name,
-                quantity: balance.quantity,
-                price: balance.price,
-                value: balance.value,
-                currency: balance.currency as 'TWD' | 'USD',
-                note: balance.note ?? undefined,
-                userId: balance.user.id,
-                updatedAt: balance.updatedAt,
-                createdAt: balance.createdAt,
-            })
+        const Balances = data.map( (balance) => {
+            const parsed = BalanceSchema.safeParse( balance )
             if(!parsed.success){
                 console.error("Invalid balance record:", parsed.error);
                 return null;
             }
             return parsed.data;
         })
-        return balanceRecords;
+        return Balances;
     } catch (error) {
         console.error("Failed to fetch balance data:", error);
         return [];
     }
 }
 
-export async function createBalance( balance: BalanceRecord ){
+export async function createBalance( balance: BalanceCreateType ){
     try {
 
         //TODO: update if it has have same holding in current month
-        
-        console.log(`create balance: ${JSON.stringify(balance)}`);
-        
         const data = await prisma.balance.create({
             data: balance   
         })
@@ -112,15 +87,29 @@ export async function createBalance( balance: BalanceRecord ){
     redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
-export async function createMonthBalance( balances: BalanceRecord[] ){
-
+export async function createMonthBalance( balances: Balance[] ){
+    try {
+        
+    } catch (error) {
+        
+    }
 }
 
-export async function deleteBalance( id: number ){
-
+export async function deleteBalance( id: number, balance: Balance ){
+    try {
+        await prisma.balance.delete({
+            where:{
+                id: id
+            }
+        })
+        revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
+    } catch (error) {
+        console.error('Fail to delete balance', error);
+        
+    }
 }
 
-export async function updateBalance( id: number ){
+export async function updateBalance( id: number, balance: BalanceCreateType ){
 
 }
 
@@ -158,17 +147,10 @@ export async function fetchHoldingWithId( id:number ){
 export async function fetchHoldings(){
     try {
         const data = await prisma.holding.findMany({
-            select:{
-                id: true,
-                name: true,
-                symbol: true,
-                typeId: true,
-                userId: true,
-                categoryId: true,
-                sourceId: true,
-                sourceURL: true,
-                updatedAt: true,
-                createdAt: true,
+            include: { 
+                category: true,
+                type: true, 
+                user: true 
             }, orderBy:{
                 id:'asc'
             }
@@ -194,18 +176,12 @@ export async function fetchHoldingsWithHoldingId( categoryId: number ){
             where:{
                 categoryId: categoryId,
             },
-            select:{
-                id: true,
-                name: true,
-                symbol: true,
-                typeId: true,
-                userId: true,
-                categoryId: true,
-                sourceId: true,
-                sourceURL: true,
-                updatedAt: true,
-                createdAt: true,
-            }, orderBy:{
+            include: { 
+                category: true,
+                type: true, 
+                user: true 
+            }, 
+            orderBy:{
                 id:'asc'
             }
         })
@@ -368,26 +344,13 @@ export async function fetchListedStockPriceFromAPI( symbol: string ){
 export async function fetchCategories(){
     try {
         const data = await prisma.category.findMany({
-            select:{
-                id: true,
-                name: true,
-                isHide: true,
-                updatedAt: true,
-                createdAt: true,
-            },
             orderBy:{
                 id:'asc'
             }
         });
         
         const categoryList = data.map( (category) => {
-            const parsed = CategorySchema.safeParse({
-                id: category.id,
-                name: category.name,
-                isHide: category.isHide,
-                updatedAt: category.updatedAt,
-                createdAt: category.createdAt
-            })
+            const parsed = CategorySchema.safeParse( category )
             if(!parsed.success){
                 console.error("Invalid category data", parsed.error)
                 return null;
@@ -406,23 +369,12 @@ export async function fetchCategories(){
 export async function fetchTypes(){
     try {
         const data = await prisma.type.findMany({
-            select:{
-                id: true,
-                name: true,
-                updatedAt: true,
-                createdAt: true,
-            },
             orderBy:{
                 id: 'desc'
             }
         });
         const typeList = data.map( (type) => {
-            const parsed = TypeSchema.safeParse({
-                id: type.id,
-                name: type.name,
-                updatedAt: type.updatedAt,
-                createdAt: type.createdAt
-            })
+            const parsed = TypeSchema.safeParse(type)
             if(!parsed.success){
                 console.error("Invalid type data", parsed.error);
                 return null;

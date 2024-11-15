@@ -1,6 +1,6 @@
 'use client'
 
-import { BalanceRecord, currencyType } from "@/lib/definitions"
+import { BalanceCreateType, Balance, currencyType } from "@/lib/definitions"
 import { convertCurrency } from "@/lib/utils"
 import { ColumnDef, Row, Column } from '@tanstack/react-table'
 import { MoreHorizontal, ArrowUpDown } from "lucide-react"
@@ -16,12 +16,14 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
+import { deleteBalance } from "@/lib/actions"
+import Link from "next/link"
 
 
-//TODO: fetch display currency from setting
+//TODO: fetch displayed currency from setting
 const displayedCurrency = 'USD'
 
-const moneyCellFormatter = (row: Row<BalanceRecord>, key: string) => {
+const moneyCellFormatter = (row: Row<Balance>, key: string) => {
     const recordPrice = parseFloat(row.getValue(key))
     const recordCurrency: currencyType =  row.original.currency;
     const recordDate = row.original.date;
@@ -33,12 +35,12 @@ const moneyCellFormatter = (row: Row<BalanceRecord>, key: string) => {
     return <div className="text-right font-medium">{formattedPrice}</div>
 }
 
-const numberCellFormatter = (row: Row<BalanceRecord>, key: string) => {
+const numberCellFormatter = (row: Row<Balance>, key: string) => {
     const recordNumber = parseInt(row.getValue(key))
     return <div className="text-right font-medium">{recordNumber}</div>
 }
 
-const getSortedHeader = ( column: Column<BalanceRecord>, headerName:string ) => {
+const getSortedHeader = ( column: Column<Balance>, headerName:string ) => {
     return(
         <Button
             variant="ghost"
@@ -51,21 +53,21 @@ const getSortedHeader = ( column: Column<BalanceRecord>, headerName:string ) => 
 }
 
 
-export const columns: ColumnDef<BalanceRecord>[] = [
+export const columns: ColumnDef<Balance>[] = [
     {
-        accessorKey: "holdingName",
+        accessorKey: "holding.name",
         header: "Name",
     },
     {
-        accessorKey: "holdingSymbol",
+        accessorKey: "holding.symbol",
         header: "Symbol",
     },
     {
-        accessorKey: "categoryName",
+        accessorKey: "holding.category.name",
         header: ({column}) => getSortedHeader(column, "Category"),
     },
     {
-        accessorKey: "typeName",
+        accessorKey: "holding.type.name",
         header: ({column}) => getSortedHeader(column, "Type"),
     },
     {
@@ -127,8 +129,20 @@ export const columns: ColumnDef<BalanceRecord>[] = [
                             </DropdownMenuSubTrigger>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem> Edit </DropdownMenuItem>
-                        <DropdownMenuItem> Delete </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href={`/balance/${row.original.id}/edit`}>
+                                Edit
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={async () => {
+                                const id = row.original.id;
+                                const balance: Balance = row.original;
+                                if(id){
+                                    await deleteBalance(id, balance);
+                                }
+                            }}
+                        > Delete </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
