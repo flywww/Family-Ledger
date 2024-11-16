@@ -4,7 +4,6 @@ import {
     BalanceCreateType, 
     Balance, 
     Category, 
-    CategorySchema, 
     Holding, 
     Type, 
     BalanceCreateSchema} 
@@ -90,7 +89,6 @@ export default function CreateBalanceForm({
     const [holdingDBIsUpdated, setHoldingDBIsUpdated] = useState<boolean>(true)
     const [selectedCategory, setSelectedCategory] = useState<Category>();
     const [selectedType, setSelectedType] = useState<Type>();
-    const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const [selectedDate, setSelectedDate] = useState<Date>(initialDate)
     const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');

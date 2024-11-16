@@ -64,11 +64,11 @@ export function DataTable<TData, TValue>({
     return(
         <div className="w-full">
             <div className="flex items-center py-4">
-                <Input
+            <Input
                     placeholder="Filter balances..."
-                    value={(table.getColumn("holding.name")?.getFilterValue() as string) ?? ""}
+                    value={(table.getColumn("holdingName")?.getFilterValue() as string) ?? ""}
                     onChange={(event) => 
-                        table.getColumn("holding.name")?.setFilterValue(event.target.value)
+                        table.getColumn("holdingName")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />

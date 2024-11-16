@@ -1,6 +1,6 @@
 'use client'
 
-import { BalanceCreateType, Balance, currencyType } from "@/lib/definitions"
+import { BalanceCreateType, FlattedBalanceType, currencyType } from "@/lib/definitions"
 import { convertCurrency } from "@/lib/utils"
 import { ColumnDef, Row, Column } from '@tanstack/react-table'
 import { MoreHorizontal, ArrowUpDown } from "lucide-react"
@@ -23,7 +23,7 @@ import Link from "next/link"
 //TODO: fetch displayed currency from setting
 const displayedCurrency = 'USD'
 
-const moneyCellFormatter = (row: Row<Balance>, key: string) => {
+const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
     const recordPrice = parseFloat(row.getValue(key))
     const recordCurrency: currencyType =  row.original.currency;
     const recordDate = row.original.date;
@@ -35,12 +35,12 @@ const moneyCellFormatter = (row: Row<Balance>, key: string) => {
     return <div className="text-right font-medium">{formattedPrice}</div>
 }
 
-const numberCellFormatter = (row: Row<Balance>, key: string) => {
+const numberCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
     const recordNumber = parseInt(row.getValue(key))
     return <div className="text-right font-medium">{recordNumber}</div>
 }
 
-const getSortedHeader = ( column: Column<Balance>, headerName:string ) => {
+const getSortedHeader = ( column: Column<FlattedBalanceType>, headerName:string ) => {
     return(
         <Button
             variant="ghost"
@@ -53,21 +53,21 @@ const getSortedHeader = ( column: Column<Balance>, headerName:string ) => {
 }
 
 
-export const columns: ColumnDef<Balance>[] = [
+export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
-        accessorKey: "holding.name",
+        accessorKey: "holdingName",
         header: "Name",
     },
     {
-        accessorKey: "holding.symbol",
+        accessorKey: "holdingSymbol",
         header: "Symbol",
     },
     {
-        accessorKey: "holding.category.name",
+        accessorKey: "holdingCategoryName",
         header: ({column}) => getSortedHeader(column, "Category"),
     },
     {
-        accessorKey: "holding.type.name",
+        accessorKey: "holdingTypeName",
         header: ({column}) => getSortedHeader(column, "Type"),
     },
     {
@@ -137,7 +137,7 @@ export const columns: ColumnDef<Balance>[] = [
                         <DropdownMenuItem
                             onClick={async () => {
                                 const id = row.original.id;
-                                const balance: Balance = row.original;
+                                const balance: FlattedBalanceType = row.original;
                                 if(id){
                                     await deleteBalance(id, balance);
                                 }

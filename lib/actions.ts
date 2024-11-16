@@ -1,7 +1,20 @@
 'use server'
 
 import prisma from "./prisma";
-import { BalanceCreateType, Balance, BalanceSchema, Category, CategorySchema, Holding, HoldingArraySchema, HoldingCreateSchema, HoldingCreateType, Type, TypeSchema } from "./definitions";
+import { 
+    BalanceCreateType, 
+    BalanceUpdateType, 
+    Balance, 
+    BalanceSchema, 
+    Category, 
+    CategorySchema, 
+    Holding, 
+    HoldingArraySchema, 
+    HoldingCreateSchema, 
+    HoldingCreateType, 
+    Type, 
+    TypeSchema 
+} from "./definitions";
 import { log } from "console";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -27,7 +40,7 @@ export async function fetchBalance( id: number ){
             throw new Error('Failed to fetch balance. Can not find balance for this id!');
         }
 
-        const parsed = BalanceSchema.safeParse({ data })
+        const parsed = BalanceSchema.safeParse( data )
         if(!parsed.success){
             console.error("Invalid balance record:", parsed.error);
             throw new Error('Failed to parse fetched balance. ');
@@ -109,8 +122,19 @@ export async function deleteBalance( id: number, balance: Balance ){
     }
 }
 
-export async function updateBalance( id: number, balance: BalanceCreateType ){
-
+export async function updateBalance( id: number, balance: BalanceUpdateType, backDate: Date ){
+    try {
+        const data = prisma.balance.update({
+            where:{
+                id: id
+            },
+            data: balance
+        })
+    } catch (error) {
+        console.error('Fail to update balance', error)
+    }
+    revalidatePath(`/balance/?date=${backDate.toUTCString()}`);
+    redirect(`/balance/?date=${backDate.toUTCString()}`);
 }
 
 

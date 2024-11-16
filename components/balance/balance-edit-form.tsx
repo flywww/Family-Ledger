@@ -8,7 +8,8 @@ import {
     CategorySchema, 
     Holding, 
     Type, 
-    BalanceUpdateType} 
+    BalanceUpdateType,
+    BalanceUpdateSchema} 
 from "@/lib/definitions";
 import {
     Form,
@@ -68,19 +69,23 @@ export default function EditBalanceForm({
 }:{
     balance: Balance
 }){
+
     const form = useForm<Balance>({
-        resolver: zodResolver(BalanceSchema),
+        resolver: zodResolver(BalanceUpdateSchema),
         defaultValues:{
+            id: balance.id,
             holdingId: balance.holdingId,
-            categoryId: balance.holding?.categoryId,
-            typeId: balance.typeId,
-            typeName: balance.typeName,
+            holding:{
+                categoryId: balance.holding?.category?.id,
+                typeId: balance.holding?.type?.id
+            },
             date: balance.date, 
             quantity: balance.quantity,
             price: balance.price,
             value: balance.value,
             currency: balance.currency,
             userId: balance.userId, 
+            note: balance.note,
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);
@@ -91,7 +96,7 @@ export default function EditBalanceForm({
     const [selectedType, setSelectedType] = useState<Type>();
     const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const [selectedDate, setSelectedDate] = useState<Date>(balance.date)
-    const categoryId = form.watch('categoryName');
+    const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');
     const quantity = form.watch('quantity');
     //TODO: if it's float?
@@ -143,7 +148,11 @@ export default function EditBalanceForm({
     }
 
     function onSubmit(values: BalanceUpdateType){
-        updateBalance(values);
+        console.log('submmitimg!!!');
+        
+        console.log(values.date ?? balance.date);
+        
+        updateBalance(values.id ,values, values.date ?? balance.date);
         //TODO: Add transition UI
     }
     
@@ -153,23 +162,23 @@ export default function EditBalanceForm({
             <Form {...form}>
                 <form   
                     onSubmit={form.handleSubmit(onSubmit, (errors) => { 
-                        console.log('create balance form validation Errors:', errors)})
+                        console.log('update balance form validation Errors:', errors)})
                     } 
                     className="space-y-1"
                 >
                     <FormField
                         control={form.control}
-                        name="holding.category.name"
+                        name="holding.categoryId"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Category </FormLabel>
                                 <Select 
+                                    {...field}
+                                    value={ field.value ? field.value.toString() : ""}
                                     onValueChange={(value) => {
                                         field.onChange(value);
                                         setSelectedCategory(categoryList.find((category) => category.id.toString() === value));
-                                    }} 
-                                    defaultValue={field.value}
-                                    
+                                    }}
                                 >
                                     <FormControl>
                                         <SelectTrigger className="w-80">
@@ -194,16 +203,17 @@ export default function EditBalanceForm({
 
                     <FormField
                         control={form.control}
-                        name="typeName"
+                        name="holding.typeId"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Type </FormLabel>
                                     <Select 
+                                        {...field}
+                                        value={ field.value ? field.value.toString() : ""}
                                         onValueChange={(value) => { 
                                             field.onChange(value);
                                             setSelectedType(typeList.find((type) => value === type.id?.toString()));
                                         }} 
-                                        defaultValue={field.value}
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-80">
@@ -228,7 +238,7 @@ export default function EditBalanceForm({
 
                     <FormField
                         control={form.control}
-                        name="holdingName"
+                        name="holdingId"
                         render={({field}) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel>Name</FormLabel>
@@ -244,7 +254,7 @@ export default function EditBalanceForm({
                                                 )}
                                             >
                                                 {field.value
-                                                    ? holdingList.find( (holding) => holding.name === field.value )?.name
+                                                    ? holdingList.find( (holding) => holding.id === field.value )?.name
                                                     : "Select a holding"}
                                                 <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                                             </Button>
@@ -261,8 +271,8 @@ export default function EditBalanceForm({
                                                 <CommandGroup>
                                                     {holdingList.map( (holding) => (
                                                         <CommandItem
-                                                            value={holding.name}
-                                                            key={holding.name}
+                                                            value={holding.id.toString()}
+                                                            key={holding.id}
                                                             onSelect={() => {
                                                                 form.setValue("holdingId", holding.id);
                                                                 fetchAndUpdatePrice(holding);
@@ -272,7 +282,7 @@ export default function EditBalanceForm({
                                                             <CheckIcon
                                                                 className={cn(
                                                                     "ml-auto h-4 w-4",
-                                                                    holding.name === field.value ? "opacity-100" : "opacity-0"
+                                                                    holding.id === field.value ? "opacity-100" : "opacity-0"
                                                                 )}
                                                             />
                                                         </CommandItem>    
@@ -353,7 +363,7 @@ export default function EditBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Currency </FormLabel>
-                                    <Select>
+                                    <Select {...field}>
                                         <FormControl>
                                             <SelectTrigger className="w-80">
                                                 <SelectValue/>
@@ -378,7 +388,7 @@ export default function EditBalanceForm({
                                 <FormControl>
                                     <Popover>
                                         <PopoverTrigger asChild>
-                                            <Button variant={"outline"} className={cn("w-80 justify-start text-left font-normal", !initialDate && "text-muted-foreground")}>
+                                            <Button variant={"outline"} className={cn("w-80 justify-start text-left font-normal", !balance.date && "text-muted-foreground")}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                                 {selectedDate ? format(selectedDate, "MMM yyyy") : <span>Pick a month</span>}
                                             </Button>
@@ -407,7 +417,11 @@ export default function EditBalanceForm({
                             <FormItem>
                                 <FormLabel> Note </FormLabel>
                                 <FormControl>
-                                    <Textarea className="w-80" placeholder="add some note" {...field}/>
+                                    <Textarea 
+                                        {...field} 
+                                        className="w-80" 
+                                        placeholder="add some note"
+                                    />
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>

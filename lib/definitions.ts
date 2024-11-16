@@ -143,7 +143,14 @@ export const BalanceCreateSchema = BalanceSchema.omit({
 export const BalanceUpdateSchema = BalanceCreateSchema.partial().extend({ 
     id: z.number() 
 })
+export const FlattedBalanceSchema = BalanceSchema.extend({
+    holdingName: z.string(),
+    holdingSymbol: z.string(),
+    holdingCategoryName: z.string(),
+    holdingTypeName: z.string(),
+})
 
 export type Balance = z.infer<typeof BalanceSchema>
 export type BalanceCreateType = z.infer<typeof BalanceCreateSchema>
 export type BalanceUpdateType = z.infer<typeof BalanceUpdateSchema>
+export type FlattedBalanceType = z.infer<typeof FlattedBalanceSchema>

@@ -1,4 +1,4 @@
-import { BalanceRecord } from "@/lib/definitions";
+import { Balance } from "@/lib/definitions";
 import EditBalanceForm from "@/components/balance/balance-edit-form";
 import { fetchBalance } from "@/lib/actions";
 
