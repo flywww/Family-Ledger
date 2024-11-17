@@ -13,7 +13,8 @@ import {
     HoldingCreateSchema, 
     HoldingCreateType, 
     Type, 
-    TypeSchema 
+    TypeSchema, 
+    HoldingsArray
 } from "./definitions";
 import { log } from "console";
 import { revalidatePath } from 'next/cache';
@@ -100,9 +101,11 @@ export async function createBalance( balance: BalanceCreateType ){
     redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
-export async function createMonthBalance( balances: Balance[] ){
+export async function createMonthBalances( Date: Date , balances: Balance[] ){
     try {
-        
+        await prisma.balance.createMany({
+            data: balances,
+        })
     } catch (error) {
         
     }
@@ -124,7 +127,9 @@ export async function deleteBalance( id: number, balance: Balance ){
 
 export async function updateBalance( id: number, balance: BalanceUpdateType, backDate: Date ){
     try {
-        const data = prisma.balance.update({
+        console.log(`updating balance with id(${id}) and  data: ${JSON.stringify(balance)} `);
+        
+        const data = await prisma.balance.update({
             where:{
                 id: id
             },
@@ -171,11 +176,7 @@ export async function fetchHoldingWithId( id:number ){
 export async function fetchHoldings(){
     try {
         const data = await prisma.holding.findMany({
-            include: { 
-                category: true,
-                type: true, 
-                user: true 
-            }, orderBy:{
+            orderBy:{
                 id:'asc'
             }
         })
@@ -246,21 +247,23 @@ export async function fetchCryptosFromAPI(query: string) {
             name: crypto.name,
             symbol: crypto.symbol,
             sourceURL: fetchURL,
-            sourceId: crypto.id,
+            sourceId: crypto.id.toString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
         }))  
         : [];
     const cryptosFromSymbol = symbolResponse.data?.[query]?.map((crypto: any) => ({
         name: crypto.name,
         symbol: crypto.symbol,
         sourceURL: fetchURL,
-        sourceId: crypto.id,
+        sourceId: crypto.id.toString(),
     })) || [];
     const cryptoData = [...cryptosFromSlug, ...cryptosFromSymbol].filter( crypto => crypto !== undefined);
 
     return cryptoData;
 }
 
-export async function fetchCryptoPriceFromAPI(id: number){
+export async function fetchCryptoPriceFromAPI(id: string){
     const API_KEY = process.env.CMC_API_KEY
     const fetchURL = "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?"
     if (!API_KEY) {
@@ -271,8 +274,6 @@ export async function fetchCryptoPriceFromAPI(id: number){
             "X-CMC_PRO_API_KEY": API_KEY,
         }
     }
-    console.log(`fetch URL: ${fetchURL}id=${id}`);
-    console.log(`fetch header: ${header}`);
     
     const response = await fetch(`${fetchURL}id=${id}`, header)
     if (!response.ok) {
@@ -286,54 +287,59 @@ export async function fetchCryptoPriceFromAPI(id: number){
     return price
 }
 
-export async function fetchListedStocksFromAVSAPI(query: string){
-    const API_KEY = process.env.ALPHA_VANTAGE_STOCK_API_KEY;
-    const fetchURL = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
+// export async function fetchListedStocksFromAVSAPI(query: string){
+//     const API_KEY = process.env.ALPHA_VANTAGE_STOCK_API_KEY;
+//     const fetchURL = `https://www.alphavantage.co/query?`
 
-    if (!API_KEY) {
-        throw new Error("API key is missing");
-    }    
-    try {
-        const response = await fetch(fetchURL);
-        const data = await response.json();
-        if(!data.bestMatches){
-            return [];
-        }
+//     if (!API_KEY) {
+//         throw new Error("API key is missing");
+//     }    
+//     try {
+//         const response = await fetch(`${fetchURL}function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`);
+//         const data = await response.json();
+//         if(!data.bestMatches){
+//             return [];
+//         }
 
-        const listedStocks = data.bestMatches.map((stock: any) => ({
-            symbol: stock["1. symbol"],
-            name: stock["2. name"],
-        }))
+//         const listedStocks = data.bestMatches.map((stock: any) => ({
+//             symbol: stock["1. symbol"],
+//             name: stock["2. name"],
+//             sourceURL: fetchURL,
+//             sourceId:  stock["1. symbol"],
+//         }))
 
-        return listedStocks;
+//         return listedStocks;
     
-    } catch (error) {
-        console.error("Failed to fetch or parse stocks data:", error);
-        return [];    
-    }
-}
+//     } catch (error) {
+//         console.error("Failed to fetch or parse stocks data:", error);
+//         return [];    
+//     }
+// }
 
 export async function fetchListedStocksFromAPI(query: string){
     const API_KEY = process.env.FMP_STOCK_API_KEY;
-    const fetchURL = `https://financialmodelingprep.com/api/v3/search?query=${query}&limit=10&apikey=${API_KEY}`
+    const fetchURL = `https://financialmodelingprep.com/api/v3/search?`
 
     if (!API_KEY) {
         throw new Error("API key is missing");
     }    
     try {
-        const response = await fetch(fetchURL);
+        const response = await fetch(`${fetchURL}query=${query}&limit=10&apikey=${API_KEY}`);
         if(!response.ok){
             console.log(`Using backup API to fetch listed stock list`);
-            const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
-            return backupFetchedData;
+            // const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
+            return [];
         }
         const data = await response.json();
         const listedStocks = data.map((stock: any) => ({
             symbol: stock["symbol"],
             name: stock["name"],
             stockExchange: stock['stockExchange'],
+            sourceURL: fetchURL,
+            sourceId: stock["symbol"],
             
         })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
+        .map(({stockExchange, ...stock}: { stockExchange: any }) => stock)
 
         return listedStocks;
     
@@ -345,12 +351,12 @@ export async function fetchListedStocksFromAPI(query: string){
 
 export async function fetchListedStockPriceFromAPI( symbol: string ){
     const API_KEY = process.env.FMP_STOCK_API_KEY;
-    
-    const fetchURL = `https://financialmodelingprep.com/api/v3/otc/real-time-price/${Symbol}?apikey=${API_KEY}`
+    const fetchURL = `https://financialmodelingprep.com/api/v3/otc/real-time-price/${symbol}?apikey=${API_KEY}`
     try {
         const response = await fetch(fetchURL);
         const data = await response.json();
-        console.log(data);
+
+        console.log(`fetch listed stock price: ${data}`);
         
         const price = data.map((stock: any) => ({
             symbol: stock["symbol"],

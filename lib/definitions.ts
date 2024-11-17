@@ -95,7 +95,7 @@ export const HoldingSchema = z.object({
     userId: z.number(),
     user: UserSchema.optional(),
     sourceURL: z.string().nullable().optional(),
-    sourceId: z.number().nullable().optional(),
+    sourceId: z.string().nullable().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })

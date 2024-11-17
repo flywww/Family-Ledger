@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 
-import { Category, HoldingCreateType, HoldingCreateSchema, Type } from "@/lib/definitions"
+import { Category, HoldingCreateType, HoldingCreateSchema, Type, Holding, HoldingsArray } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -73,7 +73,7 @@ export default function CreateHoldingForm({
     })
 
     const handleSearch = useDebouncedCallback(async (query: string) => {
-        let data;
+        let data: HoldingsArray;
         if(selectedCategory?.name === "Cryptocurrency"){
             data = await fetchCryptosFromAPI(query);
         }else if(selectedCategory?.name === "Listed stock"){

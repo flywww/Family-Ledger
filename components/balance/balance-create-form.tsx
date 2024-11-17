@@ -132,9 +132,11 @@ export default function CreateBalanceForm({
     const fetchAndUpdatePrice = async (holding: Holding) => {
         if(isListedStockOrCrypto && holding.sourceId){
             if(selectedCategory.name === 'Cryptocurrency'){
-                const price = await fetchCryptoPriceFromAPI(holding.sourceId)
+                const price = await fetchCryptoPriceFromAPI(holding.sourceId.toString())
                 form.setValue('price', price);
             }else if(selectedCategory.name === 'Listed stock'){
+                console.log(`get listed stock's price with: ${holding.sourceId.toString}`);
+                
                 const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
                 form.setValue('price', price);
             }

@@ -52,7 +52,7 @@ model Holding {
   user         User       @relation(fields: [userId], references: [id])
   userId       Int
   sourceURL    String?
-  sourceId     Int?
+  sourceId     String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   balances     Balance[]  // Each holding will have multiple balances over time
