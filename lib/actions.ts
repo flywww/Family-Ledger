@@ -14,7 +14,9 @@ import {
     HoldingCreateType, 
     Type, 
     TypeSchema, 
-    HoldingsArray
+    HoldingsArray,
+    HoldingUpdateType,
+    HoldingSchema
 } from "./definitions";
 import { log } from "console";
 import { revalidatePath } from 'next/cache';
@@ -101,14 +103,16 @@ export async function createBalance( balance: BalanceCreateType ){
     redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
-export async function createMonthBalances( Date: Date , balances: Balance[] ){
+export async function createMonthBalances( date: Date , balances: Balance[] ){
     try {
         await prisma.balance.createMany({
             data: balances,
         })
     } catch (error) {
-        
+        console.error('Fail to create the balances', error);
     }
+    revalidatePath(`/balance/?date=${date.toUTCString()}`);
+    redirect(`/balance/?date=${date.toUTCString()}`);
 }
 
 export async function deleteBalance( id: number, balance: Balance ){
@@ -160,12 +164,30 @@ export async function createHolding( holding: HoldingCreateType ){
         })
 
         if(!data){
-            const data = await prisma.holding.create({
+            await prisma.holding.create({
                 data: holding
             })
+        }else{
+            const parsed = HoldingSchema.safeParse(data);
+            if(parsed.success){
+                updateHolding(parsed.data.id, holding as HoldingUpdateType)
+            }
         }
     } catch (error) {
         console.error('Fail to create the Holding', error);
+    }
+}
+
+export async function updateHolding( id: number, holding: HoldingUpdateType){
+    try {
+        await prisma.holding.update({
+            where:{
+                id: id
+            },
+            data: holding
+        })
+    } catch (error) {
+        console.log(`Can not update holding with id:${id} and data: ${holding}, error: ${error}`);
     }
 }
 
