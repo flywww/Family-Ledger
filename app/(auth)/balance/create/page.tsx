@@ -3,7 +3,7 @@ import { firstDateOfMonth } from "@/lib/utils";
 
 
 export default function Page({
-   searchParams 
+    searchParams 
 }:{
     searchParams?: {
         date?: string

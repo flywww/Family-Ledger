@@ -1,9 +1,7 @@
-import { format } from "date-fns";
-import Search from "@/components/balance/search";
 import BalanceTable from "@/components/balance/balance-table";
 import { firstDateOfMonth } from "@/lib/utils";
-import { buttonVariants, Button } from "@/components/ui/button";
-import Link from "next/link";
+import { fetchMonthlyBalance } from "@/lib/actions";
+import { FlattedBalanceType } from "@/lib/definitions";
 
 export default async function Page({
   searchParams,
@@ -13,17 +11,24 @@ export default async function Page({
   }
 }) {
 
-    let queryDate = firstDateOfMonth(new Date());
-    if(searchParams?.date) queryDate = new Date(searchParams.date);
+    const queryDate = searchParams?.date ? new Date(searchParams.date) : firstDateOfMonth(new Date());
+
+    //TODO: fetch with user id
+    const balanceData = await fetchMonthlyBalance(queryDate);
+    const flattedBalanceData = balanceData.map( (balance) => ({
+        ...balance,
+        holdingName: balance?.holding?.name,
+        holdingSymbol: balance?.holding?.symbol,
+        holdingCategoryName: balance?.holding?.category?.name,
+        holdingTypeName: balance?.holding?.type?.name,
+    } as FlattedBalanceType)) 
 
     return (
       <div>
-        <h1> balance page</h1>
-        <Search/>
-        <Button asChild>
-          <Link href={`/balance/create?date=${queryDate}`}> New </Link>
-        </Button>
-        <BalanceTable date={ queryDate }/>
+        <BalanceTable 
+          date={ queryDate } 
+          data={flattedBalanceData}
+        />
       </div>
     )
   }

@@ -80,7 +80,7 @@ model Type {
 
 model Setting {
   id             Int       @id @default(autoincrement())
-  accountingDate Int
+  accountingDate DateTime
   userId         Int       @unique
   user           User      @relation(fields: [userId], references: [id])
   createdAt      DateTime  @default(now())

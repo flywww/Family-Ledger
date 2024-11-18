@@ -16,7 +16,9 @@ import {
     TypeSchema, 
     HoldingsArray,
     HoldingUpdateType,
-    HoldingSchema
+    HoldingSchema,
+    SettingSchema,
+    Setting,
 } from "./definitions";
 import { log } from "console";
 import { revalidatePath } from 'next/cache';
@@ -437,5 +439,25 @@ export async function fetchTypes(){
     } catch (error) {
         console.log('Failed to fetch types', error);
         return [];
+    }
+}
+
+//Setting
+export async function fetchSetting( id: number ){
+    try {
+        const data = await prisma.setting.findFirst({
+            where: {
+                id: id
+            }
+        })
+        const parsed = SettingSchema.safeParse(data);
+        if(!parsed.success){
+            return {}
+        }
+        return parsed.data
+
+    } catch (error) {
+        console.log(`Failed to fetch setting with id:${id}, error: ${error}`);
+        return {}
     }
 }

@@ -22,7 +22,6 @@ export type User = z.infer<typeof UserSchema>
 export type UserCreateType = z.infer<typeof UserCreateSchema>
 export type UserUpdateType = z.infer<typeof UserUpdateSchema>
 
-
 export const SettingSchema = z.object({
     id: z.number(),
     accountingDate: z.date(),

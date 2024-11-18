@@ -28,7 +28,7 @@ export default function Search(){
         <div>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"outline"} className={cn("w-[280px] justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
+                    <Button variant={"outline"} className={cn("min-w-40 justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {queryDate ? format(queryDate, "MMM yyyy") : <span>Pick a month</span>}
                     </Button>

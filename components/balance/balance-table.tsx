@@ -1,30 +1,60 @@
-import { fetchMonthlyBalance } from "@/lib/actions";
+'use client'
+
 import { FlattedBalanceType } from "@/lib/definitions";
 import { DataTable } from "../data-table";
 import { columns } from "./balance-columns";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "../ui/button";
+import BalanceTableToolbar from "@/components/balance/balance-table-toolbar";
+import { 
+    ColumnDef, 
+    getCoreRowModel, 
+    useReactTable,
+    SortingState,
+    getSortedRowModel,
+    ColumnFiltersState,
+    getFilteredRowModel,
+    VisibilityState,
+} from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table";
+import { useState } from "react";
 
-export default async function BalanceTable({
+export default function BalanceTable({
     date,
+    data,
 }:{
-    date:Date;
+    date:Date,
+    data: FlattedBalanceType[]
 }){
 
-    //TODO: fetch with user id
-    const balanceData = await fetchMonthlyBalance(date);
-    const flattedBalanceData = balanceData.map( (balance) => ({
-        ...balance,
-        holdingName: balance?.holding?.name,
-        holdingSymbol: balance?.holding?.symbol,
-        holdingCategoryName: balance?.holding?.category?.name,
-        holdingTypeName: balance?.holding?.type?.name,
-    } as FlattedBalanceType)) 
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const table: Table<FlattedBalanceType> = useReactTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),
+        onColumnFiltersChange: setColumnFilters,
+        getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
+        state:{
+            sorting,
+            columnFilters,
+            columnVisibility
+        },
+    })
 
     return(
         <>
-            
-            <DataTable columns={columns as ColumnDef<FlattedBalanceType | null, any>[]} data={flattedBalanceData}></DataTable>
+            <BalanceTableToolbar 
+                queryDate={date}
+                table={table}
+            />
+            <DataTable 
+                columns={columns as ColumnDef<FlattedBalanceType | null, any>[]} 
+                data={data}
+                table={table}
+            />
         </>
     )
 }
