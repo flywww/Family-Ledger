@@ -1,8 +1,7 @@
 'use client'
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getYearList, monthList, minYear } from "@/lib/data";
+import { getYearList, minYear } from "@/lib/data";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -10,13 +9,10 @@ import { format } from "date-fns";
 import { cn, getLastMonth } from "@/lib/utils";
 import { MonthPicker } from "../ui/month-picker";
 
-export default function Search(){
+export default function Search({queryDate}:{queryDate: Date}){
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
-    const yearList = getYearList();
-    const UTCDateString: string|null = searchParams.get('date') || new Date().toUTCString();
-    const queryDate = new Date(UTCDateString);
 
     const handleDateSearch = (date: Date) => {
         const params = new URLSearchParams(searchParams);

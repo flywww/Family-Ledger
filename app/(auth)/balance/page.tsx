@@ -1,5 +1,5 @@
 import BalanceTable from "@/components/balance/balance-table";
-import { firstDateOfMonth } from "@/lib/utils";
+import { firstDateOfMonth, getCalculatedMonth } from "@/lib/utils";
 import { fetchMonthlyBalance } from "@/lib/actions";
 import { FlattedBalanceType } from "@/lib/definitions";
 
@@ -11,7 +11,7 @@ export default async function Page({
   }
 }) {
 
-    const queryDate = searchParams?.date ? new Date(searchParams.date) : firstDateOfMonth(new Date());
+    const queryDate = searchParams?.date ? new Date(searchParams.date) : getCalculatedMonth(new Date(), -1);
 
     //TODO: fetch with user id
     const balanceData = await fetchMonthlyBalance(queryDate);

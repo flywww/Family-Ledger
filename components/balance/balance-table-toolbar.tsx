@@ -58,7 +58,7 @@ export default function BalanceTableToolbar({
     return(
             <div className="flex items-center py-4 justify-between">
                 <div className="flex items-center gap-3 justify-between">
-                    <Search/>
+                    <Search queryDate={queryDate}/>
                     <Input
                         placeholder="Filter balances"
                         value={(table.getColumn("holdingName")?.getFilterValue() as string) ?? ""}
