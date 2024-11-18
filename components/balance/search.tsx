@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, getLastMonth } from "@/lib/utils";
 import { MonthPicker } from "../ui/month-picker";
 
 export default function Search(){
@@ -37,7 +37,7 @@ export default function Search(){
                     <MonthPicker 
                         onMonthSelect={handleDateSearch} 
                         selectedMonth={queryDate}
-                        maxDate={new Date()}
+                        maxDate={getLastMonth(new Date())}
                         minDate={new Date(minYear,1,1)} />
                 </PopoverContent>
             </Popover>

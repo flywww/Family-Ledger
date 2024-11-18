@@ -45,8 +45,6 @@ import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
 import { DialogClose } from "@radix-ui/react-dialog"
 
-
-
 export default function CreateHoldingForm({
     holdingDBIsUpdated,
     setHoldingDBIsUpdated,

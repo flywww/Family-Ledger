@@ -16,19 +16,44 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/balance/search";
-import { fetchSetting } from "@/lib/actions";
-import { FlattedBalanceType } from "@/lib/definitions";
+import { createMonthBalances, fetchMonthlyBalance, fetchSetting } from "@/lib/actions";
+import { Balance, FlattedBalanceType, Setting, SettingSchema } from "@/lib/definitions";
 import Link from "next/link"
+import { useEffect, useState } from "react";
+import { parse } from "path";
+import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
+import { date } from "zod";
+import { isEqual } from "date-fns";
 
+export default function BalanceTableToolbar({ 
+    table, 
+    queryDate 
+}:{
+    table: Table<FlattedBalanceType>,
+    queryDate: Date
+}){
+    const [setting, setSetting] = useState<Setting>();
+    const lastMonth = getLastMonth(new Date());
+    const [isOutdated, setIsOutdated] = useState<boolean>(false);
 
-export default function BalanceTableToolbar(
-    { 
-        table, 
-        queryDate 
-    }:{
-        table: Table<FlattedBalanceType>, //TODO: find table type
-        queryDate: Date
-    }){
+    useEffect(() => {
+        console.log(`getting settings`);
+        
+        const getSettingData = async () => {
+            const data: Setting | undefined = await fetchSetting(3);
+            console.log(`get setting data: ${data}`);
+            
+            if(data){
+                setSetting(data);
+                console.log(`accountingDate: ${data.accountingDate}`);
+                console.log(`lastMonth: ${lastMonth}`);
+                console.log(`compare: ${data.accountingDate < lastMonth}`);
+                
+                setIsOutdated(data.accountingDate < lastMonth)
+            }
+        };
+        getSettingData();
+    }, [])
 
     return(
             <div className="flex items-center py-4 justify-between">
@@ -53,9 +78,18 @@ export default function BalanceTableToolbar(
                             <DropdownMenuItem>
                                 <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            {isOutdated && <DropdownMenuItem onClick={
+                                async () => {
+                                    if(setting){
+                                        const balances = await fetchMonthlyBalance(setting.accountingDate);
+                                        if(balances){
+                                            await createMonthBalances( getCalculatedMonth(setting.accountingDate, 1), balances)
+                                        }
+                                    }
+                                }
+                            }>
                                 New month balance
-                            </DropdownMenuItem>
+                            </DropdownMenuItem>}
                             <DropdownMenuSub>
                                 <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
                                 <DropdownMenuPortal>
@@ -75,8 +109,7 @@ export default function BalanceTableToolbar(
                                                 >
                                                     {column.id}
                                                 </DropdownMenuCheckboxItem>
-                                            )
-                                    })}
+                                    )})}
                                     </DropdownMenuSubContent>
                                 </DropdownMenuPortal>
                             </DropdownMenuSub>

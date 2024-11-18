@@ -20,7 +20,6 @@ import {
     SettingSchema,
     Setting,
 } from "./definitions";
-import { log } from "console";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -76,18 +75,18 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
             orderBy:{ id: 'asc' }
         })
 
-        const Balances = data.map( (balance) => {
+        const balances = data.map( (balance) => {
             const parsed = BalanceSchema.safeParse( balance )
             if(!parsed.success){
                 console.error("Invalid balance record:", parsed.error);
-                return null;
+                throw new Error('Failed to fetch monthly balance.');
             }
             return parsed.data;
         })
-        return Balances;
+        return balances;
     } catch (error) {
         console.error("Failed to fetch balance data:", error);
-        return [];
+        throw new Error('Failed to fetch monthly balance.');
     }
 }
 
@@ -105,14 +104,49 @@ export async function createBalance( balance: BalanceCreateType ){
     redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
+function delay(ms: number){
+    return new Promise( resolve => setTimeout(resolve, ms));
+}
+
 export async function createMonthBalances( date: Date , balances: Balance[] ){
+    let updatedBalance: BalanceCreateType[] = [];
+    //TODO: quantity is decimal number
+    
     try {
+        for(const balance of balances){
+            let newPrice = balance.price;
+            let newCurrency = balance.currency;
+            const { holding, user, id, updatedAt, createdAt, ...balanceData } = balance;
+
+            if(holding?.sourceId){
+                console.log(`Fetching price for holding: ${holding.name}(${holding.symbol}) (sourceId: ${holding.sourceId})`);
+                if(holding.category?.name === 'Cryptocurrency'){
+                    newPrice = await fetchCryptoPriceFromAPI(holding.sourceId);
+                    newCurrency = 'USD'
+                }else if(holding.category?.name === 'Listed stock'){
+                    newPrice = await fetchListedStockPriceFromAPI(holding.sourceId);
+                    newCurrency = 'USD'
+                }
+            }
+            updatedBalance.push({
+                ...balanceData,
+                date: date,
+                price: newPrice, //TODO: USD:TWD exchange rate
+                value: newPrice * balance.quantity,
+                currency: newCurrency,
+            })
+
+            await delay(2100);
+        }
+
         await prisma.balance.createMany({
-            data: balances,
+            data: updatedBalance,
         })
+        //TODO: update setting accounting Date
     } catch (error) {
-        console.error('Fail to create the balances', error);
+        
     }
+
     revalidatePath(`/balance/?date=${date.toUTCString()}`);
     redirect(`/balance/?date=${date.toUTCString()}`);
 }
@@ -443,21 +477,21 @@ export async function fetchTypes(){
 }
 
 //Setting
-export async function fetchSetting( id: number ){
+export async function fetchSetting( userId: number ){
     try {
         const data = await prisma.setting.findFirst({
             where: {
-                id: id
+                userId: userId
             }
         })
         const parsed = SettingSchema.safeParse(data);
         if(!parsed.success){
-            return {}
+            return undefined
         }
         return parsed.data
 
     } catch (error) {
-        console.log(`Failed to fetch setting with id:${id}, error: ${error}`);
-        return {}
+        console.log(`Failed to fetch setting with id:${userId}, error: ${error}`);
+        return undefined
     }
 }

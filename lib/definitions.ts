@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export type currencyType = 'TWD' | 'USD';
+export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'unlisted stock';
+export type typeListType = 'Assets' | 'Liabilities'
 
 export const UserSchema = z.object({
     id: z.number(),
