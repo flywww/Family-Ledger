@@ -15,7 +15,7 @@ export default async function Page({
 
     //TODO: fetch with user id
     const balanceData = await fetchMonthlyBalance(queryDate);
-    const flattedBalanceData = balanceData.map( (balance) => ({
+    const flattedBalanceData = balanceData?.map( (balance) => ({
         ...balance,
         holdingName: balance?.holding?.name,
         holdingSymbol: balance?.holding?.symbol,
@@ -25,10 +25,10 @@ export default async function Page({
 
     return (
       <div>
-        <BalanceTable 
+        {flattedBalanceData && <BalanceTable 
           date={ queryDate } 
-          data={flattedBalanceData}
-        />
+          data={ flattedBalanceData }
+        />}
       </div>
     )
   }

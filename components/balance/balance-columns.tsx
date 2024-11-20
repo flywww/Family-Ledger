@@ -36,7 +36,7 @@ const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
 }
 
 const numberCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
-    const recordNumber = parseInt(row.getValue(key))
+    const recordNumber = parseFloat(row.getValue(key))
     return <div className="text-right font-medium">{recordNumber}</div>
 }
 

@@ -19,9 +19,14 @@ import {
     HoldingSchema,
     SettingSchema,
     Setting,
+    SettingUpdateType,
+    BalanceCreateSchema,
+    currencyType,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { delay, convertCurrency } from "./utils";
+import { CurveType } from "recharts/types/shape/Curve";
 
 
 export async function fetchBalance( id: number ){
@@ -47,12 +52,12 @@ export async function fetchBalance( id: number ){
         const parsed = BalanceSchema.safeParse( data )
         if(!parsed.success){
             console.error("Invalid balance record:", parsed.error);
-            throw new Error('Failed to parse fetched balance. ');
+            throw new Error('Failed to parse fetched balance.');
         }
         return parsed.data;
 
     } catch (error) {
-        throw new Error('Failed to fetch balance.');
+        console.log(`Fail to fetch balance, error: ${error}`);
     }
 }
 
@@ -86,38 +91,115 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
         return balances;
     } catch (error) {
         console.error("Failed to fetch balance data:", error);
-        throw new Error('Failed to fetch monthly balance.');
     }
 }
 
+export async function fetchSumOfAssets( month: Date , excludedCategoryName: string[], convertTo: currencyType){
+    try {
+        const balances = await prisma.balance.findMany({
+            where: {
+                date: month,
+                holding: {
+                    type: {
+                        name: 'Assets'
+                    },
+                    category:{
+                        name: {
+                            notIn: excludedCategoryName,
+                        }
+                    }
+                }
+            },
+            select:{
+                value: true,
+                currency: true,
+            }
+        })
+        let value = 0;
+        if (balances) {
+            value = balances.reduce((total, balance) => {
+                const convertedValue = convertCurrency(balance.currency as currencyType, convertTo, balance.value, month);
+                return total + convertedValue;
+            }, 0)
+        }
+
+        return value;
+    } catch (error) {
+        console.error("Failed to calculate value sum by date", error);
+    }
+}
+
+export async function fetchSumOfLiabilities( month: Date , excludedCategoryName: string[], convertTo: currencyType){
+    try {
+        const balances = await prisma.balance.findMany({
+            where: {
+                date: month,
+                holding: {
+                    type: {
+                        name: 'Liabilities'
+                    },
+                    category:{
+                        name: {
+                            notIn: excludedCategoryName,
+                        }
+                    }
+                }
+            },
+            select:{
+                value: true,
+                currency: true,
+            }
+        })
+        let value = 0;
+        if (balances) {
+            value = balances.reduce((total, balance) => {
+                const convertedValue = convertCurrency(balance.currency as currencyType, convertTo, balance.value, month);
+                return total + convertedValue;
+            }, 0)
+        }
+        return value;
+    } catch (error) {
+        console.error("Failed to calculate sum of liability by date", error);
+    }
+}
+
+export async function fetchHistoricalValue( excludedCategoryName: string[], convertTo: currencyType){
+    
+}
+
+//TODO: error handling sample
 export async function createBalance( balance: BalanceCreateType ){
     try {
-
+        const parsed = BalanceCreateSchema.safeParse(balance);
+        if(!parsed.success){
+            return {
+                errors: parsed.error.flatten().fieldErrors,
+                message: 'Missing Fields. Failed to Create balance.',
+            };
+        }
         //TODO: update if it has have same holding in current month
         const data = await prisma.balance.create({
-            data: balance   
+            data: parsed.data   
         })
     } catch (error) {
         console.error('Fail to create the balance', error);
+        return {
+            message: 'Database Error: Failed to Create balance.',
+        };
     }
     revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
     redirect(`/balance/?date=${balance.date.toUTCString()}`);
 }
 
-function delay(ms: number){
-    return new Promise( resolve => setTimeout(resolve, ms));
-}
-
 export async function createMonthBalances( date: Date , balances: Balance[] ){
     let updatedBalance: BalanceCreateType[] = [];
-    //TODO: quantity is decimal number
     
     try {
         for(const balance of balances){
             let newPrice = balance.price;
             let newCurrency = balance.currency;
             const { holding, user, id, updatedAt, createdAt, ...balanceData } = balance;
-
+            //TODO: error handling when fetch price failed
             if(holding?.sourceId){
                 console.log(`Fetching price for holding: ${holding.name}(${holding.symbol}) (sourceId: ${holding.sourceId})`);
                 if(holding.category?.name === 'Cryptocurrency'){
@@ -131,7 +213,7 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
             updatedBalance.push({
                 ...balanceData,
                 date: date,
-                price: newPrice, //TODO: USD:TWD exchange rate
+                price: newPrice,
                 value: newPrice * balance.quantity,
                 currency: newCurrency,
             })
@@ -142,9 +224,11 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
         await prisma.balance.createMany({
             data: updatedBalance,
         })
-        //TODO: update setting accounting Date
+        //TODO: create singleton for setting and user
+        await updateSetting(3, { id:2, accountingDate:date })
+    
     } catch (error) {
-        
+        throw new Error('Failed to create monthly balances.');
     }
 
     revalidatePath(`/balance/?date=${date.toUTCString()}`);
@@ -161,7 +245,7 @@ export async function deleteBalance( id: number, balance: Balance ){
         revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
     } catch (error) {
         console.error('Fail to delete balance', error);
-        
+        throw new Error('Failed to delete balance.');
     }
 }
 
@@ -242,12 +326,11 @@ export async function fetchHoldings(){
         const parsed = HoldingArraySchema.safeParse(data);
         if(!parsed.success){
             console.error("Invalid holding data", parsed.error)
-            return [];
+            throw new Error(`Invalid holding data: ${parsed.data}, error: ${parsed.error}`);
         }
         return parsed.data;
     } catch (error) {
         console.error('Fail to fetch Holdings', error);
-        return [];
     }
 }
 
@@ -440,8 +523,7 @@ export async function fetchCategories(){
         const categoryList = data.map( (category) => {
             const parsed = CategorySchema.safeParse( category )
             if(!parsed.success){
-                console.error("Invalid category data", parsed.error)
-                return null;
+                throw new Error(`Invalid category data: ${parsed.error}`);
             }
             return parsed.data;
         }).filter( (category): category is Category => category !== null )
@@ -449,7 +531,6 @@ export async function fetchCategories(){
 
     } catch (error) {
         console.error("Failed to fetch categories", error)
-        return [];
     }
 }
 
@@ -464,15 +545,13 @@ export async function fetchTypes(){
         const typeList = data.map( (type) => {
             const parsed = TypeSchema.safeParse(type)
             if(!parsed.success){
-                console.error("Invalid type data", parsed.error);
-                return null;
+                throw new Error('Failed to parse fetched type.');
             }
             return parsed.data;
         }).filter( (type): type is Type => type !== null)
         return typeList;
     } catch (error) {
         console.log('Failed to fetch types', error);
-        return [];
     }
 }
 
@@ -486,12 +565,24 @@ export async function fetchSetting( userId: number ){
         })
         const parsed = SettingSchema.safeParse(data);
         if(!parsed.success){
-            return undefined
+            throw new Error('Failed to parse fetched setting.');
         }
         return parsed.data
 
     } catch (error) {
         console.log(`Failed to fetch setting with id:${userId}, error: ${error}`);
-        return undefined
+    }
+}
+
+export async function updateSetting( userId: number, setting: SettingUpdateType ){
+    try {
+        await prisma.setting.update({
+            where: {
+                userId: userId
+            },
+            data: setting
+        })
+    } catch (error) {
+        console.error(`Fail to update setting with userId:${userId} and setting:${setting}, error:${error}`)
     }
 }

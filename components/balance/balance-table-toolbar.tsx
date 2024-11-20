@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
-import Search from "@/components/balance/search";
+import Search from "@/components/search";
 import { createMonthBalances, fetchMonthlyBalance, fetchSetting } from "@/lib/actions";
 import { Balance, FlattedBalanceType, Setting, SettingSchema } from "@/lib/definitions";
 import Link from "next/link"
@@ -74,46 +74,46 @@ export default function BalanceTableToolbar({
                             Menu <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                                <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
-                            </DropdownMenuItem>
-                            {isOutdated && <DropdownMenuItem onClick={
-                                async () => {
-                                    if(setting){
-                                        const balances = await fetchMonthlyBalance(setting.accountingDate);
-                                        if(balances){
-                                            await createMonthBalances( getCalculatedMonth(setting.accountingDate, 1), balances)
-                                        }
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                            <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
+                        </DropdownMenuItem>
+                        {isOutdated && <DropdownMenuItem onClick={
+                            async () => {
+                                if(setting){
+                                    const balances = await fetchMonthlyBalance(setting.accountingDate);
+                                    if(balances){
+                                        await createMonthBalances( getCalculatedMonth(setting.accountingDate, 1), balances)
                                     }
                                 }
-                            }>
-                                New month balance
-                            </DropdownMenuItem>}
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                    {table
-                                        .getAllColumns()
-                                        .filter((column) => column.getCanHide())
-                                        .map((column) => {
-                                            return(
-                                                <DropdownMenuCheckboxItem
-                                                    key={column.id}
-                                                    className="capitalize"
-                                                    checked={column.getIsVisible()}
-                                                    onCheckedChange={(value) => {
-                                                        column.toggleVisibility(!!value)
-                                                    }}
-                                                >
-                                                    {column.id}
-                                                </DropdownMenuCheckboxItem>
-                                    )})}
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-                        </DropdownMenuContent>
+                            }
+                        }>
+                            New month balance
+                        </DropdownMenuItem>}
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                {table
+                                    .getAllColumns()
+                                    .filter((column) => column.getCanHide())
+                                    .map((column) => {
+                                        return(
+                                            <DropdownMenuCheckboxItem
+                                                key={column.id}
+                                                className="capitalize"
+                                                checked={column.getIsVisible()}
+                                                onCheckedChange={(value) => {
+                                                    column.toggleVisibility(!!value)
+                                                }}
+                                            >
+                                                {column.id}
+                                            </DropdownMenuCheckboxItem>
+                                )})}
+                                </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenuSub>
+                    </DropdownMenuContent>
                 </DropdownMenu>
             </div>
     )

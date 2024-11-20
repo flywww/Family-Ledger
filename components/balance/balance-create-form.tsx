@@ -93,17 +93,16 @@ export default function CreateBalanceForm({
     const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');
     const quantity = form.watch('quantity');
-    //TODO: if it's float?
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
     useEffect(() => {
         const getCategories = async () => {
             const categoryData = await fetchCategories();
-            setCategoryList(categoryData);       
+            categoryData && setCategoryList(categoryData);       
         }
         const getTypes = async () => {
             const typeData = await fetchTypes();
-            setTypeList(typeData);
+            typeData && setTypeList(typeData);
         }
         getCategories();
         getTypes();

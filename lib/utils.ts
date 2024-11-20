@@ -22,6 +22,12 @@ export const getCalculatedMonth = (date: Date, addMonth: number) => {
   calculatedDate.setMonth(calculatedDate.getMonth() + addMonth )
   return firstDateOfMonth(calculatedDate);
 }
+
+//Timer
+export function delay(ms: number){
+  return new Promise( resolve => setTimeout(resolve, ms));
+}
+
 //Currency
 const exchangeRate = new Map([
   ['TWD', 32],
