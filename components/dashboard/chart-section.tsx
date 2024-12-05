@@ -26,6 +26,8 @@ export default function ChartSection({
                             }
                             dateEntry[data.category.name] = data.value;
                             dateEntry['Total'] = (Number(dateEntry['Total']) || 0) + data.value;  
+                            
+                            
                             return dataSet;
                         }, [] as Array<Record<string, string | number>>)
                         .sort((a,b) => {
@@ -45,14 +47,16 @@ export default function ChartSection({
             category: data.category.name, 
             value: data.value, 
             fill:`var(--color-${cssSafeCategory})`,
-            labelKey: cssSafeCategory,
+            labelSafeKey: cssSafeCategory,
         }
         dataSet.push(dataEntry)
         return dataSet;
     }, [] as Array<Record<string, string | number>>)
+    
 
     return(
         <div className="">
+            
             {assetsLineChartData && <DashboardLineChart
                 title = "Assets"
                 labels = {assetsLineChartLabels}
@@ -65,7 +69,7 @@ export default function ChartSection({
                 title = "Assets ratio" 
                 labels={assetsPieChartLabels}
                 data={assetsPieChartData}
-                labelKey="labelKey"
+                labelKey="labelSafeKey"
                 valueKey="value"
             />}
         </div>

@@ -5,11 +5,6 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
-    DropdownMenuSubTrigger,
-    DropdownMenuPortal,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { ChevronDownIcon } from "lucide-react";
@@ -18,30 +13,21 @@ import { useEffect, useState } from "react";
 import { fetchCategories } from "@/lib/actions";
 import { Category } from "@/lib/definitions";
 
-export default function CategorySelector (){
+export default function CategorySelector ({
+    categories,
+    queryCategories
+}:{
+    categories: Category[],
+    queryCategories: Category[]
+}){
 
-    const [categoryList, setCategoryList] = useState<Category[]>([]);
-    const [selectedCategories, setSelectedCategories] = useState<Category[]>([]) 
+    const [categoryList, setCategoryList] = useState<Category[]>(categories);
+    const [selectedCategories, setSelectedCategories] = useState<Category[]>(queryCategories) 
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
 
-    useEffect(() => {
-        const getCategoryList = async () => {
-            const categoryData = await fetchCategories();
-            if(categoryData){
-                setCategoryList(categoryData)
 
-                const categoriesString = searchParams.get('categories');
-                if(categoriesString){
-                    const categoryNames = categoriesString.split(",");
-                    const initialSelectedCategories = categoryData.filter( category => categoryNames.some( name => name === category.name) )                    
-                    setSelectedCategories(initialSelectedCategories);
-                }
-            }
-        }
-        getCategoryList();
-    } ,[])
 
     //TODO: remove after finish the code
     useEffect(() => {
@@ -70,7 +56,7 @@ export default function CategorySelector (){
                                 checked={selectedCategories.some( selectedCategory => selectedCategory.id === category.id) }
                                 onCheckedChange={ checked => {
                                         checked && setSelectedCategories([...selectedCategories, category])
-                                        !checked && setSelectedCategories(selectedCategories.filter( selectedCategory => selectedCategory.id !== category.id ))
+                                        !checked && selectedCategories.length > 1 && setSelectedCategories(selectedCategories.filter( selectedCategory => selectedCategory.id !== category.id ))
                                 }}  
                             >
                                 {category.name}
