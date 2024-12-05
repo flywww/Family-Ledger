@@ -105,11 +105,11 @@ export default function EditBalanceForm({
     useEffect(() => {
         const getCategories = async () => {
             const categoryData = await fetchCategories();
-            setCategoryList(categoryData);       
+            categoryData && setCategoryList(categoryData);       
         }
         const getTypes = async () => {
             const typeData = await fetchTypes();
-            setTypeList(typeData);
+            typeData && setTypeList(typeData);
         }
         getCategories();
         getTypes();
@@ -124,7 +124,7 @@ export default function EditBalanceForm({
                 }else{
                     holdingData = await fetchHoldings();
                 }
-                setHoldingList(holdingData);
+                holdingData && setHoldingList(holdingData);
                 setHoldingDBIsUpdated(false)
             }
             getHoldings();

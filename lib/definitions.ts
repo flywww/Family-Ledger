@@ -155,3 +155,34 @@ export type Balance = z.infer<typeof BalanceSchema>
 export type BalanceCreateType = z.infer<typeof BalanceCreateSchema>
 export type BalanceUpdateType = z.infer<typeof BalanceUpdateSchema>
 export type FlattedBalanceType = z.infer<typeof FlattedBalanceSchema>
+
+
+export const ValueDataSchema = z.object({
+    id: z.number(),
+    key: z.string().optional(),
+    date: z.date(),
+    category: CategorySchema,
+    categoryId: z.number(),
+    type: TypeSchema,
+    typeId: z.number(),
+    value: z.number(),
+    userId: z.number(),
+    user: UserSchema.optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+export const ValueDataCreateSchema = ValueDataSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    category: true,
+    type: true,
+    user: true,
+})
+export const ValueDataUpdateSchema = ValueDataCreateSchema.partial().extend({ 
+    id: z.number() 
+})
+
+export type ValueData = z.infer<typeof ValueDataSchema>
+export type ValueDataCreateType = z.infer<typeof ValueDataCreateSchema>
+export type ValueDataUpdateType = z.infer<typeof ValueDataUpdateSchema>

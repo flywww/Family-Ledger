@@ -22,6 +22,11 @@ import {
     SettingUpdateType,
     BalanceCreateSchema,
     currencyType,
+    FlattedBalanceType,
+    ValueDataCreateSchema,
+    ValueDataCreateType,
+    ValueDataUpdateSchema,
+    ValueDataSchema,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -163,8 +168,116 @@ export async function fetchSumOfLiabilities( month: Date , excludedCategoryName:
     }
 }
 
-export async function fetchHistoricalValue( excludedCategoryName: string[], convertTo: currencyType){
+function convertToValueData( balances: Balance[]){
+    let valueData: Record<string, any> = {};
+
+    balances.forEach(balance => {
+
+        if(balance.holding?.category && balance.holding.type){
+            const { date, holding: { category, type }, value, userId, currency } = balance;
+            const key = `${date}-${category.name}-${type.name}-${userId}`;
     
+            if (!valueData[key]) {
+                valueData[key] = {
+                    date: date,
+                    category: category,
+                    type: type,
+                    value: 0,
+                    userId: userId,
+                    categoryId: category.id,
+                    typeId: type.id,
+                };
+            }
+            valueData[key].value += currency === 'USD' ? value : convertCurrency(currency, 'USD', value, date);
+        }
+    });
+
+    const valueDataArray = Object.values(valueData);
+    return valueDataArray;
+}
+
+export async function createValueData (balances:Balance[]){
+    try {
+        const valueDataArray = convertToValueData(balances);
+        const parsed = ValueDataCreateSchema.array().safeParse(valueDataArray);
+        if(!parsed.success){
+            throw new Error('Failed to parse valueData.');
+        }
+        await prisma.valueData.createMany({data: parsed.data})
+        
+
+    } catch (error) {
+        console.log(`Fail to create valueData: ${error}`)
+    }
+}   
+
+export async function updateValueData( balance: Balance ){
+    try {
+
+        //TODO: What if the balance is deleted and it's the only one?
+        const balances = await prisma.balance.findMany({
+            where:{
+                date: balance.date,
+                holding:{
+                    categoryId: balance.holding?.categoryId,
+                    typeId: balance.holding?.typeId,
+                },
+                userId: balance.userId,
+            },
+        })
+        const parsedBalances = BalanceSchema.array().safeParse(balances)
+        if(!parsedBalances.success){
+            throw new Error('Failed to parse balances.');
+        }
+        const valueDataArray = convertToValueData(parsedBalances.data);
+        const parsedValueData = ValueDataCreateSchema.array().safeParse(valueDataArray);
+        if(!parsedValueData.success){
+            throw new Error('Failed to parse valueData.');
+        }      
+        console.log(`parsed valueData: ${JSON.stringify(parsedValueData.data)}`);
+        
+        await prisma.valueData.update({
+            where:{
+                date: balance.date,
+                categoryId: balance.holding?.categoryId,
+                typeId: balance.holding?.typeId,
+                userId: balance.userId,
+            },
+                data: parsedValueData.data[0],
+        })
+
+
+    } catch (error) {
+        console.log(`Fail to update valueData: ${error}`)
+    }
+}
+
+//TODO: deleteValueData
+export async function deleteValueData(  ){
+
+}
+
+
+export async function fetchValueData(){
+    //TODO: should fetch with user id
+    try {
+        const data = await prisma.valueData.findMany({
+            where:{
+                userId: 3,
+            },
+            include:{
+                category: true,
+                type: true,
+            }
+        })
+        const parsed = ValueDataSchema.array().safeParse(data);
+        if(!parsed.success){
+            throw new Error(`Fail to parse valueData array: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`)
+        }
+        return parsed.data
+    } catch (error) {
+        console.log(`Fail to fetch valueData: ${error}`);
+    }
 }
 
 //TODO: error handling sample
@@ -174,13 +287,21 @@ export async function createBalance( balance: BalanceCreateType ){
         if(!parsed.success){
             return {
                 errors: parsed.error.flatten().fieldErrors,
-                message: 'Missing Fields. Failed to Create balance.',
+                message: `Missing Fields. Failed to Create balance: ${parsed.error}`,
             };
         }
         //TODO: update if it has have same holding in current month
-        const data = await prisma.balance.create({
+        const result = await prisma.balance.create({
             data: parsed.data   
         })
+        const parsedBalance = BalanceSchema.safeParse(result);
+        if(!parsedBalance.success){
+            console.log(`Fail to parse balance for valueData: ${parsedBalance.error}`);
+        }else{
+            updateValueData(parsedBalance.data);
+        }
+            
+
     } catch (error) {
         console.error('Fail to create the balance', error);
         return {
@@ -221,9 +342,17 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
             await delay(2100);
         }
 
-        await prisma.balance.createMany({
+        const createdBalances = await prisma.balance.createMany({
             data: updatedBalance,
         })
+
+        const parsedBalances = BalanceSchema.array().safeParse(createdBalances);
+        if(!parsedBalances.success){
+            console.log(`Fail to parse balance for valueData: ${parsedBalances.error}`);
+        }else{
+            await createValueData(parsedBalances.data)
+        }
+        
         //TODO: create singleton for setting and user
         await updateSetting(3, { id:2, accountingDate:date })
     
@@ -242,6 +371,9 @@ export async function deleteBalance( id: number, balance: Balance ){
                 id: id
             }
         })
+        //TODO: What if the balance is deleted and it's the only one?
+        updateValueData(balance);
+        
         revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
     } catch (error) {
         console.error('Fail to delete balance', error);
@@ -252,13 +384,18 @@ export async function deleteBalance( id: number, balance: Balance ){
 export async function updateBalance( id: number, balance: BalanceUpdateType, backDate: Date ){
     try {
         console.log(`updating balance with id(${id}) and  data: ${JSON.stringify(balance)} `);
-        
+
         const data = await prisma.balance.update({
             where:{
                 id: id
             },
             data: balance
         })
+        if(balance.value){
+            const balanceData = await fetchBalance(balance.id);
+            balanceData && updateValueData(balanceData);
+        }
+
     } catch (error) {
         console.error('Fail to update balance', error)
     }

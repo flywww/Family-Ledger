@@ -3,20 +3,26 @@ import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
+import { fetchValueData } from "@/lib/actions";
 
 export default async function Page({
   searchParams
 }:{
   searchParams?: {
     date?: string
-    excludedCategory?: string
+    categories?: string
   }
 }) {
   //TODO: remember selected category
-  //TODO: get currency from setting
+  //TODO: get currency from setting, and display different currency
     const displayCurrency = 'USD'
     const queryDate = searchParams?.date ? new Date(searchParams.date) : getCalculatedMonth(new Date(), -1)
-    const excludedCategory = searchParams?.excludedCategory ? searchParams.excludedCategory.split(',') : []    
+    const categories = searchParams?.categories ? searchParams.categories.split(',') : []    
+    const valueDataArray = await fetchValueData();
+    const filteredValueData = valueDataArray ? valueDataArray.filter(valueData => categories.includes(valueData.category.name)) : [];
+
+    console.log(`filteredValueData: ${JSON.stringify(filteredValueData)}`);
+    
 
     return (
       <div className="flex flex-col gap-3 justify-start">
@@ -26,10 +32,13 @@ export default async function Page({
         </div>
         <SummarySection 
           queryDate={queryDate} 
-          excludedCategory={excludedCategory}
+          categories={categories}
+          valueData={filteredValueData}
         />
         <ChartSection
-          excludedCategory={excludedCategory}
+          queryDate={queryDate} 
+          categories={categories}
+          valueData={filteredValueData}
         />
       </div>
     );

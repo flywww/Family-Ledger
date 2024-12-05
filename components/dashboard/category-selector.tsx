@@ -32,13 +32,11 @@ export default function CategorySelector (){
             if(categoryData){
                 setCategoryList(categoryData)
 
-                const excludedCategoryString = searchParams.get('excludedCategory');
-                if(excludedCategoryString){
-                    const excludedCategoryNames = excludedCategoryString.split(",");
-                    const initialSelectedCategories = categoryData.filter( category => {
-                        excludedCategoryNames.includes(category.name);
-                    })
-                    setCategoryList(initialSelectedCategories);
+                const categoriesString = searchParams.get('categories');
+                if(categoriesString){
+                    const categoryNames = categoriesString.split(",");
+                    const initialSelectedCategories = categoryData.filter( category => categoryNames.some( name => name === category.name) )                    
+                    setSelectedCategories(initialSelectedCategories);
                 }
             }
         }
@@ -48,8 +46,8 @@ export default function CategorySelector (){
     //TODO: remove after finish the code
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
-        const excludedCategoryNames = selectedCategories.map(category => category.name).toString();
-        params.set('excludedCategory', excludedCategoryNames);
+        const categoryNames = selectedCategories.map(category => category.name).toString();
+        params.set('categories', categoryNames);
         replace(`${pathname}?${params.toString()}`); 
         console.log(`effect watch: ${JSON.stringify(selectedCategories)}`);
         
@@ -69,10 +67,10 @@ export default function CategorySelector (){
                             <DropdownMenuCheckboxItem
                                 key={category.id}
                                 className="capitalize"
-                                checked={!selectedCategories.some( selectedCategory => selectedCategory.id === category.id) }
+                                checked={selectedCategories.some( selectedCategory => selectedCategory.id === category.id) }
                                 onCheckedChange={ checked => {
-                                        checked && setSelectedCategories(selectedCategories.filter( selectedCategory => selectedCategory.id !== category.id ))
-                                        !checked && setSelectedCategories([...selectedCategories, category])
+                                        checked && setSelectedCategories([...selectedCategories, category])
+                                        !checked && setSelectedCategories(selectedCategories.filter( selectedCategory => selectedCategory.id !== category.id ))
                                 }}  
                             >
                                 {category.name}

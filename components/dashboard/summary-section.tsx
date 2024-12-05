@@ -1,20 +1,41 @@
 import SummaryCard from "./summary-card";
 import { fetchSumOfAssets, fetchSumOfLiabilities } from "@/lib/actions";
+import { ValueData } from "@/lib/definitions";
 import { getCalculatedMonth } from "@/lib/utils";
 export default async function SummarySection({
     queryDate,
-    excludedCategory,
+    categories,
+    valueData,
 }:{
     queryDate: Date,
-    excludedCategory: string[]
+    categories: string[],
+    valueData: ValueData[] | undefined,
 }){
     //TODO: get currency from setting
     const displayCurrency = 'USD'
-    const sumOfLiabilities = await fetchSumOfLiabilities(queryDate, excludedCategory, displayCurrency) || 0;
-    const sumOfAssets =  await fetchSumOfAssets(queryDate, excludedCategory, displayCurrency) || 0;
+    // console.log(`value data: ${valueData}`)
+    
+    const monthValueData =  valueData 
+                            ? valueData
+                                .filter(valueData => valueData.date.getTime() === queryDate.getTime())
+                            : []
+    const lastMonthValueData =  valueData 
+                            ? valueData
+                                .filter(valueData => valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime())
+                            : []
+    const sumOfLiabilities = monthValueData
+                                .filter(valueData => valueData.type.name === 'Liabilities')
+                                .reduce((total, valueData) => total + valueData.value, 0)
+    const sumOfAssets =  monthValueData
+                            .filter(valueData => valueData.type.name === 'Assets')
+                            .reduce((total, valueData) => total + valueData.value, 0)
     const netValue = sumOfAssets - sumOfLiabilities;
-    const lastMonthSumOfLiabilities = await fetchSumOfLiabilities(getCalculatedMonth(queryDate, -1), excludedCategory, displayCurrency) || 0;
-    const lastMonthSumOfAssets =  await fetchSumOfAssets(getCalculatedMonth(queryDate, -1), excludedCategory, displayCurrency) || 0;
+    const lastMonthSumOfLiabilities = lastMonthValueData
+                                        .filter(valueData => valueData.type.name === 'Liabilities')
+                                        .reduce((total, valueData) => total + valueData.value, 0)
+    const lastMonthSumOfAssets =  lastMonthValueData
+                                    .filter(valueData => valueData.type.name === 'Assets')
+                                    .reduce((total, valueData) => total + valueData.value, 0)
     const lastMonthNetValue = lastMonthSumOfAssets - lastMonthSumOfLiabilities;
 
     return(

@@ -117,7 +117,7 @@ export default function CreateBalanceForm({
                 }else{
                     holdingData = await fetchHoldings();
                 }
-                setHoldingList(holdingData);
+                holdingData && setHoldingList(holdingData);
                 setHoldingDBIsUpdated(false)
             }
             getHoldings();
