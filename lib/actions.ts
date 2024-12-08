@@ -99,75 +99,6 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
     }
 }
 
-export async function fetchSumOfAssets( month: Date , excludedCategoryName: string[], convertTo: currencyType){
-    try {
-        const balances = await prisma.balance.findMany({
-            where: {
-                date: month,
-                holding: {
-                    type: {
-                        name: 'Assets'
-                    },
-                    category:{
-                        name: {
-                            notIn: excludedCategoryName,
-                        }
-                    }
-                }
-            },
-            select:{
-                value: true,
-                currency: true,
-            }
-        })
-        let value = 0;
-        if (balances) {
-            value = balances.reduce((total, balance) => {
-                const convertedValue = convertCurrency(balance.currency as currencyType, convertTo, balance.value, month);
-                return total + convertedValue;
-            }, 0)
-        }
-
-        return value;
-    } catch (error) {
-        console.error("Failed to calculate value sum by date", error);
-    }
-}
-
-export async function fetchSumOfLiabilities( month: Date , excludedCategoryName: string[], convertTo: currencyType){
-    try {
-        const balances = await prisma.balance.findMany({
-            where: {
-                date: month,
-                holding: {
-                    type: {
-                        name: 'Liabilities'
-                    },
-                    category:{
-                        name: {
-                            notIn: excludedCategoryName,
-                        }
-                    }
-                }
-            },
-            select:{
-                value: true,
-                currency: true,
-            }
-        })
-        let value = 0;
-        if (balances) {
-            value = balances.reduce((total, balance) => {
-                const convertedValue = convertCurrency(balance.currency as currencyType, convertTo, balance.value, month);
-                return total + convertedValue;
-            }, 0)
-        }
-        return value;
-    } catch (error) {
-        console.error("Failed to calculate sum of liability by date", error);
-    }
-}
-
 function convertToValueData( balances: Balance[]){
     let valueData: Record<string, any> = {};
 
@@ -213,37 +144,72 @@ export async function createValueData (balances:Balance[]){
 
 export async function updateValueData( balance: Balance ){
     try {
-
-        //TODO: What if the balance is deleted and it's the only one?
+        console.log(`[updating valueData]`);
+        
         const balances = await prisma.balance.findMany({
             where:{
                 date: balance.date,
                 holding:{
-                    categoryId: balance.holding?.categoryId,
-                    typeId: balance.holding?.typeId,
+                    categoryId: balance.holding.categoryId,
+                    typeId: balance.holding.typeId,
                 },
                 userId: balance.userId,
             },
+            include:{
+                holding:{
+                    include:{
+                        category: true,
+                        type:true,
+                    }
+                }
+            }
         })
+
+        console.log(`[updating valueData] get balances: ${balances}`);
+        
+        // Delete valueData if it can not find any balances
+        if(balances.length === 0){
+
+            console.log(`[updating valueData] balance.length = 0, delete valueData`);
+
+            await prisma.valueData.delete({
+                where:{
+                    date_categoryId_typeId_userId:{
+                        date: balance.date,
+                        categoryId: balance.holding.categoryId,
+                        typeId: balance.holding.typeId,
+                        userId: balance.userId,
+                    }
+                }
+            })
+            return;
+        }
         const parsedBalances = BalanceSchema.array().safeParse(balances)
         if(!parsedBalances.success){
             throw new Error('Failed to parse balances.');
         }
         const valueDataArray = convertToValueData(parsedBalances.data);
+
+        console.log(`[updating valueData] convert to valueData: ${valueDataArray}`);
+        
         const parsedValueData = ValueDataCreateSchema.array().safeParse(valueDataArray);
         if(!parsedValueData.success){
             throw new Error('Failed to parse valueData.');
         }      
-        console.log(`parsed valueData: ${JSON.stringify(parsedValueData.data)}`);
-        
-        await prisma.valueData.update({
+        console.log(`[updating valueData] parsed  to be updated valueData: ${JSON.stringify(parsedValueData.data)}`);
+
+
+        await prisma.valueData.upsert({
             where:{
-                date: balance.date,
-                categoryId: balance.holding?.categoryId,
-                typeId: balance.holding?.typeId,
-                userId: balance.userId,
+                date_categoryId_typeId_userId:{
+                    date: balance.date,
+                    categoryId: balance.holding.categoryId,
+                    typeId: balance.holding.typeId,
+                    userId: balance.userId,
+                }
             },
-                data: parsedValueData.data[0],
+            update: parsedValueData.data[0],
+            create: parsedValueData.data[0],
         })
 
 
@@ -290,9 +256,17 @@ export async function createBalance( balance: BalanceCreateType ){
                 message: `Missing Fields. Failed to Create balance: ${parsed.error}`,
             };
         }
-        //TODO: update if it has have same holding in current month
+        //TODO: update if it has same holding in current month
         const result = await prisma.balance.create({
-            data: parsed.data   
+            data: parsed.data,
+            include:{
+                holding:{
+                    include:{
+                        category: true,
+                        type:true,
+                    }
+                }
+            }   
         })
         const parsedBalance = BalanceSchema.safeParse(result);
         if(!parsedBalance.success){
@@ -313,7 +287,7 @@ export async function createBalance( balance: BalanceCreateType ){
 }
 
 export async function createMonthBalances( date: Date , balances: Balance[] ){
-    let updatedBalance: BalanceCreateType[] = [];
+    let updatedBalances: BalanceCreateType[] = [];
     
     try {
         for(const balance of balances){
@@ -331,7 +305,7 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
                     newCurrency = 'USD'
                 }
             }
-            updatedBalance.push({
+            updatedBalances.push({
                 ...balanceData,
                 date: date,
                 price: newPrice,
@@ -342,8 +316,16 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
             await delay(2100);
         }
 
-        const createdBalances = await prisma.balance.createMany({
-            data: updatedBalance,
+        const createdBalances = await prisma.balance.createManyAndReturn({
+            data: updatedBalances,
+            include:{
+                holding:{
+                    include:{
+                        category:true,
+                        type:true,
+                    }
+                }
+            }
         })
 
         const parsedBalances = BalanceSchema.array().safeParse(createdBalances);
@@ -371,9 +353,7 @@ export async function deleteBalance( id: number, balance: Balance ){
                 id: id
             }
         })
-        //TODO: What if the balance is deleted and it's the only one?
-        updateValueData(balance);
-        
+        updateValueData(balance);        
         revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
     } catch (error) {
         console.error('Fail to delete balance', error);
@@ -385,7 +365,7 @@ export async function updateBalance( id: number, balance: BalanceUpdateType, bac
     try {
         console.log(`updating balance with id(${id}) and  data: ${JSON.stringify(balance)} `);
 
-        const data = await prisma.balance.update({
+        const result = await prisma.balance.update({
             where:{
                 id: id
             },
@@ -417,6 +397,10 @@ export async function createHolding( holding: HoldingCreateType ){
             where:{
                 name: holding.name,
                 symbol: holding.symbol,
+            },
+            include:{
+                category: true,
+                type: true,
             }
         })
 
@@ -457,6 +441,10 @@ export async function fetchHoldings(){
         const data = await prisma.holding.findMany({
             orderBy:{
                 id:'asc'
+            }, 
+            include:{
+                category: true,
+                type: true,
             }
         })
         

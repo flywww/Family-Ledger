@@ -1,5 +1,4 @@
 import SummaryCard from "./summary-card";
-import { fetchSumOfAssets, fetchSumOfLiabilities } from "@/lib/actions";
 import { ValueData } from "@/lib/definitions";
 import { getCalculatedMonth } from "@/lib/utils";
 export default async function SummarySection({

@@ -4,7 +4,7 @@ import { delay } from "@/lib/utils";
 
 export async function POST(req: Request) {
     try {
-        const balanceArray = await prisma.balance.findMany({
+        const dateArray = await prisma.balance.findMany({
             where:{},
             distinct:['date'],
             select:{
@@ -12,11 +12,11 @@ export async function POST(req: Request) {
             }
         })
 
-        balanceArray.map(async ({date}) => {
+        dateArray.map(async ({date}) => {
             
             const monthlyBalance = await fetchMonthlyBalance(date);
             if(monthlyBalance){
-                await createValueData(date, monthlyBalance);
+                await createValueData(monthlyBalance);
                 delay(1000);
             }
             
