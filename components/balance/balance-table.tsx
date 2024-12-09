@@ -18,10 +18,10 @@ import { Table } from "@tanstack/react-table";
 import { useState } from "react";
 
 export default function BalanceTable({
-    date,
+    queryDate,
     data,
 }:{
-    date:Date,
+    queryDate:Date,
     data: FlattedBalanceType[]
 }){
 
@@ -47,7 +47,7 @@ export default function BalanceTable({
     return(
         <>
             <BalanceTableToolbar 
-                queryDate={date}
+                queryDate={queryDate}
                 table={table}
             />
             <DataTable 

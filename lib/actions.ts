@@ -34,6 +34,23 @@ import { delay, convertCurrency } from "./utils";
 import { CurveType } from "recharts/types/shape/Curve";
 
 
+export async function fetchLastDateOfBalance(){
+    try {
+        const lastDate = await prisma.balance.findMany({
+            take: 1,
+            select:{
+                date: true,
+            },
+            orderBy:{
+                date: 'desc'
+            }
+        })
+        return lastDate[0].date
+    } catch (error) {
+        console.log(`Fail to fetch last date of balance, error: ${error}`);
+    }
+}
+
 export async function fetchBalance( id: number ){
     try {
         const data = await prisma.balance.findFirst({
