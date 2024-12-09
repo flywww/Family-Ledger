@@ -10,9 +10,9 @@ export default async function Page({
     date?: string;
   }
 }) {
-
+    
     const queryDate = searchParams?.date ? new Date(searchParams.date) : getCalculatedMonth(new Date(), -1);
-
+    console.log(`[getCalculatedMonth] query date in balance page ${queryDate}`);
     //TODO: fetch with user id
     const balanceData = await fetchMonthlyBalance(queryDate);
     const flattedBalanceData = balanceData?.map( (balance) => ({

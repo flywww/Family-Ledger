@@ -22,6 +22,7 @@ export default async function SummarySection({
                             ? valueData
                                 .filter(valueData => valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime())
                             : []
+                            console.log(`[getCalculatedMonth] last month data in summary: ${getCalculatedMonth(queryDate, -1)}`);
     const sumOfLiabilities = monthValueData
                                 .filter(valueData => valueData.type.name === 'Liabilities')
                                 .reduce((total, valueData) => total + valueData.value, 0)
