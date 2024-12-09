@@ -19,7 +19,11 @@ export const getLastMonth = (date: Date) => {
 
 export const getCalculatedMonth = (date: Date, addMonth: number) => {
   const calculatedDate = new Date(date);
-  calculatedDate.setMonth(calculatedDate.getMonth() + addMonth )
+  const originalDate = calculatedDate.getDate();
+  calculatedDate.setMonth(calculatedDate.getMonth() + addMonth );
+  if(calculatedDate.getDate() !== originalDate){
+    calculatedDate.setDate(0);
+  }
   return calculatedDate;
 }
 
