@@ -83,7 +83,7 @@ export default function BalanceTableToolbar({
                                 if(setting){
                                     const balances = await fetchMonthlyBalance(setting.accountingDate);
                                     if(balances){
-                                        await createMonthBalances( getCalculatedMonth(setting.accountingDate, 1), balances)
+                                        await createMonthBalances( firstDateOfMonth(getCalculatedMonth(setting.accountingDate, 1)), balances)
                                     }
                                 }
                             }

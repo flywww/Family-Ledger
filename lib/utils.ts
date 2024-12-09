@@ -20,7 +20,7 @@ export const getLastMonth = (date: Date) => {
 export const getCalculatedMonth = (date: Date, addMonth: number) => {
   const calculatedDate = new Date(date);
   calculatedDate.setMonth(calculatedDate.getMonth() + addMonth )
-  return firstDateOfMonth(calculatedDate);
+  return calculatedDate;
 }
 
 //Timer
