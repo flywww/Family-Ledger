@@ -5,11 +5,11 @@ export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unl
 export type typeListType = 'Assets' | 'Liabilities'
 
 export const UserSchema = z.object({
-    id: z.number(),
-    account: z.string(),
+    id: z.number().optional(),
+    account: z.string(), //TODO: add verified result messages
     password: z.string(),
-    updatedAt: z.date(),
-    createdAt: z.date(),
+    updatedAt: z.date().optional(),
+    createdAt: z.date().optional(),
 })
 export const UserCreateSchema = UserSchema.omit({
     id: true,
