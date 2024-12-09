@@ -3,7 +3,7 @@ import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
-import { fetchCategories, fetchValueData } from "@/lib/actions";
+import { fetchCategories, fetchLastDateOfBalance, fetchValueData } from "@/lib/actions";
 
 export default async function Page({
   searchParams
@@ -17,7 +17,7 @@ export default async function Page({
   //TODO: get currency from setting, and display different currency
  //BUG: Can not fetch data when user get in the page for the first time!!!
     const displayCurrency = 'USD'
-    const queryDate = searchParams?.date ? new Date(searchParams.date) : getCalculatedMonth(new Date(), -1)
+    const queryDate = searchParams?.date ? new Date(searchParams.date) : await fetchLastDateOfBalance() || getCalculatedMonth(new Date(), -1)
     console.log(`[getCalculatedMonth] querydate in dashboard: ${queryDate}`);
     const categoryData = await fetchCategories();
     const categoryNames = searchParams?.categories ? searchParams.categories.split(',') : categoryData?.map( category => category.name) || []    
