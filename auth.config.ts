@@ -63,6 +63,8 @@ export const authConfig = {
                 return Response.redirect(new URL('/dashboard', nextUrl));
             }else if(isLoggedIn && isOnRoot){
                 return Response.redirect(new URL('/dashboard', nextUrl));
+            }else if(!isLoggedIn && isOnRoot){
+                return Response.redirect(new URL('/login', nextUrl));
             }
             return true;
         },
