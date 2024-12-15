@@ -54,8 +54,8 @@ export const authConfig = {
             const isOnBalance = nextUrl.pathname.startsWith('/balance');
             const isOnSetting = nextUrl.pathname.startsWith('/setting');
             const isOnRoot = nextUrl.pathname.startsWith('/');
-            console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}`);
-            if(isOnDashboard || isOnBalance || isOnSetting){
+            console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}, isOnRoot:${isOnRoot}`);
+            if(isOnDashboard || isOnBalance || isOnSetting || isOnRoot){
                 if(isLoggedIn) return true;
                 return false;
             }
