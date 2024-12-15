@@ -33,9 +33,7 @@ import {
     PopoverTrigger 
 } from "../ui/popover";
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-
 import { Category, HoldingCreateType, HoldingCreateSchema, Type, Holding, HoldingsArray } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
@@ -44,6 +42,7 @@ import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/
 import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
 import { DialogClose } from "@radix-ui/react-dialog"
+import { useSession } from "next-auth/react"
 
 export default function CreateHoldingForm({
     holdingDBIsUpdated,
@@ -60,12 +59,13 @@ export default function CreateHoldingForm({
 }){
     const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingCreateType[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false)
+    const { data: session } = useSession();
     
     const form = useForm<HoldingCreateType>({
         resolver: zodResolver(HoldingCreateSchema),
         defaultValues:{
             name: "",
-            userId: '3', //TODO: should load user id
+            userId: session?.user.id,
             symbol: "",
         }
     })

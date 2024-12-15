@@ -53,7 +53,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { Textarea } from "../ui/textarea";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { 
     fetchCategories, 
     fetchTypes, 

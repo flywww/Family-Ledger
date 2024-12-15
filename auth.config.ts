@@ -1,6 +1,4 @@
 import type { NextAuthConfig } from 'next-auth'
-import { User } from './lib/definitions';
-import { request } from 'http';
 
 export const authConfig = {
     pages: {
@@ -49,23 +47,23 @@ export const authConfig = {
             console.log(`[AUTH:session] session(token update?): ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
             return session;
         },
-         authorized({ auth, request: { nextUrl} }){
+        authorized({ auth, request: { nextUrl} }){
             console.log(`[AUTH:Authorized] function: auth: ${JSON.stringify(auth)}, request: ${JSON.stringify(nextUrl)}`);
-            
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             const isOnBalance = nextUrl.pathname.startsWith('/balance');
             const isOnSetting = nextUrl.pathname.startsWith('/setting');
+            const isOnRoot = nextUrl.pathname.startsWith('/');
             console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}`);
             if(isOnDashboard || isOnBalance || isOnSetting){
                 if(isLoggedIn) return true;
                 return false;
             }
-            else if(isLoggedIn){
+            else if(isLoggedIn && isOnRoot){
                 return Response.redirect(new URL('/dashboard', nextUrl));
             }
             return true;
-         },
+        },
     },
     providers: [] //list different login option
 } satisfies NextAuthConfig;

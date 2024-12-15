@@ -34,7 +34,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { delay, convertCurrency } from "./utils";
 import bcrypt from 'bcryptjs';
-import { signIn, signOut } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 
 
@@ -88,12 +88,12 @@ export async function fetchBalance( id: number ){
 }
 
 export async function fetchMonthlyBalance( queryDate: Date  ){
-    //TODO: fetch with user id
-    console.log('Fetching monthly balance with date', queryDate);
-
+    console.log('[Action] Fetching monthly balance with date', queryDate);
+    const session = await auth()
+    if(!session) return
     try {
         const data = await prisma.balance.findMany({
-            where:{ date: queryDate },
+            where:{ date: queryDate, userId: session.user.id },
             include: { 
                 holding: {
                     include:{
@@ -246,11 +246,12 @@ export async function deleteValueData(  ){
 
 
 export async function fetchValueData(){
-    //TODO: should fetch with user id
+    const session = await auth();
+    if(!session) return;
     try {
         const data = await prisma.valueData.findMany({
             where:{
-                userId: '3',
+                userId: session.user.id,
             },
             include:{
                 category: true,
@@ -356,8 +357,10 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
             await createValueData(parsedBalances.data)
         }
         
-        //TODO: create singleton for setting and user
-        await updateSetting('3', { id:2, accountingDate:date })
+        const session = await auth();
+        if(!session) return;
+        const settingId = await fetchSetting
+        await updateSetting(session.user.id, { accountingDate:date })
     
     } catch (error) {
         throw new Error('Failed to create monthly balances.');

@@ -55,7 +55,7 @@ export const SettingCreateSchema = SettingSchema.omit({
     updatedAt: true,
 })
 export const SettingUpdateSchema = SettingCreateSchema.partial().extend({
-    id: z.number(),
+    id: z.number().optional(),
 })
 
 export type Setting = z.infer<typeof SettingSchema>

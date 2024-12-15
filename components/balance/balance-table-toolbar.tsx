@@ -36,25 +36,22 @@ export default function BalanceTableToolbar({
     const [setting, setSetting] = useState<Setting>();
     const lastMonth = getLastMonth(new Date());
     const [isOutdated, setIsOutdated] = useState<boolean>(false);
-
-     const { data: session } = useSession();
-   console.log(`[Session] balance tool-bar session: ${JSON.stringify(session?.user)}`);
+    const { data: session } = useSession();
 
     useEffect(() => {
         console.log(`getting settings`);
-        
         const getSettingData = async () => {
-            //TODO: get user id
-            const data: Setting | undefined = await fetchSetting('3');
-            console.log(`get setting data: ${data}`);
             
-            if(data){
-                setSetting(data);
-                console.log(`accountingDate: ${data.accountingDate}`);
-                console.log(`lastMonth: ${lastMonth}`);
-                console.log(`compare: ${data.accountingDate < lastMonth}`);
-                
-                setIsOutdated(data.accountingDate < lastMonth)
+            if(session){
+                const data: Setting | undefined = await fetchSetting(session.user.id);
+                console.log(`get setting data: ${data}`);
+                if(data){
+                    setSetting(data);
+                    console.log(`accountingDate: ${data.accountingDate}`);
+                    console.log(`lastMonth: ${lastMonth}`);
+                    console.log(`compare: ${data.accountingDate < lastMonth}`);
+                    setIsOutdated(data.accountingDate < lastMonth)
+                }
             }
         };
         getSettingData();

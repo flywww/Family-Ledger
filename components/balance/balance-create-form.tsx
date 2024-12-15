@@ -51,7 +51,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { Textarea } from "../ui/textarea";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { 
     fetchCategories, 
     fetchTypes, 
@@ -61,6 +61,7 @@ import {
     fetchListedStockPriceFromAPI,
     createBalance
 } from "@/lib/actions";
+import { useSession } from "next-auth/react";
 
 
 
@@ -72,6 +73,7 @@ export default function CreateBalanceForm({
     backURL: string
 }){
     const router = useRouter()
+    const { data: session } = useSession()
     const form = useForm<Balance>({
         resolver: zodResolver(BalanceCreateSchema),
         defaultValues:{
@@ -80,7 +82,7 @@ export default function CreateBalanceForm({
             price: 0,
             value: 0,
             currency: 'USD',
-            userId: '3', //TODO: Should load user
+            userId: session?.user.id,
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);

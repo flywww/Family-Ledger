@@ -1,12 +1,16 @@
 'use client'
 
 import { Button } from "@/components/ui/button";
-
+import { useSession } from "next-auth/react";
 
 export default function Page() {
-    return (
+  const { data:session } = useSession();
+
+  return (
       <div>
         <p>Setting Page</p>
+        <p>{session?.user.account}</p>
+        <p>{session?.user.id}</p>
         <Button onClick={()=>{
           fetch('/api/create-valueData', {
             method: 'POST',
