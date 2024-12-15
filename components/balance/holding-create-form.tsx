@@ -65,7 +65,7 @@ export default function CreateHoldingForm({
         resolver: zodResolver(HoldingCreateSchema),
         defaultValues:{
             name: "",
-            userId: 3, //TODO: should load user id
+            userId: '3', //TODO: should load user id
             symbol: "",
         }
     })

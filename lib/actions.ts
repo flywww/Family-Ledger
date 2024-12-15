@@ -27,11 +27,15 @@ import {
     ValueDataCreateType,
     ValueDataUpdateSchema,
     ValueDataSchema,
+    User,
+    UserSchema,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { delay, convertCurrency } from "./utils";
-import { CurveType } from "recharts/types/shape/Curve";
+import bcrypt from 'bcryptjs';
+import { signIn, signOut } from "@/auth";
+import { AuthError } from "next-auth";
 
 
 export async function fetchLastDateOfBalance(){
@@ -246,7 +250,7 @@ export async function fetchValueData(){
     try {
         const data = await prisma.valueData.findMany({
             where:{
-                userId: 3,
+                userId: '3',
             },
             include:{
                 category: true,
@@ -353,7 +357,7 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
         }
         
         //TODO: create singleton for setting and user
-        await updateSetting(3, { id:2, accountingDate:date })
+        await updateSetting('3', { id:2, accountingDate:date })
     
     } catch (error) {
         throw new Error('Failed to create monthly balances.');
@@ -402,10 +406,60 @@ export async function updateBalance( id: number, balance: BalanceUpdateType, bac
 
 
 //User
-export async function fetchUserWithId( id:number ){
-
+export async function fetchUserWithAccount( account: string ){
+    try {
+        const user = await prisma.user.findUnique({
+            where:{
+                account: account
+            }
+        })
+        return user;
+    } catch (error) {
+        console.log(`Fail to fetch user with email: ${error}`)
+        throw new Error(`Fail to fetch user with email`);
+    }
 }
 
+export async function updatePassword( account: string, password: string ){
+    try {
+        const hashedPassword: string = await bcrypt.hash(password, 10);
+        console.log(`hasedPassword: ${hashedPassword}`);
+        console.log(`account: ${account}`);
+
+        const user = await prisma.user.update({
+            where:{
+                account: account
+            },
+            data: { password: hashedPassword }
+        })
+
+        console.log(`hasedPassword update result: ${JSON.stringify(user)}`);
+    } catch (error) {
+        console.log(`Fail to update user password: ${error}`)
+        throw new Error(`Fail to update user password`);
+    }
+}
+
+export async function authenticate(
+    prevState: string | undefined,
+    formData: User,
+){
+    try {
+        console.log("[AUTH:Authenticating] with:", formData);
+        await signIn('credentials', formData);
+        console.log("[AUTH:Authentication] successful");
+    } catch (error) {
+        if (error instanceof AuthError){
+            switch (error.type) {
+                case 'CredentialsSignin':
+                    return 'Invalid credentials'
+                default:
+                    return 'something went wrong';
+            }
+        }
+        throw error;
+    }
+}
 
 //Holding
 export async function createHolding( holding: HoldingCreateType ){    
@@ -698,7 +752,7 @@ export async function fetchTypes(){
 }
 
 //Setting
-export async function fetchSetting( userId: number ){
+export async function fetchSetting( userId: string ){
     try {
         const data = await prisma.setting.findFirst({
             where: {
@@ -716,7 +770,7 @@ export async function fetchSetting( userId: number ){
     }
 }
 
-export async function updateSetting( userId: number, setting: SettingUpdateType ){
+export async function updateSetting( userId: string, setting: SettingUpdateType ){
     try {
         await prisma.setting.update({
             where: {

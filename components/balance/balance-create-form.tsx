@@ -80,7 +80,7 @@ export default function CreateBalanceForm({
             price: 0,
             value: 0,
             currency: 'USD',
-            userId: 3, //TODO: Should load user
+            userId: '3', //TODO: Should load user
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);

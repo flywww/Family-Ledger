@@ -2,6 +2,9 @@ import BalanceTable from "@/components/balance/balance-table";
 import { firstDateOfMonth, getCalculatedMonth } from "@/lib/utils";
 import { fetchLastDateOfBalance, fetchMonthlyBalance } from "@/lib/actions";
 import { FlattedBalanceType } from "@/lib/definitions";
+import { authConfig } from "@/auth.config";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/auth";
 
 export default async function Page({
   searchParams,
@@ -10,6 +13,8 @@ export default async function Page({
     date?: string;
   }
 }) {
+    const session = await auth();
+    console.log(`session get: ${JSON.stringify(session)}`);
     
     const queryDate = searchParams?.date ? new Date(searchParams.date) : await fetchLastDateOfBalance() || getCalculatedMonth(new Date(), -1);
     console.log(`[getCalculatedMonth] query date in balance page ${queryDate}`);
@@ -24,7 +29,7 @@ export default async function Page({
     } as FlattedBalanceType)) 
 
     return (
-      <div>
+        <div>
         {flattedBalanceData && <BalanceTable 
           queryDate={ queryDate } 
           data={ flattedBalanceData }

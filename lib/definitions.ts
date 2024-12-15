@@ -1,13 +1,31 @@
 import { z } from 'zod';
+import NextAuth, { DefaultSession, User as AuthUser } from 'next-auth';
 
 export type currencyType = 'TWD' | 'USD';
 export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unlisted stock';
 export type typeListType = 'Assets' | 'Liabilities'
 
+declare module 'next-auth' {
+    interface User {
+        id?: string;
+        account?: string; // Add the account property
+    }
+    interface Session {
+        user: {
+            id: string;
+            account: string;
+        } & DefaultSession["user"];
+    }
+    interface JWT {
+        id: string;
+        account?: string; // Add the account property
+    }
+}
+
 export const UserSchema = z.object({
-    id: z.number().optional(),
+    id: z.string().optional(),
     account: z.string(), //TODO: add verified result messages
-    password: z.string(),
+    password: z.string().min(6),
     updatedAt: z.date().optional(),
     createdAt: z.date().optional(),
 })
@@ -17,7 +35,7 @@ export const UserCreateSchema = UserSchema.omit({
     createdAt: true,
 })
 export const UserUpdateSchema = UserCreateSchema.partial().extend({
-    id: z.number(),
+    id: z.string(),
 })
 
 export type User = z.infer<typeof UserSchema>
@@ -27,7 +45,7 @@ export type UserUpdateType = z.infer<typeof UserUpdateSchema>
 export const SettingSchema = z.object({
     id: z.number(),
     accountingDate: z.date(),
-    userId: z.number(),
+    userId: z.string(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })
@@ -93,7 +111,7 @@ export const HoldingSchema = z.object({
     type: TypeSchema,
     categoryId: z.number(),
     category: CategorySchema,
-    userId: z.number(),
+    userId: z.string(),
     user: UserSchema.optional(),
     sourceURL: z.string().nullable().optional(),
     sourceId: z.string().nullable().optional(),
@@ -129,7 +147,7 @@ export const BalanceSchema = z.object({
     value: z.number(),
     currency: z.enum(['TWD' , 'USD']).default('TWD'),
     note: z.preprocess((val) => val ?? "", z.string().optional()),
-    userId: z.number(),
+    userId: z.string(),
     user: UserSchema.optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
@@ -166,7 +184,7 @@ export const ValueDataSchema = z.object({
     type: TypeSchema,
     typeId: z.number(),
     value: z.number(),
-    userId: z.number(),
+    userId: z.string(),
     user: UserSchema.optional(),
     updatedAt: z.date(),
     createdAt: z.date(),

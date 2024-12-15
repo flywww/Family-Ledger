@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+//import { signOut } from "@/auth";
+import { signOut } from "next-auth/react"
+import { handleSignOut } from "@/lib/actions";
 
 export default function NavMenu(){
     const { theme, setTheme } = useTheme();
@@ -48,7 +51,9 @@ export default function NavMenu(){
                     <Link key='Setting' href='/setting' > Settings </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={ () => signOut()}>
+                   Sign out
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

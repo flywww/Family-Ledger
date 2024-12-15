@@ -12,13 +12,13 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
+//TODO: add @db.VarChar(30) to User id
 model User {
-  id        Int         @id @default(autoincrement())
-  account   String      @unique
+  id        String        @id @default(cuid())
+  account   String        @unique
   password  String
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
   balances      Balance[]
   holdings      Holding[]
@@ -37,7 +37,7 @@ model Balance {
   currency     String
   note         String?    // Optional notes related to this balance
   user         User       @relation(fields: [userId], references: [id])
-  userId       Int
+  userId       String
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
@@ -51,7 +51,7 @@ model Holding {
   category     Category   @relation(fields: [categoryId], references: [id])
   categoryId   Int
   user         User       @relation(fields: [userId], references: [id])
-  userId       Int
+  userId       String
   sourceURL    String?
   sourceId     String?
   createdAt    DateTime    @default(now())
@@ -84,7 +84,7 @@ model Type {
 model Setting {
   id             Int       @id @default(autoincrement())
   accountingDate DateTime
-  userId         Int       @unique
+  userId         String    @unique
   user           User      @relation(fields: [userId], references: [id])
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -98,7 +98,7 @@ model ValueData {
   category       Category   @relation(fields: [categoryId], references: [id])
   typeId         Int
   type           Type       @relation(fields: [typeId], references: [id])
-  userId         Int        
+  userId         String        
   user           User       @relation(fields: [userId], references: [id])
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt

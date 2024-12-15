@@ -16,7 +16,7 @@ import {
 } from "@tanstack/react-table";
 import { Table } from "@tanstack/react-table";
 import { useState } from "react";
-
+import { useSession } from "next-auth/react";
 export default function BalanceTable({
     queryDate,
     data,
@@ -45,7 +45,7 @@ export default function BalanceTable({
     })
 
     return(
-        <>
+            <>
             <BalanceTableToolbar 
                 queryDate={queryDate}
                 table={table}

@@ -24,6 +24,7 @@ import { parse } from "path";
 import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { date } from "zod";
 import { isEqual } from "date-fns";
+import { useSession } from "next-auth/react";
 
 export default function BalanceTableToolbar({ 
     table, 
@@ -36,11 +37,15 @@ export default function BalanceTableToolbar({
     const lastMonth = getLastMonth(new Date());
     const [isOutdated, setIsOutdated] = useState<boolean>(false);
 
+     const { data: session } = useSession();
+   console.log(`[Session] balance tool-bar session: ${JSON.stringify(session?.user)}`);
+
     useEffect(() => {
         console.log(`getting settings`);
         
         const getSettingData = async () => {
-            const data: Setting | undefined = await fetchSetting(3);
+            //TODO: get user id
+            const data: Setting | undefined = await fetchSetting('3');
             console.log(`get setting data: ${data}`);
             
             if(data){

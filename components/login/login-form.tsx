@@ -14,6 +14,7 @@ import { Input } from "../ui/input";
 import { User, UserSchema } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { authenticate } from "@/lib/actions";
 
 export default function LoginForm(){
     const form = useForm<User>({
@@ -25,13 +26,13 @@ export default function LoginForm(){
     })
 
     const onSubmit = (values: User) => {
-        console.log(`Logging in: ${JSON.stringify(values)}`);
-        
+        authenticate(undefined, values)
     }
+    
     return(
         <>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1">
+                <form onSubmit={form.handleSubmit(onSubmit)}  className="space-y-1">
                     <FormField
                         control={form.control}
                         name="account"
@@ -58,8 +59,7 @@ export default function LoginForm(){
                             </FormItem>
                         )}
                     />
-
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" >Log in</Button>
                 </form>
             </Form>
 

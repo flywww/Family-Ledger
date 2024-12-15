@@ -3,31 +3,35 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
-
+import { auth } from '@/auth'
+import { SessionProvider } from "next-auth/react"
 
 export const metadata: Metadata = {
   title: "Family Ledger",
   description: "Manage family assets easily",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
     <html lang="en">
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <SpeedInsights />
-          <Analytics />
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <SpeedInsights />
+              <Analytics />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
