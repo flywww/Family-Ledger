@@ -54,7 +54,7 @@ export const authConfig = {
             const isOnBalance = nextUrl.pathname.startsWith('/balance');
             const isOnSetting = nextUrl.pathname.startsWith('/setting');
             const isOnLogin = nextUrl.pathname.startsWith('/login');
-            const isOnRoot = nextUrl.pathname.startsWith('/');
+            const isOnRoot = nextUrl.pathname.endsWith('/');
             console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}, isOnRoot:${isOnRoot}, isOnLogin:${isOnLogin}`);
             if(isOnDashboard || isOnBalance || isOnSetting){
                 if(isLoggedIn) return true;
@@ -63,7 +63,7 @@ export const authConfig = {
                 return Response.redirect(new URL('/dashboard', nextUrl));
             }else if(isLoggedIn && isOnRoot){
                 return Response.redirect(new URL('/dashboard', nextUrl));
-            }else if(!isLoggedIn && isOnRoot){
+            }else if(!isLoggedIn && isOnRoot){ 
                 return Response.redirect(new URL('/login', nextUrl));
             }
             return true;
