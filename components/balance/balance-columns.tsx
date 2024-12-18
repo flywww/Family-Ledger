@@ -16,10 +16,11 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBalance, fetchSetting } from "@/lib/actions"
+import { deleteBalance, fetchSetting, updateBalance } from "@/lib/actions"
 import Link from "next/link"
-import { useEffect, useState, useContext } from "react"
+import React, { useEffect, useState, useContext } from "react"
 import { SettingContext } from "@/context/settingContext"
+import { Input } from "../ui/input"
 
 const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string, displayedCurrency: currencyType) => { 
     const recordPrice = parseFloat(row.getValue(key))
@@ -71,7 +72,28 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "quantity",
         header: ({column}) => getSortedHeader(column, "Quantity"),
-        cell:({row}) => numberCellFormatter(row, 'quantity')
+        cell:({row}) => {
+            const [editing, setEditing] = useState<boolean>(false)
+            const [currentValue, setCurrentValue] = useState<number>(parseFloat(row.getValue('quantity')))
+            const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+                const oldValue = parseFloat(row.getValue('quantity'));
+                if(oldValue && oldValue !== currentValue){
+                    await updateBalance(row.original.id, { quantity: currentValue })
+                }    
+                setEditing(false)
+            }
+            return (
+                    <Input
+                        name="quantity"
+                        type="number"
+                        value={currentValue}
+                        readOnly={!editing}
+                        onClick={ () => setEditing(true) }
+                        onBlur={handleBlur}
+                        onChange={(e) => setCurrentValue(parseFloat(e.target.value))}
+                    ></Input>
+            )
+        }
     },
     {
         accessorKey: "price",

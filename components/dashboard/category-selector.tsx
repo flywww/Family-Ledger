@@ -32,7 +32,6 @@ export default function CategorySelector ({
     }
     const { updateDisplayCategories } = settingContext;
 
-    //TODO: remove after finish the code
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
         const categoryNames = selectedCategories.map(category => category.name).toString();

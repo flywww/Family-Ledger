@@ -239,12 +239,6 @@ export async function updateValueData( balance: Balance ){
     }
 }
 
-//TODO: deleteValueData
-export async function deleteValueData(  ){
-
-}
-
-
 export async function fetchValueData(){
     const session = await auth();
     if(!session) return;
@@ -384,7 +378,7 @@ export async function deleteBalance( id: number, balance: Balance ){
     }
 }
 
-export async function updateBalance( id: number, balance: BalanceUpdateType, backDate: Date ){
+export async function updateBalance( id: number, balance: BalanceUpdateType, backDate?: Date ){
     try {
         console.log(`updating balance with id(${id}) and  data: ${JSON.stringify(balance)} `);
 
@@ -402,8 +396,11 @@ export async function updateBalance( id: number, balance: BalanceUpdateType, bac
     } catch (error) {
         console.error('Fail to update balance', error)
     }
-    revalidatePath(`/balance/?date=${backDate.toUTCString()}`);
-    redirect(`/balance/?date=${backDate.toUTCString()}`);
+    if(backDate){
+        revalidatePath(`/balance/?date=${backDate.toUTCString()}`);
+        redirect(`/balance/?date=${backDate.toUTCString()}`);
+    }
+    
 }
 
 

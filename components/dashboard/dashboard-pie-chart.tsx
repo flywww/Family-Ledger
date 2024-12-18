@@ -16,10 +16,6 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { SettingContext } from "@/context/settingContext";
-import { currencyType } from "@/lib/definitions";
-import { convertCurrency } from "@/lib/utils";
-import { useContext, useEffect, useState } from "react";
 import { Pie, PieChart, LabelList } from "recharts"
 
 export default function DashboardPieChart({
