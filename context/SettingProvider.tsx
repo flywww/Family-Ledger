@@ -26,13 +26,20 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
         }
     }
 
+    const updateDisplayCategories = async (categories:string) => {
+        if(session){
+            const newSetting = await updateSetting(session.user.id, {displayCategories:categories});
+            newSetting && setSetting(newSetting);
+        }
+    }
+
     useEffect(() => {
         console.log(`!!!!!!!! setting changed!!! ${JSON.stringify(setting)}`);
         
     }, [setting])
 
     return (
-        <SettingContext.Provider value={{setting, updateUserSetting}}>
+        <SettingContext.Provider value={{setting, updateUserSetting, updateDisplayCategories}}>
             {children}
         </SettingContext.Provider>
     )

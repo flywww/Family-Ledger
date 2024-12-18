@@ -9,11 +9,9 @@ import { enUSNumberFormat } from "../../lib/utils"
 
 export default function SummarySection({
     queryDate,
-    categories,
     valueData,
 }:{
     queryDate: Date,
-    categories: string[],
     valueData: ValueData[] | undefined,
 }){
     const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');

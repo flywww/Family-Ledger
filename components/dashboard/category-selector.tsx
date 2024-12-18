@@ -9,8 +9,9 @@ import {
 import { Button } from "../ui/button";
 import { ChevronDownIcon } from "lucide-react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Category } from "@/lib/definitions";
+import { SettingContext } from "@/context/settingContext";
 
 export default function CategorySelector ({
     categories,
@@ -25,17 +26,19 @@ export default function CategorySelector ({
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
-
-
+    const settingContext = useContext(SettingContext);
+    if(!settingContext){
+        throw Error ("Setting must be used within a setting provider")
+    }
+    const { updateDisplayCategories } = settingContext;
 
     //TODO: remove after finish the code
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
         const categoryNames = selectedCategories.map(category => category.name).toString();
         params.set('categories', categoryNames);
+        updateDisplayCategories(categoryNames);
         replace(`${pathname}?${params.toString()}`); 
-        console.log(`effect watch: ${JSON.stringify(selectedCategories)}`);
-        
     }, [selectedCategories])
 
     return (
