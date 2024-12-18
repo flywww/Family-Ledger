@@ -148,11 +148,7 @@ export default function EditBalanceForm({
     }
 
     function onSubmit(values: BalanceUpdateType){
-        console.log('submmitimg!!!');
-        
-        console.log(values.date ?? balance.date);
-        
-        updateBalance(values.id ,values, values.date ?? balance.date);
+        updateBalance(values, values.date ?? balance.date);
         //TODO: Add transition UI
     }
     

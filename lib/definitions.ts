@@ -161,7 +161,9 @@ export const BalanceCreateSchema = BalanceSchema.omit({
     holding: true,
     user: true,
 })
-export const BalanceUpdateSchema = BalanceCreateSchema.partial()
+export const BalanceUpdateSchema = BalanceCreateSchema.partial().extend({ 
+    id: z.number() 
+})
 export const FlattedBalanceSchema = BalanceSchema.extend({
     holdingName: z.string(),
     holdingSymbol: z.string(),

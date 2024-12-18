@@ -378,13 +378,13 @@ export async function deleteBalance( id: number, balance: Balance ){
     }
 }
 
-export async function updateBalance( id: number, balance: BalanceUpdateType, backDate?: Date ){
+export async function updateBalance( balance: BalanceUpdateType, backDate?: Date ){
     try {
-        console.log(`updating balance with id(${id}) and  data: ${JSON.stringify(balance)} `);
+        console.log(`updating balance with id(${balance.id}) and  data: ${JSON.stringify(balance)} `);
 
         const result = await prisma.balance.update({
             where:{
-                id: id
+                id: balance.id
             },
             data: balance
         })

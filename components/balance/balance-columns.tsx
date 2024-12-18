@@ -16,7 +16,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBalance, fetchSetting, updateBalance } from "@/lib/actions"
+import { deleteBalance, updateBalance } from "@/lib/actions"
 import Link from "next/link"
 import React, { useEffect, useState, useContext } from "react"
 import { SettingContext } from "@/context/settingContext"
@@ -78,7 +78,7 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
             const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
                 const oldValue = parseFloat(row.getValue('quantity'));
                 if(oldValue && oldValue !== currentValue){
-                    await updateBalance(row.original.id, { quantity: currentValue })
+                    await updateBalance({id:row.original.id, quantity: currentValue })
                 }    
                 setEditing(false)
             }
