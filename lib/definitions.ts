@@ -45,6 +45,8 @@ export type UserUpdateType = z.infer<typeof UserUpdateSchema>
 export const SettingSchema = z.object({
     id: z.number(),
     accountingDate: z.date(),
+    displayCurrency: z.enum(['TWD','USD']),
+    displayCategories: z.string(),
     userId: z.string(),
     updatedAt: z.date(),
     createdAt: z.date(),

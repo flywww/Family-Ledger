@@ -1,6 +1,6 @@
 'use client'
 
-import { BalanceCreateType, FlattedBalanceType, currencyType } from "@/lib/definitions"
+import { FlattedBalanceType, currencyType } from "@/lib/definitions"
 import { convertCurrency } from "@/lib/utils"
 import { ColumnDef, Row, Column } from '@tanstack/react-table'
 import { MoreHorizontal, ArrowUpDown } from "lucide-react"
@@ -16,14 +16,12 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBalance } from "@/lib/actions"
+import { deleteBalance, fetchSetting } from "@/lib/actions"
 import Link from "next/link"
+import { useEffect, useState, useContext } from "react"
+import { SettingContext } from "@/context/settingContext"
 
-
-//TODO: fetch displayed currency from setting
-const displayedCurrency = 'USD'
-
-const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
+const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string, displayedCurrency: currencyType) => { 
     const recordPrice = parseFloat(row.getValue(key))
     const recordCurrency: currencyType =  row.original.currency;
     const recordDate = row.original.date;
@@ -78,12 +76,38 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "price",
         header: ({column}) => getSortedHeader(column, "Price"),
-        cell:({row}) => moneyCellFormatter(row, 'price')
+        cell:({row}) => {
+            const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
+            const settingContext = useContext(SettingContext);
+            if(!settingContext){
+                throw Error ("Setting must be used within a setting provider")
+            }
+            const { setting } = settingContext;         
+            useEffect(()=>{
+                if (setting && 'displayCurrency' in setting){
+                    setDisplayedCurrency(setting.displayCurrency as currencyType);
+                }
+            }, [setting])
+            return moneyCellFormatter(row, 'price', displayedCurrency)
+        }
     },
     {
         accessorKey: "value",
         header: ({column}) => getSortedHeader(column, "Value"),
-        cell:({row}) => moneyCellFormatter(row, 'value')
+        cell:({row}) => {
+            const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
+            const settingContext = useContext(SettingContext);
+            if(!settingContext){
+                throw Error ("Setting must be used within a setting provider")
+            }
+            const { setting } = settingContext; 
+            useEffect(()=>{
+                if (setting && 'displayCurrency' in setting) {
+                    setDisplayedCurrency(setting.displayCurrency as currencyType);
+                }
+            }, [setting])
+            return  moneyCellFormatter(row, 'value', displayedCurrency)
+        }
     },
     {
         accessorKey: "note",
@@ -92,6 +116,18 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         id: "actions",
         cell:({row}) => {
+            const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
+            const settingContext = useContext(SettingContext);
+            if(!settingContext){
+                throw Error ("Setting must be used within a setting provider")
+            }
+            const { setting } = settingContext; 
+            useEffect(()=>{
+                if (setting && 'displayCurrency' in setting) {
+                    setDisplayedCurrency(setting.displayCurrency as currencyType);
+                }
+            }, [setting])
+
             return(
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

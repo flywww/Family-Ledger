@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn, getLastMonth } from "@/lib/utils";
+import { cn, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
 
 export default function Search({

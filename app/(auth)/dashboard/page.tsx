@@ -14,11 +14,8 @@ export default async function Page({
   }
 }) {
   //TODO: remember selected category
-  //TODO: get currency from setting, and display different currency
  //BUG: Can not fetch data when user get in the page for the first time!!!
-    const displayCurrency = 'USD'
     const queryDate = searchParams?.date ? new Date(searchParams.date) : await fetchLastDateOfBalance() || getCalculatedMonth(new Date(), -1)
-    console.log(`[getCalculatedMonth] querydate in dashboard: ${queryDate}`);
     const categoryData = await fetchCategories();
     const categoryNames = searchParams?.categories ? searchParams.categories.split(',') : categoryData?.map( category => category.name) || []    
     const queryCategories = categoryData?.filter( category => categoryNames.includes(category.name)) || [];

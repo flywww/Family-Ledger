@@ -1,4 +1,4 @@
-import { ValueData } from "@/lib/definitions"
+import { currencyType, ValueData } from "@/lib/definitions"
 import DashboardLineChart from "./dashboard-line-chart"
 import DashboardPieChart from "./dashboard-pie-chart"
 
@@ -56,7 +56,6 @@ export default function ChartSection({
 
     return(
         <div className="">
-            
             {assetsLineChartData && <DashboardLineChart
                 title = "Assets"
                 labels = {assetsLineChartLabels}

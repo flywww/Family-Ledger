@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { auth } from '@/auth'
 import { SessionProvider } from "next-auth/react"
+import { SettingProvider } from "@/context/SettingProvider";
 
 export const metadata: Metadata = {
   title: "Family Ledger",
@@ -21,16 +22,18 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <SessionProvider>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <SpeedInsights />
-              <Analytics />
-          </ThemeProvider>
+          <SettingProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <SpeedInsights />
+                <Analytics />
+            </ThemeProvider>
+          </SettingProvider>
         </SessionProvider>
       </body>
     </html>

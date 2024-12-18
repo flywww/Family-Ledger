@@ -17,12 +17,31 @@ import {
     DropdownMenuItem,
     
 } from "@/components/ui/dropdown-menu"
-import Link from "next/link"
-import { signOut } from "next-auth/react"
+import { signOut} from "next-auth/react"
+import { useRouter } from "next/navigation";
+import { useContext, useEffect, useState } from "react";
+import { updateSetting } from "@/lib/actions";
+import { currencyType } from "@/lib/definitions";
+import { SettingContext } from "@/context/settingContext";
 
 export default function NavMenu(){
     const { theme, setTheme } = useTheme();
+    const [currency, setCurrency] = useState('USD');
+    const settingContext = useContext(SettingContext);
+    if(!settingContext){
+        throw Error ("Setting must be used within a setting provider")
+    }
+    const { setting, updateUserSetting } = settingContext;         
+    const router = useRouter();
 
+    const updateCurrency = (value:string) => {
+        updateUserSetting({displayCurrency:(value as currencyType)})
+        setCurrency(value);
+    }
+
+    useEffect(()=>{
+        if(setting) setCurrency(setting.displayCurrency);
+    },[setting])
 
     return(
         <DropdownMenu>
@@ -44,12 +63,23 @@ export default function NavMenu(){
                         </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                 </DropdownMenuSub>
-                <DropdownMenuItem>
-                    <Link key='Setting' href='/setting' > Settings </Link>
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Currency</DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup value={currency} onValueChange={updateCurrency}>
+                                <DropdownMenuRadioItem value="USD">USD</DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="TWD">TWD</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                </DropdownMenuSub>
+                <DropdownMenuItem onClick={ () => router.push('/setting') }>
+                    Setting
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={ () => signOut()}>
-                   Sign out
+                    Sign out
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

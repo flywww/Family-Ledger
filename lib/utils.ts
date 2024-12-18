@@ -14,7 +14,7 @@ export const firstDateOfMonth = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() , 1);
 
 export const getLastMonth = (date: Date) => {
-  return getCalculatedMonth(date, -1);
+  return getCalculatedMonth(firstDateOfMonth(date), -1);
 }
 
 export const getCalculatedMonth = (date: Date, addMonth: number) => {
@@ -53,4 +53,8 @@ export const convertCurrency = ( from:currencyType, to:currencyType, amount:numb
     convertedResult = -1;
   }
   return convertedResult;
+}
+
+export const enUSNumberFormat = ( num: any ) => {
+  return new Intl.NumberFormat('en-US').format(num);
 }

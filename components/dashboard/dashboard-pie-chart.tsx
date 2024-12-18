@@ -16,6 +16,10 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
+import { SettingContext } from "@/context/settingContext";
+import { currencyType } from "@/lib/definitions";
+import { convertCurrency } from "@/lib/utils";
+import { useContext, useEffect, useState } from "react";
 import { Pie, PieChart, LabelList } from "recharts"
 
 export default function DashboardPieChart({
@@ -31,6 +35,30 @@ export default function DashboardPieChart({
     labelKey: string,
     valueKey: string,
 }){
+
+    const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
+    const [convertedData, setConvertedData] = useState(data);
+    const settingContext = useContext(SettingContext);
+    if(!settingContext){
+        throw Error ("Setting must be used within a setting provider")
+    }
+    const { setting } = settingContext;         
+    useEffect(()=>{
+        console.log(`pie-chart useEffect - setting`);
+        if (setting && 'displayCurrency' in setting){
+            setDisplayedCurrency(setting.displayCurrency as currencyType);
+        }
+    }, [setting])
+
+    useEffect(()=>{
+        console.log(`pie-chart useEffect - setting`);
+        const newData = data.map( dataItem => (
+            { ...dataItem,
+                value: convertCurrency('USD', displayedCurrency, dataItem['value'] as number, new Date()) //TODO: update currency ex-rate by date
+            }
+        ))
+        setConvertedData(newData);
+    }, [data, displayedCurrency])
 
     const colors = [
         "hsl(var(--chart-1))", 
@@ -66,7 +94,7 @@ export default function DashboardPieChart({
             >
                 <PieChart>
                     <ChartTooltip content={<ChartTooltipContent nameKey={labelKey}/>}/>
-                    <Pie data={data} dataKey={valueKey}>
+                    <Pie data={convertedData} dataKey={valueKey}>
                         <LabelList
                             dataKey={labelKey}
                             className="fill-background"

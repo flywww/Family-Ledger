@@ -10,7 +10,6 @@ import { Button } from "../ui/button";
 import { ChevronDownIcon } from "lucide-react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react";
-import { fetchCategories } from "@/lib/actions";
 import { Category } from "@/lib/definitions";
 
 export default function CategorySelector ({

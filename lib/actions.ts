@@ -359,7 +359,6 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
         
         const session = await auth();
         if(!session) return;
-        const settingId = await fetchSetting
         await updateSetting(session.user.id, { accountingDate:date })
     
     } catch (error) {
@@ -775,12 +774,17 @@ export async function fetchSetting( userId: string ){
 
 export async function updateSetting( userId: string, setting: SettingUpdateType ){
     try {
-        await prisma.setting.update({
+        const updatedSetting = await prisma.setting.update({
             where: {
                 userId: userId
             },
             data: setting
         })
+        const parsed = SettingSchema.safeParse(updatedSetting);
+        if(!parsed.success){
+            throw new Error('Failed to parse fetched updatedSetting.');
+        }
+        return parsed.data;
     } catch (error) {
         console.error(`Fail to update setting with userId:${userId} and setting:${setting}, error:${error}`)
     }
