@@ -35,31 +35,6 @@ export default function DashboardPieChart({
     labelKey: string,
     valueKey: string,
 }){
-
-    const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
-    const [convertedData, setConvertedData] = useState(data);
-    const settingContext = useContext(SettingContext);
-    if(!settingContext){
-        throw Error ("Setting must be used within a setting provider")
-    }
-    const { setting } = settingContext;         
-    useEffect(()=>{
-        console.log(`pie-chart useEffect - setting`);
-        if (setting && 'displayCurrency' in setting){
-            setDisplayedCurrency(setting.displayCurrency as currencyType);
-        }
-    }, [setting])
-
-    useEffect(()=>{
-        console.log(`pie-chart useEffect - setting`);
-        const newData = data.map( dataItem => (
-            { ...dataItem,
-                value: convertCurrency('USD', displayedCurrency, dataItem['value'] as number, new Date()) //TODO: update currency ex-rate by date
-            }
-        ))
-        setConvertedData(newData);
-    }, [data, displayedCurrency])
-
     const colors = [
         "hsl(var(--chart-1))", 
         "hsl(var(--chart-2))", 
@@ -94,7 +69,7 @@ export default function DashboardPieChart({
             >
                 <PieChart>
                     <ChartTooltip content={<ChartTooltipContent nameKey={labelKey}/>}/>
-                    <Pie data={convertedData} dataKey={valueKey}>
+                    <Pie data={data} dataKey={valueKey}>
                         <LabelList
                             dataKey={labelKey}
                             className="fill-background"

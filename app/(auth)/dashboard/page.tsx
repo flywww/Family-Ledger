@@ -1,30 +1,30 @@
-import { getCalculatedMonth } from "@/lib/utils";
+import { convertCurrency, getCalculatedMonth } from "@/lib/utils";
 import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
 import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData } from "@/lib/actions";
 import { auth } from "@/auth";
+import { currencyType } from "@/lib/definitions";
 
 export default async function Page({
   searchParams
 }:{
   searchParams?: {
     date?: string
-    categories?: string
+    categories?: string,
+    currency?: string,
   }
 }) {
-  //TODO: remember selected category
  //BUG: Can not fetch data when user get in the page for the first time!!!
     const queryDate = searchParams?.date ? new Date(searchParams.date) : await fetchLastDateOfBalance() || getCalculatedMonth(new Date(), -1)
     const categoryData = await fetchCategories();
-    const session = await auth();   
+    const session = await auth();
+    const setting = session && await fetchSetting(session.user.id);
     let categoryNames;
-
     if(searchParams?.categories){
       categoryNames = searchParams.categories.split(',');
-    }else if(session && !searchParams?.categories){
-      const setting = await fetchSetting(session.user.id);
+    }else if(setting && !searchParams?.categories){
       categoryNames = setting ? setting.displayCategories.split(',') : categoryData?.map( category => category.name) || [];  
     }else{
       categoryNames = categoryData?.map( category => category.name) || [];
@@ -32,8 +32,12 @@ export default async function Page({
 
     const queryCategories = categoryData?.filter( category => categoryNames.includes(category.name)) || [];
     const valueDataArray = await fetchValueData();
-    const filteredValueData = valueDataArray ? valueDataArray.filter(valueData => categoryNames.includes(valueData.category.name)) : [];
-
+    const currency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
+    const filteredValueData = valueDataArray 
+                              ? valueDataArray
+                                  .filter(valueData => categoryNames.includes(valueData.category.name))
+                                  .map(valueData => ({...valueData, value:convertCurrency('USD',currency,valueData.value,valueData.date)}))
+                              : [];
     return (
       <div className="flex flex-col gap-3 justify-start">
         <div className="flex flex-row gap-3">
@@ -46,6 +50,7 @@ export default async function Page({
         <SummarySection 
           queryDate={queryDate} 
           valueData={filteredValueData}
+          currency={currency}
         />
         <ChartSection
           queryDate={queryDate} 

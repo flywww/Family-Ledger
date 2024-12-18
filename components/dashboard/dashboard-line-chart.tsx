@@ -14,10 +14,6 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { SettingContext } from "@/context/settingContext"
-import { currencyType } from "@/lib/definitions"
-import { convertCurrency } from "@/lib/utils"
-import { useContext, useEffect, useState } from "react"
 import { CartesianGrid, XAxis, Line, LineChart } from "recharts"
 
 export default function DashboardLineChart({
@@ -33,39 +29,6 @@ export default function DashboardLineChart({
     data: Array<Record<string, string | number>>,
     xAxisDataKey: string
 }){
-    const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
-    const [convertedData, setConvertedData] = useState(data);
-    const settingContext = useContext(SettingContext);
-    if(!settingContext){
-        throw Error ("Setting must be used within a setting provider")
-    }
-    const { setting } = settingContext;         
-    useEffect(()=>{
-        console.log(`line-chart useEffect - setting`);
-        
-        if (setting && 'displayCurrency' in setting){
-            setDisplayedCurrency(setting.displayCurrency as currencyType);
-        }
-    }, [setting])
-
-    useEffect(()=>{
-        console.log(`line-chart useEffect - displaycurrency`);
-        const newData = data.reduce( (dataArray, dataObject) => {
-            let newDataObject: Record<string, string | number> = {};
-            const date = new Date(dataObject['date']);
-            for (const [key, value] of Object.entries(dataObject)){
-                if(key === 'date'){
-                    newDataObject[key] = value;
-                }else{
-                    newDataObject[key] = convertCurrency('USD', displayedCurrency, value as number, date)
-                }
-            }
-            dataArray.push(newDataObject);              
-            return dataArray;
-        }, [] as Array<Record<string, string | number>> )
-        setConvertedData(newData);
-    }, [data, displayedCurrency])
-
     const colors = [
         "hsl(var(--chart-1))", 
         "hsl(var(--chart-2))", 
@@ -91,7 +54,7 @@ export default function DashboardLineChart({
                     <ChartContainer config={chartConfig}>
                         <LineChart
                             accessibilityLayer
-                            data={convertedData}
+                            data={data}
                             margin={{
                                 left: 12,
                                 right: 12

@@ -27,7 +27,6 @@ export default function ChartSection({
                             dateEntry[data.category.name] = data.value;
                             dateEntry['Total'] = (Number(dateEntry['Total']) || 0) + data.value;  
                             
-                            
                             return dataSet;
                         }, [] as Array<Record<string, string | number>>)
                         .sort((a,b) => {
@@ -53,7 +52,6 @@ export default function ChartSection({
         return dataSet;
     }, [] as Array<Record<string, string | number>>)
     
-
     return(
         <div className="">
             {assetsLineChartData && <DashboardLineChart

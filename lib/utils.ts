@@ -47,6 +47,8 @@ export const convertCurrency = ( from:currencyType, to:currencyType, amount:numb
   const toRate = exchangeRate.get(to);
   let convertedResult = 0;
   
+  if( from === to ) return amount;
+
   if(fromRate !== undefined && toRate !== undefined){
     convertedResult = amount * toRate / fromRate;
   }else{

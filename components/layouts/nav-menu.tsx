@@ -18,7 +18,7 @@ import {
     
 } from "@/components/ui/dropdown-menu"
 import { signOut} from "next-auth/react"
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { updateSetting } from "@/lib/actions";
 import { currencyType } from "@/lib/definitions";
@@ -27,6 +27,9 @@ import { SettingContext } from "@/context/settingContext";
 export default function NavMenu(){
     const { theme, setTheme } = useTheme();
     const [currency, setCurrency] = useState('USD');
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const { replace } = useRouter()
     const settingContext = useContext(SettingContext);
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
@@ -37,6 +40,9 @@ export default function NavMenu(){
     const updateCurrency = (value:string) => {
         updateUserSetting({displayCurrency:(value as currencyType)})
         setCurrency(value);
+        const params = new URLSearchParams(searchParams);
+        params.set('currency',value);
+        replace(`${pathname}?${params.toString()}`)
     }
 
     useEffect(()=>{
