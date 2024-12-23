@@ -383,25 +383,19 @@ export async function updateBalance( balance: BalanceUpdateType, backDate?: Date
         console.log(`updating balance with id(${balance.id}) and  data: ${JSON.stringify(balance)} `);
 
         const result = await prisma.balance.update({
-            where:{
-                id: balance.id
-            },
+            where:{ id: balance.id },
             data: balance
         })
         if(balance.value){
             const balanceData = await fetchBalance(balance.id);
-            balanceData && updateValueData(balanceData);
+            balanceData && await updateValueData(balanceData);
         }
-        return result;
-
     } catch (error) {
         console.error('Fail to update balance', error)
     }
-    if(backDate){
-        revalidatePath(`/balance/?date=${backDate.toUTCString()}`);
-        redirect(`/balance/?date=${backDate.toUTCString()}`);
-    }
-    
+    if(!backDate) return;
+    revalidatePath(`/balance/?date=${backDate.toUTCString()}`);
+    redirect(`/balance/?date=${backDate.toUTCString()}`);
 }
 
 
