@@ -1,9 +1,9 @@
 'use client'
 
 import { FlattedBalanceType, currencyType } from "@/lib/definitions"
-import { convertCurrency } from "@/lib/utils"
+import { convertCurrency, delay } from "@/lib/utils"
 import { ColumnDef, Row, Column } from '@tanstack/react-table'
-import { MoreHorizontal, ArrowUpDown } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, AwardIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -16,11 +16,13 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
-import { deleteBalance, updateBalance } from "@/lib/actions"
+import { deleteBalance, fetchBalance, updateBalance } from "@/lib/actions"
 import Link from "next/link"
 import React, { useEffect, useState, useContext } from "react"
 import { SettingContext } from "@/context/settingContext"
 import { Input } from "../ui/input"
+import LoadingSpinner from "../ui/loading-spinner"
+import { MonthBalanceContext } from "@/context/monthBalanceContext"
 
 const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string, displayedCurrency: currencyType) => { 
     const recordPrice = parseFloat(row.getValue(key))
@@ -74,24 +76,50 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         header: ({column}) => getSortedHeader(column, "Quantity"),
         cell:({row}) => {
             const [editing, setEditing] = useState<boolean>(false)
-            const [currentValue, setCurrentValue] = useState<number>(parseFloat(row.getValue('quantity')))
+            const [currentQuantity, setCurrentQuantity] = useState<number>(parseFloat(row.getValue('quantity')))
+            const [isLoading, setIsLoading] = useState<boolean>(false);
+            const monthBalanceContext = useContext(MonthBalanceContext);
+            if(!monthBalanceContext){
+                throw Error ("Setting must be used within a setting provider")
+            }
+            const { monthBalanceData ,updateMonthBalance } = monthBalanceContext;  
             const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-                const oldValue = parseFloat(row.getValue('quantity'));
-                if(oldValue && oldValue !== currentValue){
-                    await updateBalance({id:row.original.id, quantity: currentValue })
+                const balance = await fetchBalance(row.original.id)
+                const oldQuantity = balance?.quantity; 
+                if(oldQuantity && oldQuantity !== currentQuantity){
+                    setIsLoading(true);
+                    const newFlatteredBalance = {
+                        ...row.original,
+                        quantity: currentQuantity, 
+                        value: currentQuantity*row.original.price 
+                    }
+                    await updateBalance({
+                        id: row.original.id,
+                        quantity: currentQuantity, 
+                        value: currentQuantity*row.original.price 
+                    })
+                    updateMonthBalance(newFlatteredBalance);
+
+                    await delay(600);
+                    setIsLoading(false);
                 }    
                 setEditing(false)
             }
+
+            useEffect(()=> setCurrentQuantity(row.getValue('quantity')), [monthBalanceData])
             return (
+                <div className="flex flex-row items-center gap-1">
                     <Input
                         name="quantity"
                         type="number"
-                        value={currentValue}
+                        value={currentQuantity}
                         readOnly={!editing}
                         onClick={ () => setEditing(true) }
                         onBlur={handleBlur}
-                        onChange={(e) => setCurrentValue(parseFloat(e.target.value))}
+                        onChange={(e) => setCurrentQuantity(parseFloat(e.target.value))}
                     ></Input>
+                    { isLoading && <LoadingSpinner size={4}/> }
+                </div>
             )
         }
     },
@@ -128,7 +156,9 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                     setDisplayedCurrency(setting.displayCurrency as currencyType);
                 }
             }, [setting])
-            return  moneyCellFormatter(row, 'value', displayedCurrency)
+            const value = row.original.quantity * row.original.price;
+            
+            return  moneyCellFormatter( {...row, original:{ ...row.original, value}}, 'value', displayedCurrency)
         }
     },
     {

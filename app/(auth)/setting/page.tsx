@@ -2,9 +2,34 @@
 
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { useForm } from "react-hook-form";
 
 export default function Page() {
   const { data:session } = useSession();
+  const form = useForm({
+    defaultValues:{
+      newPassword: "",
+      retypePassword: "",
+    }
+  })
 
   return (
       <div>

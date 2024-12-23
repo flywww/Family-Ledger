@@ -392,6 +392,7 @@ export async function updateBalance( balance: BalanceUpdateType, backDate?: Date
             const balanceData = await fetchBalance(balance.id);
             balanceData && updateValueData(balanceData);
         }
+        return result;
 
     } catch (error) {
         console.error('Fail to update balance', error)

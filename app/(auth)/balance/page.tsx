@@ -2,7 +2,7 @@ import BalanceTable from "@/components/balance/balance-table";
 import { getCalculatedMonth } from "@/lib/utils";
 import { fetchLastDateOfBalance, fetchMonthlyBalance } from "@/lib/actions";
 import { FlattedBalanceType } from "@/lib/definitions";
-
+import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 
 export default async function Page({
   searchParams,
@@ -20,14 +20,16 @@ export default async function Page({
         holdingSymbol: balance?.holding?.symbol,
         holdingCategoryName: balance?.holding?.category?.name,
         holdingTypeName: balance?.holding?.type?.name,
-    } as FlattedBalanceType)) 
+    } as FlattedBalanceType) )  //TODO: update currency here by loading parameter
 
     return (
+      <MonthBalanceProvider>
         <div>
-        {flattedBalanceData && <BalanceTable 
-          queryDate={ queryDate } 
-          data={ flattedBalanceData }
-        />}
-      </div>
+          {flattedBalanceData && <BalanceTable 
+            queryDate={ queryDate } 
+            data={ flattedBalanceData }
+          />}
+        </div>
+      </MonthBalanceProvider>
     )
   }

@@ -15,8 +15,9 @@ import {
     VisibilityState,
 } from "@tanstack/react-table";
 import { Table } from "@tanstack/react-table";
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useContext, useEffect, useState } from "react";
+import { MonthBalanceContext } from "@/context/monthBalanceContext";
+
 export default function BalanceTable({
     queryDate,
     data,
@@ -28,8 +29,14 @@ export default function BalanceTable({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [tableData, setTableData] = useState<FlattedBalanceType[]>(data);
+    const monthBalanceContext = useContext(MonthBalanceContext);
+    if(!monthBalanceContext){
+        throw Error ("Setting must be used within a setting provider")
+    }
+    const { monthBalanceData, updateMonthBalanceData } = monthBalanceContext;  
     const table: Table<FlattedBalanceType> = useReactTable({
-        data,
+        data: monthBalanceData,
         columns,
         getCoreRowModel: getCoreRowModel(),
         onSortingChange: setSorting,
@@ -40,19 +47,25 @@ export default function BalanceTable({
         state:{
             sorting,
             columnFilters,
-            columnVisibility
+            columnVisibility,
         },
     })
+    
+    useEffect(()=>{
+        console.log(`updateMonthBalanceData in Balance-table`);
+        
+        updateMonthBalanceData(data);
+    }, [data, updateMonthBalanceData])
 
     return(
-            <>
+        <>
             <BalanceTableToolbar 
                 queryDate={queryDate}
                 table={table}
             />
             <DataTable 
                 columns={columns as ColumnDef<FlattedBalanceType | null, any>[]} 
-                data={data}
+                data={monthBalanceData}
                 table={table}
             />
         </>

@@ -38,7 +38,7 @@ export const authConfig = {
             console.log(`[AUTH:jst] token(user update?): ${JSON.stringify(token)}, user: ${JSON.stringify(user)}`);
             return token
         },
-        async session({ session, token}: {session: any, token: any}){
+        async session({ session, token}: {session: any, token: any}){ //BUG: session can't load when user log in at the first time
             console.log(`[AUTH:session] session: ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
             if(token){
                 session.user.id = token.id;
