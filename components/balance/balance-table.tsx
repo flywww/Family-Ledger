@@ -51,10 +51,8 @@ export default function BalanceTable({
     })
     
     useEffect(()=>{
-        console.log(`updateMonthBalanceData in Balance-table`);
-        
         updateMonthBalanceData(data);
-    }, [data, updateMonthBalanceData])
+    }, [data,updateMonthBalanceData])
 
     return(
         <>

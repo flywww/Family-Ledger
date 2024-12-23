@@ -29,7 +29,7 @@ export default async function Page({
     } as FlattedBalanceType) )  
 
     return (
-      <MonthBalanceProvider>
+      <MonthBalanceProvider initialData={flattedBalanceData || []}>
         <div>
           {flattedBalanceData && <BalanceTable 
             queryDate={ queryDate } 
