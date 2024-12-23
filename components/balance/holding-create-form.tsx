@@ -155,9 +155,6 @@ export default function CreateHoldingForm({
                                                                 value={`${holding.name}(${holding.symbol})`}
                                                                 key={`${holding.name}(${holding.symbol})`}
                                                                 onSelect={() => {
-                                                                    console.log(`\n${holding.name}`);
-                                                                    console.log(`${holding.symbol}`);
-                                                                    console.log(`${holding.sourceId}`);
                                                                     form.setValue("name", holding.name);
                                                                     form.setValue("symbol", holding.symbol);
                                                                     form.setValue("sourceId", holding.sourceId);

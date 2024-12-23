@@ -21,21 +21,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useForm } from "react-hook-form";
+import ChangePasswordForm from "@/components/setting/change-password-form";
 
 export default function Page() {
   const { data:session } = useSession();
-  const form = useForm({
-    defaultValues:{
-      newPassword: "",
-      retypePassword: "",
-    }
-  })
+  
 
   return (
       <div>
         <p>Setting Page</p>
         <p>{session?.user.account}</p>
         <p>{session?.user.id}</p>
+        <ChangePasswordForm/>
         <Button onClick={()=>{
           fetch('/api/create-valueData', {
             method: 'POST',

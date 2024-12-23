@@ -31,6 +31,7 @@ export default function Search({
                     variant="outline" 
                     size="icon"
                     onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,-1))}
+                    disabled={getCalculatedMonth(queryDate,-1) < new Date(minYear,1,1)}
                 > 
                 <ChevronLeft/>
             </Button>
