@@ -12,7 +12,7 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
     const [setting, setSetting] = useState<Setting | undefined>();
     useEffect(()=>{
         console.log(`Session has updated in useEffect: ${JSON.stringify(session)}`);
-        
+        //BUG: session will update periodically
         (async function () {
             if(session){
                 const setting = await fetchSetting(session?.user.id);

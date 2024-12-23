@@ -29,7 +29,6 @@ export default function BalanceTable({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-    const [tableData, setTableData] = useState<FlattedBalanceType[]>(data);
     const monthBalanceContext = useContext(MonthBalanceContext);
     if(!monthBalanceContext){
         throw Error ("Setting must be used within a setting provider")

@@ -17,13 +17,10 @@ import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
 import { createMonthBalances, fetchMonthlyBalance, fetchSetting } from "@/lib/actions";
-import { Balance, FlattedBalanceType, Setting, SettingSchema } from "@/lib/definitions";
+import { FlattedBalanceType, Setting } from "@/lib/definitions";
 import Link from "next/link"
 import { useEffect, useState } from "react";
-import { parse } from "path";
 import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
-import { date } from "zod";
-import { isEqual } from "date-fns";
 import { useSession } from "next-auth/react";
 
 export default function BalanceTableToolbar({ 
@@ -57,12 +54,12 @@ export default function BalanceTableToolbar({
                     <Search queryDate={queryDate}/>
                     <Input
                         placeholder="Filter balances"
-                        value={(table.getColumn("holdingName")?.getFilterValue() as string) ?? ""}
+                        value={(table.getState().globalFilter as string) ?? ""}
                         onChange={(event) => 
-                            table.getColumn("holdingName")?.setFilterValue(event.target.value)
+                            table.setGlobalFilter(String(event.target.value))
                         }
                         className="min-w-40"
-                    />
+                    /> 
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
