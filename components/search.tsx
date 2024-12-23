@@ -4,10 +4,11 @@ import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { getYearList, minYear } from "@/lib/data";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
+
 
 export default function Search({
     queryDate
@@ -25,7 +26,14 @@ export default function Search({
     }
 
     return(
-        <div>
+        <div className="flex flex-row gap-1">
+            <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,-1))}
+                > 
+                <ChevronLeft/>
+            </Button>
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant={"outline"} className={cn("min-w-40 justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
@@ -41,6 +49,14 @@ export default function Search({
                         minDate={new Date(minYear,1,1)} />
                 </PopoverContent>
             </Popover>
+            <Button 
+                variant="outline" 
+                size="icon"
+                onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,1))}
+                disabled={getCalculatedMonth(queryDate,1) > getLastMonth(new Date())}
+            > 
+                <ChevronRight/>
+            </Button>
         </div>
     )
 }
