@@ -15,12 +15,10 @@ import {
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuItem,
-    
 } from "@/components/ui/dropdown-menu"
-import { signOut} from "next-auth/react"
+import { signOut, useSession} from "next-auth/react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-import { updateSetting } from "@/lib/actions";
 import { currencyType, currencySymbols } from "@/lib/definitions";
 import { SettingContext } from "@/context/settingContext";
 
@@ -36,6 +34,7 @@ export default function NavMenu(){
     }
     const { setting, updateUserSetting } = settingContext;         
     const router = useRouter();
+    const {data:session} = useSession();
 
     const updateCurrency = (value:string) => {
         updateUserSetting({displayCurrency:(value as currencyType)})
@@ -55,7 +54,7 @@ export default function NavMenu(){
                 <Button variant="outline">Menu</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{session?.user.account}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Display</DropdownMenuSubTrigger>
@@ -74,9 +73,11 @@ export default function NavMenu(){
                     <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                             <DropdownMenuRadioGroup value={currency} onValueChange={updateCurrency}>
-                                {currencySymbols.map( (symbol) => (
-                                    <DropdownMenuRadioItem key={symbol} value={symbol}>{symbol}</DropdownMenuRadioItem>
-                                ))}
+                                <div className="max-h-80 overflow-y-auto">
+                                    {currencySymbols.map( (symbol) => (
+                                        <DropdownMenuRadioItem key={symbol} value={symbol}>{symbol}</DropdownMenuRadioItem>
+                                    ))}    
+                                </div>
                             </DropdownMenuRadioGroup>
                         </DropdownMenuSubContent>
                     </DropdownMenuPortal>

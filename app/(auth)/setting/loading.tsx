@@ -1,4 +1,4 @@
 export default function Loading() {
-    return <div>Loading...</div>;
+    return <div>Setting loading...</div>;
     //TODO: Add skeletons
 }

@@ -71,6 +71,7 @@ export default function DashboardLineChart({
                             <ChartTooltip cursor={true} content={<ChartTooltipContent/>}/>
                             {labels.map(label => (
                                 <Line
+                                    key={label}
                                     dataKey={label}
                                     type="natural"
                                     stroke={`var(--color-${label.replace(/\s+/g,"")})`}

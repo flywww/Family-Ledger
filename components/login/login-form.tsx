@@ -26,19 +26,20 @@ export default function LoginForm(){
     })
 
     const onSubmit = (values: User) => {
+        console.log("onSubmit triggered with values:", values);
         authenticate(undefined, values)
     }
     
     return(
-        <>
+        <div className="w-auto">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}  className="space-y-1">
+                <form onSubmit={form.handleSubmit(onSubmit)}  className="space-y-2">
                     <FormField
                         control={form.control}
                         name="account"
                         render={({field}) => (
                             <FormItem>
-                                <FormLabel>Account</FormLabel>
+                                <FormLabel className="text-lg">Account</FormLabel>
                                 <FormControl>
                                     <Input placeholder="Please input account name" {...field}/>
                                 </FormControl>
@@ -51,7 +52,7 @@ export default function LoginForm(){
                         name="password"
                         render={({field}) => (
                             <FormItem>
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel className="text-lg">Password</FormLabel>
                                 <FormControl>
                                     <Input type="password" placeholder="Please input password" {...field}/>
                                 </FormControl>
@@ -59,10 +60,20 @@ export default function LoginForm(){
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" >Log in</Button>
+                    <br />
+                    <Button 
+                        className="w-full mt-8 mb-6"
+                        variant='default' 
+                        type="submit"
+                        size="lg"
+                    >
+                        Log in
+                    </Button>
+                    <br />
+                    <br />
                 </form>
             </Form>
 
-        </>
+        </div>
     )
 }

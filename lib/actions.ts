@@ -441,9 +441,9 @@ export async function authenticate(
     formData: User,
 ){
     try {
-        //console.log("[AUTH:Authenticating] with:", formData);
+        console.log("[AUTH:Authenticating] with:", formData);
         await signIn('credentials', formData);
-        //console.log("[AUTH:Authentication] successful");
+        console.log("[AUTH:Authentication] successful");
     } catch (error) {
         if (error instanceof AuthError){
             switch (error.type) {
