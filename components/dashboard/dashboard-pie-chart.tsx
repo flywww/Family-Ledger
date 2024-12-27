@@ -48,8 +48,6 @@ export default function DashboardPieChart({
         config[valueKey] = {
             label: valueKey
         }
-        console.log(`config: ${JSON.stringify(config)}`);
-        
         return config;
     }, {} as Record<string, { label: string; color?: string }> ) satisfies ChartConfig;
 

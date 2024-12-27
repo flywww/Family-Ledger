@@ -1,9 +1,9 @@
-import { convertCurrency, getCalculatedMonth } from "@/lib/utils";
+import { getCalculatedMonth } from "@/lib/utils";
 import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
-import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData } from "@/lib/actions";
+import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData, getConvertedCurrency } from "@/lib/actions";
 import { auth } from "@/auth";
 import { currencyType } from "@/lib/definitions";
 
@@ -16,7 +16,6 @@ export default async function Page({
     currency?: string,
   }
 }) {
- //BUG: Can not fetch data when user get in the page for the first time!!!
     const queryDate = searchParams?.date ? new Date(searchParams.date) : await fetchLastDateOfBalance() || getCalculatedMonth(new Date(), -1)
     const categoryData = await fetchCategories();
     const session = await auth();
@@ -34,9 +33,11 @@ export default async function Page({
     const valueDataArray = await fetchValueData();
     const currency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
     const filteredValueData = valueDataArray 
-                              ? valueDataArray
-                                  .filter(valueData => categoryNames.includes(valueData.category.name))
-                                  .map(valueData => ({...valueData, value:convertCurrency('USD',currency,valueData.value,valueData.date)}))
+                              ? await Promise.all(
+                                  valueDataArray
+                                    .filter(valueData => categoryNames.includes(valueData.category.name))
+                                    .map(async valueData => ({...valueData, value: await getConvertedCurrency('USD',currency,valueData.value,valueData.date) || 0}))
+                                )
                               : [];
     return (
       <div className="flex flex-col gap-3 justify-start">

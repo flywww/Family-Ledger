@@ -29,10 +29,12 @@ import {
     ValueDataSchema,
     User,
     UserSchema,
+    currencySymbols,
+    CurrencyExchangeRateCreateType,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { delay, convertCurrency } from "./utils";
+import { delay, getUTCDateString } from "./utils";
 import bcrypt from 'bcryptjs';
 import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -140,7 +142,7 @@ function convertToValueData( balances: Balance[]){
                     typeId: type.id,
                 };
             }
-            valueData[key].value += currency === 'USD' ? value : convertCurrency(currency, 'USD', value, date);
+            valueData[key].value += currency === 'USD' ? value : getConvertedCurrency(currency as currencyType, 'USD', value, date);
         }
     });
 
@@ -417,7 +419,7 @@ export async function fetchUserWithAccount( account: string ){
 export async function updatePassword( account: string, password: string ){
     try {
         const hashedPassword: string = await bcrypt.hash(password, 10);
-        console.log(`hasedPassword: ${hashedPassword}`);
+        console.log(`hashedPassword: ${hashedPassword}`);
         console.log(`account: ${account}`);
 
         const user = await prisma.user.update({
@@ -427,7 +429,7 @@ export async function updatePassword( account: string, password: string ){
             data: { password: hashedPassword }
         })
 
-        console.log(`hasedPassword update result: ${JSON.stringify(user)}`);
+        console.log(`hashedPassword update result: ${JSON.stringify(user)}`);
     } catch (error) {
         console.log(`Fail to update user password: ${error}`)
         throw new Error(`Fail to update user password`);
@@ -439,9 +441,9 @@ export async function authenticate(
     formData: User,
 ){
     try {
-        console.log("[AUTH:Authenticating] with:", formData);
+        //console.log("[AUTH:Authenticating] with:", formData);
         await signIn('credentials', formData);
-        console.log("[AUTH:Authentication] successful");
+        //console.log("[AUTH:Authentication] successful");
     } catch (error) {
         if (error instanceof AuthError){
             switch (error.type) {
@@ -780,4 +782,99 @@ export async function updateSetting( userId: string, setting: SettingUpdateType 
     } catch (error) {
         console.error(`Fail to update setting with userId:${userId} and setting:${setting}, error:${error}`)
     }
+}
+
+let usdExchangeRateCache= new Map<string, number>();
+
+//Currency
+export async function getConvertedCurrency(fromCurrency:currencyType, toCurrency:currencyType, amount:number, date: Date){
+    try {
+        if(fromCurrency === toCurrency) return amount;
+        let fromCurrencyRate, toCurrencyRate;
+        const fromCacheKey = `${fromCurrency}-${date.toISOString().split('T')[0]}`;
+        const toCacheKey = `${toCurrency}-${date.toISOString().split('T')[0]}`;      
+        if( usdExchangeRateCache.has(fromCacheKey) && usdExchangeRateCache.has(toCacheKey)){
+            fromCurrencyRate = usdExchangeRateCache.get(fromCacheKey);
+            toCurrencyRate = usdExchangeRateCache.get(toCacheKey);
+            //console.log(`[getConvertedCurrency] from catch - fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+            if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined) return amount * toCurrencyRate / fromCurrencyRate;
+        }
+
+        const rateData = await prisma.currencyExchangeRate.findMany({
+            where:{
+                OR:[
+                    {date: date, currency: fromCurrency},
+                    {date: date, currency: toCurrency},
+                ] 
+            }
+        })
+        
+        //console.log(`[getConvertedCurrency] rateData from db: ${JSON.stringify(rateData)}`);
+        
+        if(rateData.length === 0){
+            //console.log(`[getConvertedCurrency] rateData.length === 0`);
+            
+            const currencyData = await fetchCurrencyExchangeRates(date);
+            //TODO: use insert?
+            await prisma.currencyExchangeRate.createMany({data: currencyData});
+            //catch the rate
+            fromCurrencyRate = currencyData.find( (data:any) => data.currency === fromCurrency)?.rate;
+            if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
+            toCurrencyRate = currencyData.find( (data:any) => data.currency === toCurrency)?.rate;
+            if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
+        }else{
+            //console.log(`[getConvertedCurrency] rateData.length !== 0`);
+            //catch the rate
+            fromCurrencyRate = rateData.find( (data:any) => data.currency === fromCurrency)?.rate;
+            if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
+            toCurrencyRate = rateData.find( (data:any) => data.currency === toCurrency)?.rate;
+            if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
+        } 
+        //console.log(`[getConvertedCurrency] fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+        let convertedResult = 0;
+        if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined){
+            convertedResult = amount * toCurrencyRate / fromCurrencyRate;
+        }else{
+            convertedResult = -1;
+        }
+        return convertedResult;
+    } catch (error) {
+        console.log(`Fail to get converted currency: ${error}`);   
+    }
+}
+
+const fetchCurrencyExchangeRates = async (date: Date) => {
+    const isHistoricalData = date < (new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+            //console.log(`[getConvertedCurrency] isHistoricalData: ${isHistoricalData} date: ${date} compareDate: ${new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())}`);
+            
+            const API_KEY = process.env.CURRENCY_API_KEY;
+            if (!API_KEY) {
+                throw new Error("Currency exchange API key is missing");
+            }
+            const header = {
+                headers:{
+                    "apikey": API_KEY,
+                }
+            }
+            const API_url = `https://api.currencyapi.com/v3/${isHistoricalData ? "historical" : "latest"}?`    
+            const currencies = currencySymbols.join('%2C');
+            const queryURL = isHistoricalData
+                                ? `${API_url}currencies=${currencies}&date=${getUTCDateString(date)}`
+                                : `${API_url}currencies=${currencies}`;
+            //console.log(`[getConvertedCurrency] queryURL: ${queryURL}`);
+            const response = await fetch(queryURL, header);
+            await delay(6100);
+            if (!response.ok) {
+                const errorText = await response.text(); // Read raw response
+                console.error("Failed response body:", errorText);
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const result = await response.json();
+            //console.log(`[getConvertedCurrency] response: ${JSON.stringify(result)}`);
+            const currencyData: CurrencyExchangeRateCreateType[] = Object.values(result.data).map((data: any) => ({
+                currency: data.code, 
+                rate: data.value, 
+                date: date
+            }))
+            return currencyData;
 }

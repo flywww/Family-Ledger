@@ -14,18 +14,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                 password: {label: "Password", type: "password"},
             },
             async authorize(credentials){
-                console.log(`[AUTH:authorize] credentials: ${JSON.stringify(credentials)}`);
+                //console.log(`[AUTH:authorize] credentials: ${JSON.stringify(credentials)}`);
                 const parsedCredentials = UserSchema.safeParse(credentials);
                 if(parsedCredentials.success){
                     const { account, password } = parsedCredentials.data;
                     const user = await fetchUserWithAccount(account);
-                    console.log(`fetch user with account: ${JSON.stringify(user)}`);
+                    //console.log(`[AUTH:authorize] fetch user with account: ${JSON.stringify(user)}`);
                     
                     if(!user) return null;
                     const passwordsMatch = await bcrypt.compare(password, user.password)
                     if(passwordsMatch) return {id: user.id, account: user.account};
                 }
-                console.log(`Invalid credentials`);
+                //console.log(`[AUTH:authorize] Invalid credentials`);
                 return null;
             },
         }),

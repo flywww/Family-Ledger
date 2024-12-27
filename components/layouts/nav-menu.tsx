@@ -21,7 +21,7 @@ import { signOut} from "next-auth/react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { updateSetting } from "@/lib/actions";
-import { currencyType } from "@/lib/definitions";
+import { currencyType, currencySymbols } from "@/lib/definitions";
 import { SettingContext } from "@/context/settingContext";
 
 export default function NavMenu(){
@@ -74,8 +74,9 @@ export default function NavMenu(){
                     <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                             <DropdownMenuRadioGroup value={currency} onValueChange={updateCurrency}>
-                                <DropdownMenuRadioItem value="USD">USD</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="TWD">TWD</DropdownMenuRadioItem>
+                                {currencySymbols.map( (symbol) => (
+                                    <DropdownMenuRadioItem key={symbol} value={symbol}>{symbol}</DropdownMenuRadioItem>
+                                ))}
                             </DropdownMenuRadioGroup>
                         </DropdownMenuSubContent>
                     </DropdownMenuPortal>

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { useForm } from "react-hook-form";
 import ChangePasswordForm from "@/components/setting/change-password-form";
+import { getConvertedCurrency } from "@/lib/actions";
 
 export default function Page() {
   const { data:session } = useSession();
@@ -54,6 +55,17 @@ export default function Page() {
           .then(data => console.log(data))
           .catch(error => console.error(error))
         }}> Update Password </Button>
+      
+      <Button onClick={
+        async ()=>{
+          const convertedCurrency = await getConvertedCurrency('JPY','TWD',100,new Date('2024-12-23 23:59:59'))
+          console.log(`convertedCurrency: ${convertedCurrency}`)
+      }}
+      >
+        Test button
+      </Button>
+      
       </div>
+      
     );
   }

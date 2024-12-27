@@ -27,6 +27,13 @@ export const getCalculatedMonth = (date: Date, addMonth: number) => {
   return calculatedDate;
 }
 
+export const getUTCDateString = (date: Date) => {
+  const year = date.getUTCFullYear().toString();
+  const month = (date.getUTCMonth() +1).toString().padStart(2,'0');
+  const day = date.getUTCDate().toString().padStart(2,'0');
+  return `${year}-${month}-${day}`
+}
+
 //Timer
 export function delay(ms: number){
   return new Promise( resolve => setTimeout(resolve, ms));
@@ -38,24 +45,6 @@ const exchangeRate = new Map([
   ['USD', 1],
   ['EUR', 0.93]
 ])
-
-export const convertCurrency = ( from:currencyType, to:currencyType, amount:number, date:Date ) => {
-  //TODO: get rate with date form API
-  //https://app.currencyapi.com/subscription
-//https://app.exchangerate-api.com/dashboard/confirmed
-  const fromRate = exchangeRate.get(from) ;
-  const toRate = exchangeRate.get(to);
-  let convertedResult = 0;
-  
-  if( from === to ) return amount;
-
-  if(fromRate !== undefined && toRate !== undefined){
-    convertedResult = amount * toRate / fromRate;
-  }else{
-    convertedResult = -1;
-  }
-  return convertedResult;
-}
 
 export const enUSNumberFormat = ( num: any ) => {
   return new Intl.NumberFormat('en-US').format(num);

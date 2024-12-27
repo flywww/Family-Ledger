@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import NextAuth, { DefaultSession, User as AuthUser } from 'next-auth';
 
-export type currencyType = 'TWD' | 'USD';
+export type currencyType = 'TWD' | 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CNY' | 'KRW' | 'HKD' | 'AUD' | 'CAD' | 'SGD' | 'CHF' | 'SEK' | 'NZD' | 'THB' | 'PHP' | 'IDR' | 'VND' | 'MYR' | 'ZAR' | 'BRL' | 'INR' | 'RUB' | 'DKK' | 'NOK' | 'TRY' | 'MXN' | 'PLN' | 'ILS' | 'HUF' | 'CZK' | 'CLP' | 'EGP' | 'AED' | 'COP' | 'SAR' | 'PKR' | 'KWD' | 'QAR' | 'OMR' | 'BHD' | 'RSD' | 'HRK' | 'BGN' | 'RON' | 'LKR' | 'BDT' | 'DZD' | 'KES' | 'NGN' | 'UGX' | 'GHS' | 'ZMW' | 'MAD' | 'MZN';
 export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unlisted stock';
 export type typeListType = 'Assets' | 'Liabilities'
+export const currencySymbols = ['TWD','USD','EUR','JPY','GBP','CNY','KRW','HKD','AUD','CAD','SGD','CHF','SEK','NZD','THB','PHP','IDR','VND','MYR','ZAR','BRL','INR','RUB','DKK','NOK','TRY','MXN','PLN','ILS','HUF','CZK','CLP','EGP','AED','COP','SAR','PKR','KWD','QAR','OMR','BHD','RSD','HRK','BGN','RON','LKR','BDT','DZD','KES','NGN','UGX','GHS','ZMW','MAD','MZN']
 
 declare module 'next-auth' {
     interface User {
@@ -45,7 +46,7 @@ export type UserUpdateType = z.infer<typeof UserUpdateSchema>
 export const SettingSchema = z.object({
     id: z.number(),
     accountingDate: z.date(),
-    displayCurrency: z.enum(['TWD','USD']),
+    displayCurrency: z.enum([...currencySymbols] as [string, ...string[]]),
     displayCategories: z.string(),
     userId: z.string(),
     updatedAt: z.date(),
@@ -147,7 +148,7 @@ export const BalanceSchema = z.object({
     quantity: z.number(),
     price: z.number(),
     value: z.number(),
-    currency: z.enum(['TWD' , 'USD']).default('TWD'),
+    currency: z.enum([...currencySymbols] as [string, ...string[]]).default('TWD'),
     note: z.preprocess((val) => val ?? "", z.string().optional()),
     userId: z.string(),
     user: UserSchema.optional(),
@@ -206,3 +207,25 @@ export const ValueDataUpdateSchema = ValueDataCreateSchema.partial().extend({
 export type ValueData = z.infer<typeof ValueDataSchema>
 export type ValueDataCreateType = z.infer<typeof ValueDataCreateSchema>
 export type ValueDataUpdateType = z.infer<typeof ValueDataUpdateSchema>
+
+
+export const currencyExchangeRateSchema = z.object({
+    id: z.number(),
+    currency: z.enum([...currencySymbols] as [string, ...string[]]),
+    rate: z.number(),
+    date: z.date(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+export const currencyExchangeRateCreateSchema = currencyExchangeRateSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+export const currencyExchangeRateUpdateSchema = currencyExchangeRateCreateSchema.partial().extend({
+    id: z.number(),
+})
+
+export type CurrencyExchangeRate = z.infer<typeof currencyExchangeRateSchema>
+export type CurrencyExchangeRateCreateType = z.infer<typeof currencyExchangeRateCreateSchema>
+export type CurrencyExchangeRateUpdateType = z.infer<typeof currencyExchangeRateUpdateSchema>

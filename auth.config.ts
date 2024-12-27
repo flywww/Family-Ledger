@@ -30,32 +30,32 @@ export const authConfig = {
     },
     callbacks:{
         async jwt({ token, user }){
-            console.log(`[AUTH:jst] token: ${JSON.stringify(token)}, user: ${JSON.stringify(user)}`);
+            //console.log(`[AUTH:jst] token: ${JSON.stringify(token)}, user: ${JSON.stringify(user)}`);
             if(user){
                 token.id = user.id;
                 token.account = user.account;
             }
-            console.log(`[AUTH:jst] token(user update?): ${JSON.stringify(token)}, user: ${JSON.stringify(user)}`);
+            //console.log(`[AUTH:jst] token(user update?): ${JSON.stringify(token)}, user: ${JSON.stringify(user)}`);
             return token
         },
         async session({ session, token}: {session: any, token: any}){ //BUG: session can't load when user log in at the first time
-            console.log(`[AUTH:session] session: ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
+            //console.log(`[AUTH:session] session: ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
             if(token){
                 session.user.id = token.id;
                 session.user.account = token.account;
             }
-            console.log(`[AUTH:session] session(token update?): ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
+            //console.log(`[AUTH:session] session(token update?): ${JSON.stringify(session)}, token: ${JSON.stringify(token)}`);
             return session;
         },
         authorized({ auth, request: { nextUrl} }){
-            console.log(`[AUTH:Authorized] function: auth: ${JSON.stringify(auth)}, request: ${JSON.stringify(nextUrl)}`);
+           //console.log(`[AUTH:Authorized] function: auth: ${JSON.stringify(auth)}, request: ${JSON.stringify(nextUrl)}`);
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
             const isOnBalance = nextUrl.pathname.startsWith('/balance');
             const isOnSetting = nextUrl.pathname.startsWith('/setting');
             const isOnLogin = nextUrl.pathname.startsWith('/login');
             const isOnRoot = nextUrl.pathname.endsWith('/');
-            console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}, isOnRoot:${isOnRoot}, isOnLogin:${isOnLogin}`);
+            //console.log(`[AUTH:Authorized] isLoggedIn:${isLoggedIn}, isOnDashboard:${isOnDashboard}, isOnBalance:${isOnBalance}, isOnSetting:${isOnSetting}, isOnRoot:${isOnRoot}, isOnLogin:${isOnLogin}`);
             if(isOnDashboard || isOnBalance || isOnSetting){
                 if(isLoggedIn) return true;
                 return false;

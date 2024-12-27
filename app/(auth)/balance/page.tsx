@@ -1,9 +1,9 @@
 import BalanceTable from "@/components/balance/balance-table";
-import { convertCurrency, getCalculatedMonth } from "@/lib/utils";
-import { fetchLastDateOfBalance, fetchMonthlyBalance, fetchSetting } from "@/lib/actions";
+import { fetchLastDateOfBalance, fetchMonthlyBalance, fetchSetting, getConvertedCurrency } from "@/lib/actions";
 import { currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
+import { getCalculatedMonth } from "@/lib/utils";
 
 export default async function Page({
   searchParams,
@@ -18,15 +18,15 @@ export default async function Page({
     const setting = session && await fetchSetting(session.user.id);;
     const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
     const balanceData = await fetchMonthlyBalance(queryDate);
-    const flattedBalanceData = balanceData?.map( (balance) => ({
+    const flattedBalanceData = await Promise.all(balanceData?.map(async (balance) => ({
         ...balance,
-        price: convertCurrency(balance.currency,displayCurrency,balance.price,balance.date),
-        value: convertCurrency(balance.currency,displayCurrency,balance.value,balance.date),
+        price: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.price, balance.date),
+        value: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.value, balance.date),
         holdingName: balance?.holding?.name,
         holdingSymbol: balance?.holding?.symbol,
         holdingCategoryName: balance?.holding?.category?.name,
         holdingTypeName: balance?.holding?.type?.name,
-    } as FlattedBalanceType) )  
+    })) as Promise<FlattedBalanceType>[]);
 
     return (
       <MonthBalanceProvider initialData={flattedBalanceData || []}>

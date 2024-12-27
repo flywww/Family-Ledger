@@ -39,7 +39,7 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
     }
 
     useEffect(() => {
-        console.log(`!!!!!!!! setting changed!!! ${JSON.stringify(setting)}`);
+        console.log(`[SettingProvider] setting changed!!! ${JSON.stringify(setting)}`);
         
     }, [setting])
 
