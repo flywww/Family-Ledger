@@ -82,7 +82,13 @@ export default function NavMenu(){
                         </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                 </DropdownMenuSub>
-                <DropdownMenuItem onClick={ () => router.push('/setting') }>
+                <DropdownMenuItem className="block sm:hidden" onClick={ () => router.push('/dashboard') }>
+                    Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem className="block sm:hidden" onClick={ () => router.push('/balance') }>
+                    Balance
+                </DropdownMenuItem>
+                <DropdownMenuItem  onClick={ () => router.push('/setting') }>
                     Setting
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
