@@ -39,6 +39,7 @@ export default async function Page({
                                     .map(async valueData => ({...valueData, value: await getConvertedCurrency('USD',currency,valueData.value,valueData.date) || 0}))
                                 )
                               : [];
+                              
     return (
       <div className="flex flex-col gap-3 justify-start">
         <div className="flex flex-row gap-3">

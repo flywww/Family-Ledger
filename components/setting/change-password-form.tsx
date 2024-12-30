@@ -94,7 +94,7 @@ export default function ChangePasswordForm(){
                                             <Input
                                                 type="password"
                                                 className="w-80"
-                                                placeholder="repeat new password"
+                                                placeholder="Repeat new password"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -106,7 +106,7 @@ export default function ChangePasswordForm(){
                         <DialogClose asChild>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit">Submit change</Button>
+                        <Button type="submit">Submit</Button>
                     </DialogFooter>
                     </form>
                 </Form>
