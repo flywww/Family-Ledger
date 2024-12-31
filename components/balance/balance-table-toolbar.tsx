@@ -16,12 +16,13 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
-import { createMonthBalances, fetchMonthlyBalance, fetchSetting } from "@/lib/actions";
-import { FlattedBalanceType, Setting } from "@/lib/definitions";
+import { createMonthBalances, fetchMonthlyBalance } from "@/lib/actions";
+import { FlattedBalanceType } from "@/lib/definitions";
 import Link from "next/link"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { SettingContext } from "@/context/settingContext";
 
 export default function BalanceTableToolbar({ 
     table, 
@@ -30,27 +31,26 @@ export default function BalanceTableToolbar({
     table: Table<FlattedBalanceType>,
     queryDate: Date
 }){
-    const [setting, setSetting] = useState<Setting>();
+    const settingContext = useContext(SettingContext);
+    if(!settingContext){
+        throw Error ("Setting must be used within a setting provider")
+    }
+    const { setting } = settingContext;
     const lastMonth = getLastMonth(new Date());
     const [isOutdated, setIsOutdated] = useState<boolean>(false);
     const { data: session } = useSession();
 
     useEffect(() => {
-        const getSettingData = async () => {
-            if(session){
-                const data: Setting | undefined = await fetchSetting(session.user.id);
-                if(data){
-                    setSetting(data);
-                    setIsOutdated(data.accountingDate < lastMonth)
-                }
+        (async function(){
+            if(session && setting){
+                setIsOutdated(setting.accountingDate < lastMonth)
             }
-        };
-        getSettingData();
-    }, [])
+        })();
+    }, [setting])
 
     return(
-            <div className="flex items-center py-4 justify-between">
-                <div className="flex items-center gap-3 justify-between">
+            <div className="flex items-center justify-between ">
+                <div className="w-full flex flex-col justify-start items-center gap-2 sm:flex-row">
                     <Search queryDate={queryDate}/>
                     <Input
                         placeholder="Filter balances"
@@ -58,12 +58,12 @@ export default function BalanceTableToolbar({
                         onChange={(event) => 
                             table.setGlobalFilter(String(event.target.value))
                         }
-                        className="min-w-40"
+                        className="hidden w-full sm:max-w-48 sm:block text-base sm:text-sm"
                     /> 
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="default" className="ml-auto">
+                        <Button variant="default" className="hidden sm:block ml-auto">
                             Menu <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>

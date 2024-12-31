@@ -26,8 +26,9 @@ export default function Search({
     }
 
     return(
-        <div className="flex flex-row gap-1">
+        <div className="flex flex-row gap-1 justify-center w-full items-center sm:justify-start sm:w-72">
             <Button 
+                    className="min-w-12"
                     variant="outline" 
                     size="icon"
                     onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,-1))}
@@ -37,13 +38,13 @@ export default function Search({
             </Button>
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant={"outline"} className={cn("min-w-40 justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
+                    <Button variant={"outline"} className={cn("w-full  justify-start text-left font-normal", !queryDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {queryDate ? format(queryDate, "MMM yyyy") : <span>Pick a month</span>}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                    <MonthPicker 
+                    <MonthPicker
                         onMonthSelect={handleDateSearch} 
                         selectedMonth={queryDate}
                         maxDate={getLastMonth(new Date())}
@@ -51,6 +52,7 @@ export default function Search({
                 </PopoverContent>
             </Popover>
             <Button 
+                className="min-w-12"
                 variant="outline" 
                 size="icon"
                 onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,1))}
