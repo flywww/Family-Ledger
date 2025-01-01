@@ -22,12 +22,14 @@ export default function DashboardLineChart({
     highlightLabel,
     data,
     xAxisDataKey,
+    className,
 }:{
     title: string,
     labels: string[],
     highlightLabel: string,
     data: Array<Record<string, string | number>>,
-    xAxisDataKey: string
+    xAxisDataKey: string,
+    className?: string,
 }){
     const colors = [
         "hsl(var(--chart-1))", 
@@ -46,12 +48,12 @@ export default function DashboardLineChart({
     }, {} as Record<string, { label: string; color: string }>) satisfies ChartConfig;
 
     return (
-        <Card className="max-w-lg">
+        <Card className={`w-full ${className}`}>
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ChartContainer config={chartConfig}>
+                    <ChartContainer config={chartConfig} className="max-h-[300px] w-full">
                         <LineChart
                             accessibilityLayer
                             data={data}
@@ -82,9 +84,6 @@ export default function DashboardLineChart({
 
                         </LineChart>
                     </ChartContainer>
-                    <CardFooter>
-                        <p>Footer</p>
-                    </CardFooter>
                 </CardContent>
             </Card>
     )

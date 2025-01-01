@@ -24,12 +24,14 @@ export default function DashboardPieChart({
     data,
     labelKey,
     valueKey,
+    className,
 }:{
     title: string,
     labels: string[],
     data: Array<Record<string, string | number>>,
     labelKey: string,
     valueKey: string,
+    className?: string,
 }){
     const colors = [
         "hsl(var(--chart-1))", 
@@ -52,35 +54,35 @@ export default function DashboardPieChart({
     }, {} as Record<string, { label: string; color?: string }> ) satisfies ChartConfig;
 
     return (
-        <Card className="flex flex-col">
-        <CardHeader className="items-center pb-0">
-            <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 pb-0">
-            <ChartContainer
-                config={pieChartConfig}
-                className="mx-auto aspect-square max-h-[300px] [&_.recharts-text]:fill-background"
-            >
-                <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent nameKey={labelKey}/>}/>
-                    <Pie data={data} dataKey={valueKey}>
-                        <LabelList
-                            dataKey={labelKey}
-                            className="fill-background"
-                            stroke="none"
-                            fontSize={12}
-                            formatter={(value: keyof typeof pieChartConfig) =>
-                                pieChartConfig[value]?.label
-                            }
-                        /> 
-                    </Pie>
-                    <ChartLegend
-                            content={<ChartLegendContent nameKey={labelKey} />}
-                            className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-                        />
-                </PieChart>
-            </ChartContainer>
-        </CardContent>
+        <Card className={`flex flex-col w-full ${className}`}>
+            <CardHeader className="items-center pb-0">
+                <CardTitle>{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+                <ChartContainer
+                    config={pieChartConfig}
+                    className="mx-auto aspect-square max-h-[300px] [&_.recharts-text]:fill-background"
+                >
+                    <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent nameKey={labelKey}/>}/>
+                        <Pie data={data} dataKey={valueKey}>
+                            <LabelList
+                                dataKey={labelKey}
+                                className="fill-background"
+                                stroke="none"
+                                fontSize={12}
+                                formatter={(value: keyof typeof pieChartConfig) =>
+                                    pieChartConfig[value]?.label
+                                }
+                            /> 
+                        </Pie>
+                        <ChartLegend
+                                content={<ChartLegendContent nameKey={labelKey} />}
+                                className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                            />
+                    </PieChart>
+                </ChartContainer>
+            </CardContent>
     </Card>
     )
 }

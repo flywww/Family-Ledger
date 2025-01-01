@@ -41,24 +41,26 @@ export default async function Page({
                               : [];
                               
     return (
-      <div className="flex flex-col gap-3 justify-start">
-        <div className="flex flex-row gap-3">
+      <div className="flex flex-col gap-3 justify-stretch">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Search queryDate={queryDate}/>
           <CategorySelector 
             queryCategories={queryCategories} 
             categories={categoryData || []}
           />
         </div>
-        <SummarySection 
-          queryDate={queryDate} 
-          valueData={filteredValueData}
-          currency={currency}
-        />
-        <ChartSection
-          queryDate={queryDate} 
-          categories={categoryNames}
-          valueData={filteredValueData}
-        />
+        <div className="flex flex-col gap-3 justify-center items-center w-full">
+          <SummarySection 
+            queryDate={queryDate} 
+            valueData={filteredValueData}
+            currency={currency}
+          />
+          <ChartSection
+            queryDate={queryDate} 
+            categories={categoryNames}
+            valueData={filteredValueData}
+          />
+        </div>
       </div>
     );
   }

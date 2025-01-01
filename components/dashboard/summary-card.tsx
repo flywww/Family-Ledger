@@ -12,14 +12,16 @@ export default function SummaryCard({
     value,
     description,
     currency,
+    className,
 }:{
     title: string,
     value: string,
     description: string,
     currency: string,
+    className?: string,
 }){
     return(
-            <Card className="min-w-48 max-w-56">
+            <Card className={`w-full ${className}`}>
                 <CardHeader>
                     <CardTitle> {title} </CardTitle>
                 </CardHeader>

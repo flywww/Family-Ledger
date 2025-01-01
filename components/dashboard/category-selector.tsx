@@ -44,7 +44,7 @@ export default function CategorySelector ({
         <div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="ml-auto">
+                    <Button variant="outline" className="w-full sm:w-32">
                         Category <ChevronDownIcon className="ml-2 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>

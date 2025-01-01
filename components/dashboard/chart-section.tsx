@@ -53,13 +53,14 @@ export default function ChartSection({
     }, [] as Array<Record<string, string | number>>)
     
     return(
-        <div className="">
+        <div className="grid grid-cols-1 grid-rows-2 gap-3 w-full sm:grid-cols-3 sm:grid-rows-1">
             {assetsLineChartData && <DashboardLineChart
                 title = "Assets"
                 labels = {assetsLineChartLabels}
                 highlightLabel = "Total"
                 data = {assetsLineChartData}
                 xAxisDataKey = "date"
+                className="col-span-1 row-span-1 sm:col-span-2 sm:row-span-1"
             />}
 
             {assetsPieChartData && <DashboardPieChart
@@ -68,6 +69,7 @@ export default function ChartSection({
                 data={assetsPieChartData}
                 labelKey="labelSafeKey"
                 valueKey="value"
+                className="col-span-1 row-span-2 sm:col-span-1 sm:row-span-1"
             />}
         </div>
     )

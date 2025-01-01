@@ -63,7 +63,7 @@ export default function BalanceTableToolbar({
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="default" className="hidden sm:block ml-auto">
+                        <Button variant="default" className="hidden sm:flex ml-auto">
                             Menu <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>

@@ -15,7 +15,8 @@ export default function Page({
     const backURL = `/balance?date=${initialDate}`    
 
     return(
-        <div>
+        <div className="flex flex-col gap-3 ml-6">
+            <h1 className="text-xl">Create Balance</h1>
             <CreateBalanceForm 
                 initialDate={initialDate}
                 backURL={backURL}   

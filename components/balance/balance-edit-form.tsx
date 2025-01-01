@@ -153,14 +153,13 @@ export default function EditBalanceForm({
     }
     
     return(
-        <div>
-            Create Balance Form
+        <div className="flex flex-col justify-start items-start">
             <Form {...form}>
                 <form   
                     onSubmit={form.handleSubmit(onSubmit, (errors) => { 
                         console.log('update balance form validation Errors:', errors)})
                     } 
-                    className="space-y-1"
+                    className="space-y-2"
                 >
                     <FormField
                         control={form.control}
@@ -237,7 +236,7 @@ export default function EditBalanceForm({
                         name="holdingId"
                         render={({field}) => (
                             <FormItem className="flex flex-col">
-                                <FormLabel>Name</FormLabel>
+                                <FormLabel className="py-1">Name</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
@@ -379,8 +378,8 @@ export default function EditBalanceForm({
                         control={form.control}
                         name="date"
                         render={({field}) => (
-                            <FormItem>
-                                <FormLabel> Date </FormLabel>
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="py-1">Date</FormLabel>
                                 <FormControl>
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -424,7 +423,7 @@ export default function EditBalanceForm({
                         )}
                     />
 
-                    <Button type="submit"> Submit </Button>
+                    <Button type="submit" className="w-full"> Submit </Button>
                 </form>
             </Form>
         </div>

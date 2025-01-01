@@ -10,8 +10,8 @@ export default async function Page({
     const balance = await fetchBalance(parseInt(params.id));
 
     return(
-        <div>
-            <h1>update page</h1>
+        <div className="flex flex-col gap-3 ml-6">
+            <h1 className="text-xl">Edit Balance</h1>
             {balance && <EditBalanceForm balance={balance}></EditBalanceForm>}
 
         </div>
