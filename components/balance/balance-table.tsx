@@ -56,9 +56,6 @@ export default function BalanceTable({
         },
     })
     
-    useEffect(()=>{
-        updateMonthBalanceData(data);
-    }, [data,updateMonthBalanceData])
 
     return(
         <div className="flex flex-col gap-4">

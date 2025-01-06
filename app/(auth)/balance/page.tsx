@@ -4,6 +4,8 @@ import { currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
 import { getCalculatedMonth } from "@/lib/utils";
+import BalanceTableSkeleton from "@/components/balance/skeleton/balance-table-skeleton";
+import { Suspense } from "react";
 
 export default async function Page({
   searchParams,
@@ -31,10 +33,13 @@ export default async function Page({
     return (
       <MonthBalanceProvider initialData={flattedBalanceData || []}>
         <div>
-          {flattedBalanceData && <BalanceTable 
-            queryDate={ queryDate } 
-            data={ flattedBalanceData }
-          />}
+            {flattedBalanceData &&
+              <Suspense fallback={<BalanceTableSkeleton/>}> 
+                <BalanceTable 
+                  queryDate={ queryDate } 
+                  data={ flattedBalanceData }
+                />
+              </Suspense>}
         </div>
       </MonthBalanceProvider>
     )

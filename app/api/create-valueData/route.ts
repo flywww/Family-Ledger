@@ -16,6 +16,8 @@ export async function POST(req: Request) {
             
             const monthlyBalance = await fetchMonthlyBalance(date);
             if(monthlyBalance){
+                console.log(`[createValueData] monthlyBalance: ${JSON.stringify(monthlyBalance)}`);
+                
                 await createValueData(monthlyBalance);
                 delay(1000);
             }
@@ -24,6 +26,7 @@ export async function POST(req: Request) {
         
 
     } catch (error) {
+        console.log(`[createValueData] error: ${error}`);
         
     }
 }

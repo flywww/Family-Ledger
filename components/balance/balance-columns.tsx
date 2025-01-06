@@ -24,7 +24,7 @@ import { Input } from "../ui/input"
 import LoadingSpinner from "../ui/loading-spinner"
 import { MonthBalanceContext } from "@/context/monthBalanceContext"
 
-const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
+const moneyCellFormatter = (value: number, key: string) => {
     const [displayedCurrency, setDisplayedCurrency] = useState<currencyType>('USD');
     const settingContext = useContext(SettingContext);
     if(!settingContext){
@@ -36,11 +36,10 @@ const moneyCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
             setDisplayedCurrency(setting.displayCurrency as currencyType);
         }
     }, [setting]) 
-    const recordPrice = parseFloat(row.getValue(key))
     const formattedPrice = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: displayedCurrency,
-    }).format(recordPrice)
+    }).format(value)
     return <div className="text-right font-medium">{formattedPrice}</div>
 }
 
@@ -84,6 +83,7 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         cell:({row}) => {
             const [editing, setEditing] = useState<boolean>(false)
             const [currentQuantity, setCurrentQuantity] = useState<number>(parseFloat(row.getValue('quantity')))
+            const [oldQuantity, setOldQuantity] = useState<number>(parseFloat(row.getValue('quantity')))
             const [isLoading, setIsLoading] = useState<boolean>(false);
             const monthBalanceContext = useContext(MonthBalanceContext);
             if(!monthBalanceContext){
@@ -92,20 +92,25 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
             const { monthBalanceData ,updateMonthBalance } = monthBalanceContext;  
             const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
                 const balance = await fetchBalance(row.original.id)
-                const oldQuantity = balance?.quantity; 
-                if(oldQuantity && oldQuantity !== currentQuantity){
+                //const oldQuantity = balance?.quantity; 
+                console.log(`[balance-columns] oldQuantity: ${oldQuantity} currentQuantity: ${currentQuantity}`);
+                console.log(`[balance-columns] update??: ${balance && oldQuantity.toString() !== currentQuantity.toString()}`);
+                //BUG: the quantity won't update when the user change back to the old value
+                if(balance && oldQuantity.toString() !== currentQuantity.toString()){
                     setIsLoading(true);
                     const newFlatteredBalance = {
                         ...row.original,
-                        quantity: currentQuantity, 
-                        value: currentQuantity*row.original.price 
+                        quantity: currentQuantity,
+                        price: balance.price, 
+                        value: currentQuantity*balance.price,
                     }
                     await updateBalance({
                         id: row.original.id,
-                        quantity: currentQuantity, 
-                        value: currentQuantity*row.original.price 
+                        quantity: currentQuantity,
+                        value: currentQuantity*balance.price,
                     })
-                    updateMonthBalance(newFlatteredBalance);
+                    updateMonthBalance(newFlatteredBalance); //TODO: the function name should be modified for clarity
+                    setOldQuantity(currentQuantity);
                     await delay(600);
                     setIsLoading(false);
                 }    
@@ -113,6 +118,10 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
             }
 
             useEffect(()=> setCurrentQuantity(row.getValue('quantity')), [monthBalanceData])
+            //BUG: the quantity won't update when the user paste a new value
+            //BUG: safari can't work well
+            //TODO: add save value and blur after enter
+
             return (
                 <div className="flex flex-row items-center gap-1 max-w-28">
                     <Input
@@ -133,15 +142,17 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         accessorKey: "price",
         header: ({column}) => getSortedHeader(column, "Price"),
         cell:({row}) => {
-            return moneyCellFormatter(row, 'price')
+            return moneyCellFormatter(row.original.price, 'price')
         }
     },
     {
         accessorKey: "value",
         header: ({column}) => getSortedHeader(column, "Value"),
         cell:({row}) => {
+
+            //BUG: the value isn't right when the user change the quantity
             const value = row.original.quantity * row.original.price;
-            return  moneyCellFormatter( {...row, original:{ ...row.original, value}}, 'value' )
+            return  moneyCellFormatter( value , 'value')
         }
     },
     {
@@ -153,13 +164,10 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
             const [isLoading, setIsLoading] = useState<boolean>(false);
             const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
                 const balance = await fetchBalance(row.original.id)
-                const oldNote = balance?.note; 
-                if(oldNote && oldNote !== currentNote){
+                const oldNote = balance ? balance.note : ''; 
+                
+                if(oldNote !== currentNote){
                     setIsLoading(true);
-                    const newFlatteredBalance = {
-                        ...row.original,
-                        note: currentNote
-                    }
                     await updateBalance({
                         id: row.original.id,
                         note: currentNote
@@ -169,7 +177,6 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                 }    
                 setEditing(false)
             }
-
             return (
                 <div className="flex flex-row items-center gap-1">
                     <Input

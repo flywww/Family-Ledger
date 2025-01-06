@@ -90,7 +90,6 @@ export async function fetchBalance( id: number ){
 }
 
 export async function fetchMonthlyBalance( queryDate: Date  ){
-    console.log('[Action] Fetching monthly balance with date', queryDate);
     const session = await auth()
     if(!session) return
     try {
@@ -107,7 +106,7 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
             },
             orderBy:{ id: 'asc' }
         })
-
+        
         const balances = data.map( (balance) => {
             const parsed = BalanceSchema.safeParse( balance )
             if(!parsed.success){
@@ -122,14 +121,16 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
     }
 }
 
-function convertToValueData( balances: Balance[]){
+async function convertToValueData( balances: Balance[] ){
     let valueData: Record<string, any> = {};
 
-    balances.forEach(balance => {
-
+    for(const balance of balances){
         if(balance.holding?.category && balance.holding.type){
             const { date, holding: { category, type }, value, userId, currency } = balance;
             const key = `${date}-${category.name}-${type.name}-${userId}`;
+            if (key === "Sun Dec 01 2024 00:00:00 GMT+0800 (Taipei Standard Time)-Cryptocurrency-Assets-cm4qh5eyz0000dh7ccntzdddz") {
+                console.log(`[convertToValueData] balance: ${JSON.stringify(balance.value)}`);  
+            }
     
             if (!valueData[key]) {
                 valueData[key] = {
@@ -142,17 +143,37 @@ function convertToValueData( balances: Balance[]){
                     typeId: type.id,
                 };
             }
-            valueData[key].value += currency === 'USD' ? value : getConvertedCurrency(currency as currencyType, 'USD', value, date);
+            //console.log(`[convertToValueData] currency: ${currency}`);
+            
+            if(currency === 'USD'){
+                valueData[key].value += value;
+                if (key === "Sun Dec 01 2024 00:00:00 GMT+0800 (Taipei Standard Time)-Cryptocurrency-Assets-cm4qh5eyz0000dh7ccntzdddz") {
+                    console.log(`USD ${value}`);  
+                }
+                //console.log(`[convertToValueData] key: ${key} \n valueData[key].value: ${valueData[key].value} (add value: ${value})`);
+                
+            }else{
+                const addValue = await getConvertedCurrency(currency as currencyType, 'USD', value, date);
+                valueData[key].value += addValue;
+                if (key === "Sun Dec 01 2024 00:00:00 GMT+0800 (Taipei Standard Time)-Cryptocurrency-Assets-cm4qh5eyz0000dh7ccntzdddz") {
+                    console.log(`Other ${addValue}`);
+                }
+
+                //console.log(`[convertToValueData] key: ${key} \n valueData[key].value: ${valueData[key].value} (add value: ${addValue})`); 
+                
+            }
         }
-    });
+    };
 
     const valueDataArray = Object.values(valueData);
+    //console.log(`[convertToValueData] valueDataArray: ${JSON.stringify(valueDataArray)}`);
+    
     return valueDataArray;
 }
 
 export async function createValueData (balances:Balance[]){
     try {
-        const valueDataArray = convertToValueData(balances);
+        const valueDataArray = await convertToValueData(balances);
         const parsed = ValueDataCreateSchema.array().safeParse(valueDataArray);
         if(!parsed.success){
             throw new Error('Failed to parse valueData.');
@@ -165,9 +186,10 @@ export async function createValueData (balances:Balance[]){
     }
 }   
 
+//BUG: Value data did not update after update balances
 export async function updateValueData( balance: Balance ){
     try {
-        console.log(`[updating valueData]`);
+        console.log(`[updating valueData] Balance: ${JSON.stringify(balance)}`);
         
         const balances = await prisma.balance.findMany({
             where:{
@@ -211,7 +233,7 @@ export async function updateValueData( balance: Balance ){
         if(!parsedBalances.success){
             throw new Error('Failed to parse balances.');
         }
-        const valueDataArray = convertToValueData(parsedBalances.data);
+        const valueDataArray = await convertToValueData(parsedBalances.data);
 
         console.log(`[updating valueData] convert to valueData: ${valueDataArray}`);
         
@@ -286,10 +308,12 @@ export async function createBalance( balance: BalanceCreateType ){
                 }
             }   
         })
+        console.log(`[createBalance] balance created: ${JSON.stringify(result)}`);
         const parsedBalance = BalanceSchema.safeParse(result);
         if(!parsedBalance.success){
             console.log(`Fail to parse balance for valueData: ${parsedBalance.error}`);
         }else{
+            console.log(`[createBalance] Proceed to update valueData`);
             updateValueData(parsedBalance.data);
         }
             
@@ -381,12 +405,12 @@ export async function deleteBalance( id: number, balance: Balance ){
 }
 
 export async function updateBalance( balance: BalanceUpdateType, backDate?: Date ){
+    //BUG: update data can not contain id
+    const { id, ...balanceWithoutId } = balance;
     try {
-        console.log(`updating balance with id(${balance.id}) and  data: ${JSON.stringify(balance)} `);
-
         const result = await prisma.balance.update({
             where:{ id: balance.id },
-            data: balance
+            data: balanceWithoutId,
         })
         if(balance.value){
             const balanceData = await fetchBalance(balance.id);
@@ -441,9 +465,7 @@ export async function authenticate(
     formData: User,
 ){
     try {
-        console.log("[AUTH:Authenticating] with:", formData);
         await signIn('credentials', formData);
-        console.log("[AUTH:Authentication] successful");
     } catch (error) {
         if (error instanceof AuthError){
             switch (error.type) {
@@ -488,6 +510,8 @@ export async function createHolding( holding: HoldingCreateType ){
 
 export async function updateHolding( id: number, holding: HoldingUpdateType){
     try {
+
+        //BUG: update data can not contain id
         await prisma.holding.update({
             where:{
                 id: id
@@ -767,6 +791,7 @@ export async function fetchSetting( userId: string ){
 }
 
 export async function updateSetting( userId: string, setting: SettingUpdateType ){
+    //BUG: update data can not contain id
     try {
         const updatedSetting = await prisma.setting.update({
             where: {
@@ -789,6 +814,8 @@ let usdExchangeRateCache= new Map<string, number>();
 //Currency
 export async function getConvertedCurrency(fromCurrency:currencyType, toCurrency:currencyType, amount:number, date: Date){
     try {
+        //console.log(`[getConvertedCurrency] fromCurrency: ${fromCurrency}, toCurrency: ${toCurrency}, amount: ${amount}, date: ${date}`);
+        
         if(fromCurrency === toCurrency) return amount;
         let fromCurrencyRate, toCurrencyRate;
         const fromCacheKey = `${fromCurrency}-${date.toISOString().split('T')[0]}`;
@@ -796,10 +823,11 @@ export async function getConvertedCurrency(fromCurrency:currencyType, toCurrency
         if( usdExchangeRateCache.has(fromCacheKey) && usdExchangeRateCache.has(toCacheKey)){
             fromCurrencyRate = usdExchangeRateCache.get(fromCacheKey);
             toCurrencyRate = usdExchangeRateCache.get(toCacheKey);
-            //console.log(`[getConvertedCurrency] from catch - fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+            //console.log(`[getConvertedCurrency catch] fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+            
             if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined) return amount * toCurrencyRate / fromCurrencyRate;
         }
-
+        
         const rateData = await prisma.currencyExchangeRate.findMany({
             where:{
                 OR:[
@@ -808,73 +836,80 @@ export async function getConvertedCurrency(fromCurrency:currencyType, toCurrency
                 ] 
             }
         })
-        
-        //console.log(`[getConvertedCurrency] rateData from db: ${JSON.stringify(rateData)}`);
-        
         if(rateData.length === 0){
-            //console.log(`[getConvertedCurrency] rateData.length === 0`);
-            
             const currencyData = await fetchCurrencyExchangeRates(date);
             //TODO: use insert?
-            await prisma.currencyExchangeRate.createMany({data: currencyData});
-            //catch the rate
-            fromCurrencyRate = currencyData.find( (data:any) => data.currency === fromCurrency)?.rate;
-            if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
-            toCurrencyRate = currencyData.find( (data:any) => data.currency === toCurrency)?.rate;
-            if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
+            if(currencyData){
+                await prisma.currencyExchangeRate.createMany({data: currencyData});
+                //catch the rate
+                fromCurrencyRate = currencyData.find( (data:any) => data.currency === fromCurrency)?.rate;
+                if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
+                toCurrencyRate = currencyData.find( (data:any) => data.currency === toCurrency)?.rate;
+                if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
+                //console.log(`[getConvertedCurrency] fetch fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+                
+            }
         }else{
-            //console.log(`[getConvertedCurrency] rateData.length !== 0`);
             //catch the rate
             fromCurrencyRate = rateData.find( (data:any) => data.currency === fromCurrency)?.rate;
             if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
             toCurrencyRate = rateData.find( (data:any) => data.currency === toCurrency)?.rate;
             if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
+            //console.log(`[getConvertedCurrency] db fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+            
         } 
-        //console.log(`[getConvertedCurrency] fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
         let convertedResult = 0;
+        //console.log(`[getConvertedCurrency] final fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
+        
         if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined){
             convertedResult = amount * toCurrencyRate / fromCurrencyRate;
         }else{
             convertedResult = -1;
         }
+        //console.log(`[getConvertedCurrency] convertedResult: ${convertedResult}`);
+        
         return convertedResult;
     } catch (error) {
         console.log(`Fail to get converted currency: ${error}`);   
     }
 }
 
-const fetchCurrencyExchangeRates = async (date: Date) => {
-    const isHistoricalData = date < (new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
-            //console.log(`[getConvertedCurrency] isHistoricalData: ${isHistoricalData} date: ${date} compareDate: ${new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())}`);
-            
-            const API_KEY = process.env.CURRENCY_API_KEY;
-            if (!API_KEY) {
-                throw new Error("Currency exchange API key is missing");
-            }
-            const header = {
-                headers:{
-                    "apikey": API_KEY,
-                }
-            }
-            const API_url = `https://api.currencyapi.com/v3/${isHistoricalData ? "historical" : "latest"}?`    
-            const currencies = currencySymbols.join('%2C');
-            const queryURL = isHistoricalData
-                                ? `${API_url}currencies=${currencies}&date=${getUTCDateString(date)}`
-                                : `${API_url}currencies=${currencies}`;
-            //console.log(`[getConvertedCurrency] queryURL: ${queryURL}`);
-            const response = await fetch(queryURL, header);
-            await delay(6100);
-            if (!response.ok) {
-                const errorText = await response.text(); // Read raw response
-                console.error("Failed response body:", errorText);
-                throw new Error(`Response status: ${response.status}`);
-            }
-            const result = await response.json();
-            //console.log(`[getConvertedCurrency] response: ${JSON.stringify(result)}`);
-            const currencyData: CurrencyExchangeRateCreateType[] = Object.values(result.data).map((data: any) => ({
-                currency: data.code, 
-                rate: data.value, 
-                date: date
-            }))
-            return currencyData;
+let stopCount  = 0;
+//Backup currency A=api
+export const fetchCurrencyExchangeRates = async (date: Date) => {
+    stopCount++;
+    if(stopCount > 3){
+        console.log(`[fetchCurrencyExchangeRates] stopCount: ${stopCount}`);
+        return [];
+    }
+    try {
+        const isHistoricalData = date < (new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+        const API_KEY = process.env.CURRENCYAPI_API_KEY;
+        if (!API_KEY) { throw new Error("Currency exchange API key is missing");}
+        
+        const header = { headers: { "apikey": API_KEY, }}
+        const API_url = `https://api.currencyapi.com/v3/${isHistoricalData ? "historical" : "latest"}?`    
+        const currencies = currencySymbols.join('%2C');
+        const queryURL = isHistoricalData
+                            ? `${API_url}currencies=${currencies}&date=${getUTCDateString(date)}`
+                            : `${API_url}currencies=${currencies}`;
+        const response = await fetch(queryURL, header);
+        await delay(6100);
+        
+        if (!response.ok) {
+            const errorText = await response.text(); // Read raw response
+            console.error("Failed response body:", errorText);
+            return [];
+            throw new Error(`Response status: ${response.status}`);
+        }
+        const result = await response.json();
+        const currencyData: CurrencyExchangeRateCreateType[] = Object.values(result.data).map((data: any) => ({
+            currency: data.code, 
+            rate: data.value, 
+            date: date
+        }))
+        return currencyData;
+    } catch (error) {
+        console.log(`Fail to fetch currency exchange rates: ${error}`); 
+    }
 }

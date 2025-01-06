@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import ChangePasswordForm from "@/components/setting/change-password-form";
-import { getConvertedCurrency } from "@/lib/actions";
+import { getConvertedCurrency, fetchCurrencyExchangeRates} from "@/lib/actions";
 import { Separator } from "@/components/ui/separator";
 
 export default function Page() {
@@ -45,11 +45,20 @@ export default function Page() {
           
             <Button className="min-w-64" onClick={
               async ()=>{
-                const convertedCurrency = await getConvertedCurrency('JPY','TWD',100,new Date('2024-12-23 23:59:59'))
+                const convertedCurrency = await getConvertedCurrency('JPY','TWD',100,new Date('2025-01-04 18:00:00'))
                 console.log(`convertedCurrency: ${convertedCurrency}`)
             }}
             >
               Test button
+            </Button>
+
+            <Button className="min-w-64" onClick={
+              async ()=>{
+                const result = await fetchCurrencyExchangeRates(new Date('2025-01-04 00:00:00'))
+                console.log(`Currency Exchange rate: ${JSON.stringify(result)}`)
+              }
+            }>
+              Currency API test
             </Button>
           </div>
         }

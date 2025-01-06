@@ -15,36 +15,29 @@ export const MonthBalanceProvider: React.FC<{
     const [monthBalanceData, setMonthBalanceData] = useState<FlattedBalanceType[]>(initialData);
     const updateMonthBalanceData = (balanceData:FlattedBalanceType[]) => {
         if (JSON.stringify(balanceData) !== JSON.stringify(monthBalanceData)) {
+            //console.log(`[MonthBalanceProvider] update monthBalanceData: ${JSON.stringify(balanceData)}`);
             setMonthBalanceData([...balanceData]);
         } else {
-            console.log("No update needed; data is the same.");
+            console.log("[MonthBalanceProvider] No update needed; data is the same.");
         }
     }
 
     const updateMonthBalance = (balanceData:FlattedBalanceType) => {
         //Find index in array
-        
-        console.log(`@@@@@ ${JSON.stringify(monthBalanceData)}`);
-        
         const index = monthBalanceData?.findIndex( (data:FlattedBalanceType) => {
-            console.log(`%%%%% data.id: ${data}`);
-            console.log(`%%%%% balanceData.id: ${balanceData.id}`);    
             return data.id === balanceData.id
-    })
-        console.log(`???? index: ${index}`);
-        console.log(`???? balanceData: ${JSON.stringify(balanceData)}`);
-        console.log(`???? monthBalanceData: ${JSON.stringify(monthBalanceData)}`);
+        })
     
         //Replace the object by index
         if(index !== -1 && monthBalanceData) {
             monthBalanceData[index] = balanceData;
-            console.log(`????!!!! monthBalanceData: ${JSON.stringify(monthBalanceData)}`);
+            //console.log(`[MonthBalanceProvider] new monthBalance: ${JSON.stringify(monthBalanceData[index].quantity)}`);
             setMonthBalanceData([...monthBalanceData]);
         }
     }
 
     useEffect(()=>{
-        console.log(`!!!monthBalanceData is updated: ${JSON.stringify(monthBalanceData)}`);
+        console.log(`[MonthBalanceProvider] monthBalanceData is updated: ${JSON.stringify(monthBalanceData)}`);
         
     },[monthBalanceData])
 
