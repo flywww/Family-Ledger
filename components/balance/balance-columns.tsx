@@ -2,8 +2,8 @@
 
 import { FlattedBalanceType, currencyType } from "@/lib/definitions"
 import { delay } from "@/lib/utils"
-import { ColumnDef, Row, Column } from '@tanstack/react-table'
-import { MoreHorizontal, ArrowUpDown, AwardIcon } from "lucide-react"
+import { ColumnDef, Column } from '@tanstack/react-table'
+import { MoreHorizontal, ArrowUpDown} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -41,11 +41,6 @@ const moneyCellFormatter = (value: number, key: string) => {
         currency: displayedCurrency,
     }).format(value)
     return <div className="text-right font-medium">{formattedPrice}</div>
-}
-
-const numberCellFormatter = (row: Row<FlattedBalanceType>, key: string) => {
-    const recordNumber = parseFloat(row.getValue(key))
-    return <div className="text-right font-medium">{recordNumber}</div>
 }
 
 const getSortedHeader = ( column: Column<FlattedBalanceType>, headerName:string ) => {
@@ -90,26 +85,20 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                 throw Error ("Setting must be used within a setting provider")
             }
             const { monthBalanceData ,updateMonthBalance } = monthBalanceContext;  
-            const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+            const handleValueChange = async (e: React.FocusEvent<HTMLInputElement>) => {
                 const balance = await fetchBalance(row.original.id)
-                //const oldQuantity = balance?.quantity; 
-                console.log(`[balance-columns] oldQuantity: ${oldQuantity} currentQuantity: ${currentQuantity}`);
-                console.log(`[balance-columns] update??: ${balance && oldQuantity.toString() !== currentQuantity.toString()}`);
-                //BUG: the quantity won't update when the user change back to the old value
                 if(balance && oldQuantity.toString() !== currentQuantity.toString()){
                     setIsLoading(true);
-                    const newFlatteredBalance = {
-                        ...row.original,
-                        quantity: currentQuantity,
-                        price: balance.price, 
-                        value: currentQuantity*balance.price,
-                    }
                     await updateBalance({
                         id: row.original.id,
                         quantity: currentQuantity,
                         value: currentQuantity*balance.price,
                     })
-                    updateMonthBalance(newFlatteredBalance); //TODO: the function name should be modified for clarity
+                    updateMonthBalance({
+                        ...row.original,
+                        quantity: currentQuantity,
+                        value: currentQuantity*row.original.price,
+                    });
                     setOldQuantity(currentQuantity);
                     await delay(600);
                     setIsLoading(false);
@@ -117,10 +106,9 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                 setEditing(false)
             }
 
-            useEffect(()=> setCurrentQuantity(row.getValue('quantity')), [monthBalanceData])
-            //BUG: the quantity won't update when the user paste a new value
-            //BUG: safari can't work well
-            //TODO: add save value and blur after enter
+            useEffect(()=> {
+                setCurrentQuantity(row.getValue('quantity'))
+            }, [monthBalanceData])
 
             return (
                 <div className="flex flex-row items-center gap-1 max-w-28">
@@ -130,8 +118,14 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                         value={currentQuantity}
                         readOnly={!editing}
                         onClick={ () => setEditing(true) }
-                        onBlur={handleBlur}
+                        onBlur={handleValueChange}
                         onChange={(e) => setCurrentQuantity(parseFloat(e.target.value))}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter'){
+                                e.preventDefault();
+                                handleValueChange(e as unknown as React.FocusEvent<HTMLInputElement>);
+                            }
+                        }}
                     ></Input>
                     { isLoading && <LoadingSpinner size={4}/> }
                 </div>
@@ -148,11 +142,8 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "value",
         header: ({column}) => getSortedHeader(column, "Value"),
-        cell:({row}) => {
-
-            //BUG: the value isn't right when the user change the quantity
-            const value = row.original.quantity * row.original.price;
-            return  moneyCellFormatter( value , 'value')
+        cell:({row}) => {            
+            return  moneyCellFormatter( row.getValue('value') , 'value')
         }
     },
     {
@@ -162,7 +153,7 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
             const [editing, setEditing] = useState<boolean>(false)
             const [currentNote, setCurrentNote] = useState<string>(row.getValue('note'))
             const [isLoading, setIsLoading] = useState<boolean>(false);
-            const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+            const handleValueChange = async (e: React.FocusEvent<HTMLInputElement>) => {
                 const balance = await fetchBalance(row.original.id)
                 const oldNote = balance ? balance.note : ''; 
                 
@@ -185,8 +176,14 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
                         value={currentNote}
                         readOnly={!editing}
                         onClick={ () => setEditing(true) }
-                        onBlur={handleBlur}
+                        onBlur={handleValueChange}
                         onChange={(e) => setCurrentNote(e.target.value)}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter'){
+                                e.preventDefault();
+                                handleValueChange(e as unknown as React.FocusEvent<HTMLInputElement>);
+                            }
+                        }}
                     ></Input>
                     { isLoading && <LoadingSpinner size={4}/> }
                 </div>

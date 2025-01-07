@@ -1,7 +1,6 @@
 import  CreateBalanceForm  from "@/components/balance/balance-create-form"
 import { firstDateOfMonth } from "@/lib/utils";
 
-
 export default function Page({
     searchParams 
 }:{
@@ -9,7 +8,6 @@ export default function Page({
         date?: string
     }
 }){
-
     let initialDate = firstDateOfMonth(new Date());
     if(searchParams?.date) initialDate = new Date(searchParams.date);
     const backURL = `/balance?date=${initialDate}`    

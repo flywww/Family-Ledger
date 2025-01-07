@@ -11,8 +11,6 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
     const { data:session } = useSession();
     const [setting, setSetting] = useState<Setting | undefined>();
     useEffect(()=>{
-        console.log(`Session has updated in useEffect: ${JSON.stringify(session)}`);
-        //BUG: session will update periodically
         (async function () {
             if(session){
                 const setting = await fetchSetting(session?.user.id);
@@ -22,10 +20,7 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
     }, [session])
 
     const updateUserSetting = async (setting: SettingUpdateType) => {
-        console.log(`updateUserSetting: session check: ${JSON.stringify(session)}`);
-        
         if(session){
-            console.log(`updateUserSetting: session check in if: ${JSON.stringify(session)}`);
             const newSetting = await updateSetting(session.user.id, setting);
             newSetting && setSetting(newSetting);
         }
@@ -38,10 +33,6 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
         }
     }
 
-    useEffect(() => {
-        console.log(`[SettingProvider] setting changed!!! ${JSON.stringify(setting)}`);
-        
-    }, [setting])
 
     return (
         <SettingContext.Provider value={{setting, updateUserSetting, updateDisplayCategories}}>

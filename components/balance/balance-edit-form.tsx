@@ -48,8 +48,7 @@ import { CalendarIcon, CheckIcon } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { cn, firstDateOfMonth } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { Textarea } from "../ui/textarea";
@@ -94,7 +93,6 @@ export default function EditBalanceForm({
     const [holdingDBIsUpdated, setHoldingDBIsUpdated] = useState<boolean>(true)
     const [selectedCategory, setSelectedCategory] = useState<Category>();
     const [selectedType, setSelectedType] = useState<Type>();
-    const [selectedHolding, setSelectedHolding] = useState<Holding>();
     const [selectedDate, setSelectedDate] = useState<Date>(balance.date)
     const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');

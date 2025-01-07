@@ -28,7 +28,7 @@ export default async function Page({
         holdingSymbol: balance?.holding?.symbol,
         holdingCategoryName: balance?.holding?.category?.name,
         holdingTypeName: balance?.holding?.type?.name,
-    })) as Promise<FlattedBalanceType>[]);
+    })) as Promise<FlattedBalanceType>[]);    
 
     return (
       <MonthBalanceProvider initialData={flattedBalanceData || []}>

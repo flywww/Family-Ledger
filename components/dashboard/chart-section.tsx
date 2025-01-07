@@ -1,8 +1,8 @@
-import { currencyType, ValueData } from "@/lib/definitions"
+import { ValueData } from "@/lib/definitions"
 import DashboardLineChart from "./dashboard-line-chart"
 import DashboardPieChart from "./dashboard-pie-chart"
 
-export default function ChartSection({
+export default async function ChartSection({
     queryDate, 
     categories,
     valueData, 

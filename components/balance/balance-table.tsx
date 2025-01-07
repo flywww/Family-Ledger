@@ -55,7 +55,6 @@ export default function BalanceTable({
             columnVisibility,
         },
     })
-    
 
     return(
         <div className="flex flex-col gap-4">

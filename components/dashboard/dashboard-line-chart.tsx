@@ -3,8 +3,6 @@
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -53,7 +51,7 @@ export default function DashboardLineChart({
                     <CardTitle>{title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ChartContainer config={chartConfig} className="max-h-[300px] w-full">
+                    <ChartContainer config={chartConfig} className="h-[300px] w-full">
                         <LineChart
                             accessibilityLayer
                             data={data}

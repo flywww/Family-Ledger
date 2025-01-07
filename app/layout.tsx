@@ -3,7 +3,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
-import { auth } from '@/auth'
 import { SessionProvider } from "next-auth/react"
 import { SettingProvider } from "@/context/SettingProvider";
 
@@ -17,11 +16,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
   return (
     <html lang="en">
       <body>
-        <SessionProvider refetchInterval={5*30} refetchOnWindowFocus>
+        <SessionProvider>
           <SettingProvider>
             <ThemeProvider
                 attribute="class"
