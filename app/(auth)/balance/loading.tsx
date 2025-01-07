@@ -1,4 +1,5 @@
+import BalanceTableSkeleton from "@/components/balance/skeleton/balance-table-skeleton";
+
 export default function Loading() {
-    return <div>balance loading...</div>;
-    //TODO: Add skeletons
+    return <BalanceTableSkeleton/>;
 }

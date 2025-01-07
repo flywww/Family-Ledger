@@ -34,12 +34,11 @@ export default async function Page({
       <MonthBalanceProvider initialData={flattedBalanceData || []}>
         <div>
             {flattedBalanceData &&
-              <Suspense fallback={<BalanceTableSkeleton/>}> 
                 <BalanceTable 
                   queryDate={ queryDate } 
                   data={ flattedBalanceData }
                 />
-              </Suspense>}
+            }
         </div>
       </MonthBalanceProvider>
     )

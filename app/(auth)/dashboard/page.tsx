@@ -6,6 +6,7 @@ import ChartSection from "@/components/dashboard/chart-section";
 import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData, getConvertedCurrency } from "@/lib/actions";
 import { auth } from "@/auth";
 import { currencyType } from "@/lib/definitions";
+import DashboardSkeleton from "@/components/dashboard/skeleton/dashboard-skeleton";
 
 export default async function Page({
   searchParams
@@ -51,9 +52,9 @@ export default async function Page({
         </div>
         <div className="flex flex-col gap-3 justify-center items-center w-full">
           <SummarySection 
-            queryDate={queryDate} 
-            valueData={filteredValueData}
-            currency={currency}
+              queryDate={queryDate} 
+              valueData={filteredValueData}
+              currency={currency}
           />
           <ChartSection
             queryDate={queryDate} 

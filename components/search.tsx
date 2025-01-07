@@ -17,12 +17,12 @@ export default function Search({
 }){
     const searchParams = useSearchParams();
     const pathname = usePathname();
-    const { replace } = useRouter();
+    const router = useRouter();
 
     const handleDateSearch = (date: Date) => {
         const params = new URLSearchParams(searchParams);
         params.set('date', date.toUTCString());
-        replace(`${pathname}?${params.toString()}`);   
+        router.replace(`${pathname}?${params.toString()}`);   
     }
 
     return(

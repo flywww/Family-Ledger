@@ -1,4 +1,5 @@
+import DashboardSkeleton from "@/components/dashboard/skeleton/dashboard-skeleton";
+
 export default function Loading() {
-    return <div>Dashboard loading...</div>;
-    //TODO: Add skeletons
+    return <DashboardSkeleton/>;
 }
