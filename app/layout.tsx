@@ -19,7 +19,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SessionProvider>
+        <SessionProvider refetchInterval={5*30} refetchOnWindowFocus>
           <SettingProvider>
             <ThemeProvider
                 attribute="class"
