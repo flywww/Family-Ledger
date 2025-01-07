@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import NavLinks from "./nav-links"
 import NavMenu from "./nav-menu"
 
@@ -10,7 +11,9 @@ export default function NavBar(){
                     <NavLinks/>
                 </div>
             </div>
-            <NavMenu/>
+            <Suspense>
+                <NavMenu/>
+            </Suspense>
         </div>
     )
 }

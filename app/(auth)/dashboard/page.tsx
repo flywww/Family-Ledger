@@ -7,6 +7,7 @@ import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData, 
 import { auth } from "@/auth";
 import { currencyType } from "@/lib/definitions";
 import DashboardSkeleton from "@/components/dashboard/skeleton/dashboard-skeleton";
+import { Suspense } from "react";
 
 export default async function Page({
   searchParams
@@ -44,11 +45,16 @@ export default async function Page({
     return (
       <div className="flex flex-col gap-3 justify-stretch">
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Search queryDate={queryDate}/>
-          <CategorySelector 
-            queryCategories={queryCategories} 
-            categories={categoryData || []}
-          />
+          <Suspense>
+            <Search queryDate={queryDate}/>
+          </Suspense>
+          <Suspense>
+            <CategorySelector 
+              queryCategories={queryCategories} 
+              categories={categoryData || []}
+            />
+          </Suspense>
+          
         </div>
         <div className="flex flex-col gap-3 justify-center items-center w-full">
           <SummarySection 

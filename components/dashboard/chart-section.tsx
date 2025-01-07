@@ -2,7 +2,7 @@ import { ValueData } from "@/lib/definitions"
 import DashboardLineChart from "./dashboard-line-chart"
 import DashboardPieChart from "./dashboard-pie-chart"
 
-export default async function ChartSection({
+export default function ChartSection({
     queryDate, 
     categories,
     valueData, 

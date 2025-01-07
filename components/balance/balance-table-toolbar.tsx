@@ -19,7 +19,7 @@ import Search from "@/components/search";
 import { createMonthBalances, fetchMonthlyBalance } from "@/lib/actions";
 import { FlattedBalanceType } from "@/lib/definitions";
 import Link from "next/link"
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, Suspense } from "react";
 import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { SettingContext } from "@/context/settingContext";
@@ -51,7 +51,9 @@ export default function BalanceTableToolbar({
     return(
             <div className="flex items-center justify-between ">
                 <div className="w-full flex flex-col justify-start items-center gap-2 sm:flex-row">
-                    <Search queryDate={queryDate}/>
+                    <Suspense>
+                        <Search queryDate={queryDate}/>
+                    </Suspense>
                     <Input
                         placeholder="Filter balances"
                         value={(table.getState().globalFilter as string) ?? ""}
@@ -64,7 +66,7 @@ export default function BalanceTableToolbar({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="default" className="hidden sm:flex ml-auto">
-                            Menu <ChevronDownIcon className="ml-2 h-4 w-4" />
+                            More <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

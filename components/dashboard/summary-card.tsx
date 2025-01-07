@@ -7,7 +7,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"  
 
-export default async function SummaryCard({
+export default function SummaryCard({
     title,
     value,
     description,

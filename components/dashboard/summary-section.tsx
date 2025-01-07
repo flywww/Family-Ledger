@@ -4,7 +4,7 @@ import { getCalculatedMonth } from "@/lib/utils";
 import { enUSNumberFormat } from "../../lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
-export default async function SummarySection({
+export default function SummarySection({
     queryDate,
     valueData,
     currency,
