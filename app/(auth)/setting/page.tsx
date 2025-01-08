@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button";
 import ChangePasswordForm from "@/components/setting/change-password-form";
-import { getConvertedCurrency, fetchCurrencyExchangeRates} from "@/lib/actions";
 import { Separator } from "@/components/ui/separator";
-import { Metadata } from "next";
+import { Metadata }  from "next";
 import { auth } from "@/auth";
 import AdminActions from "@/components/setting/admin-actions";
 
