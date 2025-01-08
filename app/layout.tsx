@@ -7,7 +7,10 @@ import { SessionProvider } from "next-auth/react"
 import { SettingProvider } from "@/context/SettingProvider";
 
 export const metadata: Metadata = {
-  title: "Family Ledger",
+  title: {
+    template: '%s | Family Ledger',
+    default: "Family Ledger"
+  },
   description: "Manage family assets easily",
 };
 
@@ -16,10 +19,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  //BUG: get application error on vecel (possibility happened on session)
   return (
     <html lang="en">
       <body>
-        <SessionProvider refetchInterval={5*30} refetchOnWindowFocus>
+        <SessionProvider refetchInterval={5*30} refetchOnWindowFocus> 
           <SettingProvider>
             <ThemeProvider
                 attribute="class"

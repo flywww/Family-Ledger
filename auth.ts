@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import CredentialsProviders from 'next-auth/providers/credentials';
-import { User, UserSchema } from "./lib/definitions";
+import { UserSchema } from "./lib/definitions";
 import { fetchUserWithAccount } from "./lib/actions";
 import bcrypt from 'bcryptjs'
 

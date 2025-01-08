@@ -1,14 +1,17 @@
-'use client'
-
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 import ChangePasswordForm from "@/components/setting/change-password-form";
 import { getConvertedCurrency, fetchCurrencyExchangeRates} from "@/lib/actions";
 import { Separator } from "@/components/ui/separator";
+import { Metadata } from "next";
+import { auth } from "@/auth";
+import AdminActions from "@/components/setting/admin-actions";
 
-export default function Page() {
-  const { data:session } = useSession();
-  
+export const metadata: Metadata = {
+	title: 'Setting',
+};
+
+export default async function Page() {
+  const session = await auth();
 
   return (
       <div className="flex flex-col gap-4 justify-start items-center">
@@ -22,44 +25,7 @@ export default function Page() {
             <div className="flex flex-col gap-3 items-center">
             <Separator className="my-4 min-w-64"/>
             <p>Admin feature</p>
-            <Button className="min-w-64" onClick={()=>{
-              fetch('/api/create-valueData', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key: 'value' }) // Adjust payload as needed
-              })
-              .then(response => response.json())
-              .then(data => console.log(data))
-              .catch(error => console.error(error));
-            }}> Create valueData </Button>
-            <Button className="min-w-64" onClick={()=>{
-              fetch('/api/update-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ key: 'value' })
-              })
-              .then(response => response.json())
-              .then(data => console.log(data))
-              .catch(error => console.error(error))
-            }}> Update Password </Button>
-          
-            <Button className="min-w-64" onClick={
-              async ()=>{
-                const convertedCurrency = await getConvertedCurrency('JPY','TWD',100,new Date('2025-01-04 18:00:00'))
-                console.log(`convertedCurrency: ${convertedCurrency}`)
-            }}
-            >
-              Test button
-            </Button>
-
-            <Button className="min-w-64" onClick={
-              async ()=>{
-                const result = await fetchCurrencyExchangeRates(new Date('2025-01-04 00:00:00'))
-                console.log(`Currency Exchange rate: ${JSON.stringify(result)}`)
-              }
-            }>
-              Currency API test
-            </Button>
+            <AdminActions/>
           </div>
         }
       </div>

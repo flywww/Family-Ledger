@@ -4,8 +4,11 @@ import { currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
 import { getCalculatedMonth } from "@/lib/utils";
-import BalanceTableSkeleton from "@/components/balance/skeleton/balance-table-skeleton";
-import { Suspense } from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: 'Balance',
+};
 
 export default async function Page({
   searchParams,
@@ -29,7 +32,7 @@ export default async function Page({
         holdingCategoryName: balance?.holding?.category?.name,
         holdingTypeName: balance?.holding?.type?.name,
     })) as Promise<FlattedBalanceType>[]);    
-
+    //TODO: long loading while switch date
     return (
       <MonthBalanceProvider initialData={flattedBalanceData || []}>
         <div>

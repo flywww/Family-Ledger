@@ -186,7 +186,6 @@ export async function createValueData (balances:Balance[]){
     }
 }   
 
-//BUG: Value data did not update after update balances
 export async function updateValueData( balance: Balance ){
     try {
         console.log(`[updating valueData] Balance: ${JSON.stringify(balance)}`);

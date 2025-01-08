@@ -6,8 +6,12 @@ import ChartSection from "@/components/dashboard/chart-section";
 import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData, getConvertedCurrency } from "@/lib/actions";
 import { auth } from "@/auth";
 import { currencyType } from "@/lib/definitions";
-import DashboardSkeleton from "@/components/dashboard/skeleton/dashboard-skeleton";
 import { Suspense } from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: 'Dashboard',
+};
 
 export default async function Page({
   searchParams
@@ -30,7 +34,7 @@ export default async function Page({
     }else{
       categoryNames = categoryData?.map( category => category.name) || [];
     }
-
+    
     const queryCategories = categoryData?.filter( category => categoryNames.includes(category.name)) || [];
     const valueDataArray = await fetchValueData();
     const currency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
@@ -41,7 +45,7 @@ export default async function Page({
                                     .map(async valueData => ({...valueData, value: await getConvertedCurrency('USD',currency,valueData.value,valueData.date) || 0}))
                                 )
                               : [];
-                              
+    //TODO: long loading while switch date
     return (
       <div className="flex flex-col gap-3 justify-stretch">
         <div className="flex flex-col gap-3 sm:flex-row">
