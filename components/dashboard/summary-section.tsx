@@ -32,8 +32,8 @@ export default function SummarySection({
     
     const lastMonthValueData = valueData?.filter(valueData => {
         if(valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime()){
-            console.log(`[summary-section] monthValueData = ${valueData.category.name}`);
-            console.log(`[summary-section] monthValueData = valueData.date.getTime(): ${valueData.date.getTime()} / getCalculatedMonth(queryDate, -1).getTime(): ${getCalculatedMonth(queryDate, -1).getTime()}`);
+            console.log(`[summary-section] lastMonthValueData = ${valueData.category.name}`);
+            console.log(`[summary-section] lastMonthValueData = valueData.date.getTime(): ${valueData.date.getTime()} / getCalculatedMonth(queryDate, -1).getTime(): ${getCalculatedMonth(queryDate, -1).getTime()}`);
         }
         return valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime()
     }) || [];
