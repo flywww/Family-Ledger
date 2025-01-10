@@ -21,22 +21,8 @@ export default function SummarySection({
         return sum;
     }
 
-    const monthValueData = valueData?.filter(valueData => {
-        if(valueData.date.getTime() === queryDate.getTime()){
-            console.log(`[summary-section] monthValueData = ${valueData.category.name}`);
-            console.log(`[summary-section] monthValueData = valueData.date.getTime(): ${valueData.date.getTime()} / queryDate.getTime(): ${queryDate.getTime()}`);
-        }
-        return valueData.date.getTime() === queryDate.getTime()
-    }) || [];
-    
-    
-    const lastMonthValueData = valueData?.filter(valueData => {
-        if(valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime()){
-            console.log(`[summary-section] lastMonthValueData = ${valueData.category.name}`);
-            console.log(`[summary-section] lastMonthValueData = valueData.date.getTime(): ${valueData.date.getTime()} / getCalculatedMonth(queryDate, -1).getTime(): ${getCalculatedMonth(queryDate, -1).getTime()}`);
-        }
-        return valueData.date.getTime() === getCalculatedMonth(queryDate, -1).getTime()
-    }) || [];
+    const monthValueData = valueData?.filter(valueData => (valueData.date.toISOString() === queryDate.toISOString())) || [];
+    const lastMonthValueData = valueData?.filter(valueData => (valueData.date.toISOString() === getCalculatedMonth(queryDate, -1).toISOString())) || [];
     const sumOfAssets = sumCalculate( monthValueData, 'Assets');
     const sumOfLiabilities = sumCalculate( monthValueData, 'Liabilities');
     const lastMonthSumOfAssets = sumCalculate( lastMonthValueData, 'Assets');
