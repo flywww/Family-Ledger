@@ -465,13 +465,14 @@ export async function authenticate(
 ){
     try {
         await signIn('credentials', formData);
+        return {success: "logged in"}
     } catch (error) {
         if (error instanceof AuthError){
             switch (error.type) {
                 case 'CredentialsSignin':
-                    return 'Invalid credentials'
+                    return {error: 'Invalid credentials'}
                 default:
-                    return 'something went wrong';
+                    return {error: 'something went wrong'};
             }
         }
         throw error;

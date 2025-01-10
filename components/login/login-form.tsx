@@ -15,8 +15,12 @@ import { User, UserSchema } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { authenticate } from "@/lib/actions";
+import LoadingSpinner from "../ui/loading-spinner";
+import { useState } from "react";
 
 export default function LoginForm(){
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [loginMessage, setLoginMessage] = useState<string>("");
     const form = useForm<User>({
         resolver: zodResolver(UserSchema),
         defaultValues: {
@@ -25,9 +29,18 @@ export default function LoginForm(){
         },
     })
 
-    const onSubmit = (values: User) => {
-        console.log("onSubmit triggered with values:", values);
-        authenticate(undefined, values)
+    const onSubmit = async (values: User) => {
+        try {
+            setIsLoading(true);
+            const result = await authenticate(undefined, values);
+            if(result.error){
+                setIsLoading(false);
+                setLoginMessage(result.error);
+            }
+        } catch (error) {
+            setIsLoading(false);
+            console.log(`[LoginForm] error: ${JSON.stringify(error)}`);
+        }
     }
     
     return(
@@ -67,8 +80,9 @@ export default function LoginForm(){
                         type="submit"
                         size="lg"
                     >
-                        Log in
+                        { isLoading ? <LoadingSpinner size={6}/> : "Log in" }
                     </Button>
+                    <p className="text-sm text-red-500">{loginMessage}</p>
                     <br />
                     <br />
                 </form>
