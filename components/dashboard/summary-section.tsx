@@ -21,12 +21,7 @@ export default function SummarySection({
         return sum;
     }
     console.log(`queryDate: ${queryDate}`);
-    const monthValueData = valueData?.filter(valueData => {
-        console.log(`monthValueData: valueDate.date: ${valueData.date} , queryDate: ${queryDate}`);
-        console.log(`monthValueData: valueDate.date: ${valueData.date.toISOString()} , queryDate: ${queryDate.toISOString()}`);
-        console.log(`monthValueData: valueDate.date: ${valueData.date.getTime()} , queryDate: ${queryDate.getTime()}`);
-        return (valueData.date.toISOString() === queryDate.toISOString())
-    }) || [];
+    const monthValueData = valueData?.filter(valueData => ((valueData.date.toISOString() === queryDate.toISOString()))) || [];
     const lastMonthValueData = valueData?.filter(valueData => {
         console.log(`lastmonthValueData: valueDate.date: ${valueData.date} , queryDate: ${getCalculatedMonth(queryDate, -1)}`);
         console.log(`lastmonthValueData: valueDate.date: ${valueData.date.toISOString()} , queryDate: ${getCalculatedMonth(queryDate, -1).toISOString()}`);
