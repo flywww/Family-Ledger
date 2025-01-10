@@ -13,21 +13,14 @@ export default function SummarySection({
     valueData: ValueData[] | undefined,
     currency: currencyType,
 }){
-
     const sumCalculate = ( data:ValueData[], type:typeListType): number => {
         const sum = data
             .filter(data => data.type.name === type)
             .reduce((total, valueData) => total + valueData.value, 0)
         return sum;
     }
-    console.log(`queryDate: ${queryDate}`);
-    const monthValueData = valueData?.filter(valueData => ((valueData.date.toISOString() === queryDate.toISOString()))) || [];
-    const lastMonthValueData = valueData?.filter(valueData => {
-        console.log(`lastmonthValueData: valueDate.date: ${valueData.date} , queryDate: ${getCalculatedMonth(queryDate, -1)}`);
-        console.log(`lastmonthValueData: valueDate.date: ${valueData.date.toISOString()} , queryDate: ${getCalculatedMonth(queryDate, -1).toISOString()}`);
-        console.log(`lastmonthValueData: valueDate.date: ${valueData.date.getTime()} , queryDate: ${getCalculatedMonth(queryDate, -1).getTime()}`);
-        return (valueData.date.toISOString() === getCalculatedMonth(queryDate, -1).toISOString())
-    }) || [];
+    const monthValueData = valueData?.filter(valueData => ((valueData.date.toISOString().slice(0,7) === queryDate.toISOString().slice(0,7)))) || [];
+    const lastMonthValueData = valueData?.filter(valueData => (valueData.date.toISOString().slice(0,7) === getCalculatedMonth(queryDate, -1).toISOString().slice(0,7))) || [];
     const sumOfAssets = sumCalculate( monthValueData, 'Assets');
     const sumOfLiabilities = sumCalculate( monthValueData, 'Liabilities');
     const lastMonthSumOfAssets = sumCalculate( lastMonthValueData, 'Assets');
