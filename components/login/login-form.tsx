@@ -79,6 +79,7 @@ export default function LoginForm(){
                         variant='default' 
                         type="submit"
                         size="lg"
+                        disabled={isLoading}
                     >
                         { isLoading ? <LoadingSpinner size={6}/> : "Log in" }
                     </Button>

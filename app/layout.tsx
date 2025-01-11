@@ -33,7 +33,6 @@ export default async function RootLayout({
                 disableTransitionOnChange
               >
                 {children}
-                <SpeedInsights />
                 <Analytics />
               </ThemeProvider>
             </SettingProvider>
