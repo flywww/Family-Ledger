@@ -2,6 +2,9 @@
 
 import { fetchCurrencyExchangeRates, getConvertedCurrency } from "@/lib/actions";
 import { Button } from "../ui/button";
+import Link from "next/link";
+import { Separator } from "../ui/separator";
+
 
 export default function AdminActions (){
     return(
@@ -44,6 +47,13 @@ export default function AdminActions (){
                 }>
                 Currency API test
             </Button>
+            <Separator />
+            <Link href='https://app.currencyapi.com/dashboard' target="_blank" rel="noopener noreferrer">
+                CURRENCYAPI API dashboard
+            </Link>
+            <Link href='https://pro.coinmarketcap.com/account' target="_blank" rel="noopener noreferrer">
+                Coinmarketcap API dashboard
+            </Link>
         </div>
     )
 }
