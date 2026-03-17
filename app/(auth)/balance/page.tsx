@@ -1,10 +1,18 @@
 import BalanceTable from "@/components/balance/balance-table";
-import { fetchLastDateOfBalance, fetchMonthlyBalance, fetchSetting, getConvertedCurrency } from "@/lib/actions";
+import {
+  fetchLastDateOfBalance,
+  fetchMonthlyBalance,
+  fetchMonthlyRefreshState,
+  fetchSetting,
+  getConvertedCurrency,
+} from "@/lib/actions";
 import { currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
 import { getCalculatedMonth } from "@/lib/utils";
 import { Metadata } from "next";
+import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
+import RetryFailedButton from "@/components/balance/retry-failed-button";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -24,6 +32,7 @@ export default async function Page(
   const setting = session && (await fetchSetting(session.user.id));
   const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
   const balanceData = await fetchMonthlyBalance(queryDate);
+  const refreshState = await fetchMonthlyRefreshState(queryDate);
   const flattedBalanceData = await Promise.all(balanceData?.map(async (balance) => ({
       ...balance,
       price: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.price, balance.date),
@@ -36,11 +45,19 @@ export default async function Page(
   //TODO: long loading while switch date
   return (
     <MonthBalanceProvider initialData={flattedBalanceData || []}>
-      <div>
+      <div className="flex flex-col gap-4">
+          <MonthlyRefreshStatus
+            overview={refreshState}
+            action={
+              refreshState && refreshState.failedCount > 0 ? (
+                <RetryFailedButton date={queryDate} />
+              ) : undefined
+            }
+          />
           {flattedBalanceData &&
               <BalanceTable 
                 queryDate={ queryDate } 
-                data={ flattedBalanceData }
+                refreshState={refreshState}
               />
           }
       </div>

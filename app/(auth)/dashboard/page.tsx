@@ -3,11 +3,19 @@ import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
-import { fetchCategories, fetchLastDateOfBalance, fetchSetting, fetchValueData, getConvertedCurrency } from "@/lib/actions";
+import {
+  fetchCategories,
+  fetchLastDateOfBalance,
+  fetchMonthlyRefreshState,
+  fetchSetting,
+  fetchValueData,
+  getConvertedCurrency,
+} from "@/lib/actions";
 import { auth } from "@/auth";
 import { currencyType } from "@/lib/definitions";
 import { Suspense } from "react";
 import { Metadata } from "next";
+import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 
 export const metadata: Metadata = {
 	title: 'Dashboard',
@@ -27,6 +35,7 @@ export default async function Page(
   const categoryData = await fetchCategories();
   const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
+  const refreshState = await fetchMonthlyRefreshState(queryDate);
   let categoryNames;
   if(searchParams?.categories){
     categoryNames = searchParams.categories.split(',');
@@ -49,6 +58,7 @@ export default async function Page(
   //TODO: long loading while switch date
   return (
     <div className="flex flex-col gap-3 justify-stretch">
+      <MonthlyRefreshStatus overview={refreshState} />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Suspense>
           <Search queryDate={queryDate}/>

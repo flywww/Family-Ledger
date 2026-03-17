@@ -4,6 +4,8 @@ import NextAuth, { DefaultSession, User as AuthUser } from 'next-auth';
 export type currencyType = 'TWD' | 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CNY' | 'KRW' | 'HKD' | 'AUD' | 'CAD' | 'SGD' | 'CHF' | 'SEK' | 'NZD' | 'THB' | 'PHP' | 'IDR' | 'VND' | 'MYR' | 'ZAR' | 'BRL' | 'INR' | 'RUB' | 'DKK' | 'NOK' | 'TRY' | 'MXN' | 'PLN' | 'ILS' | 'HUF' | 'CZK' | 'CLP' | 'EGP' | 'AED' | 'COP' | 'SAR' | 'PKR' | 'KWD' | 'QAR' | 'OMR' | 'BHD' | 'RSD' | 'HRK' | 'BGN' | 'RON' | 'LKR' | 'BDT' | 'DZD' | 'KES' | 'NGN' | 'UGX' | 'GHS' | 'ZMW' | 'MAD' | 'MZN';
 export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unlisted stock';
 export type typeListType = 'Assets' | 'Liabilities'
+export type priceStatusType = 'pending' | 'success' | 'failed';
+export type refreshJobStatusType = 'pending' | 'running' | 'partial_complete' | 'completed' | 'failed';
 export const currencySymbols = ['TWD','USD','EUR','JPY','GBP','CNY','KRW','HKD','AUD','CAD','SGD','CHF','SEK','NZD','THB','PHP','IDR','VND','MYR','ZAR','BRL','INR','RUB','DKK','NOK','TRY','MXN','PLN','ILS','HUF','CZK','CLP','EGP','AED','COP','SAR','PKR','KWD','QAR','OMR','BHD','RSD','HRK','BGN','RON','LKR','BDT','DZD','KES','NGN','UGX','GHS','ZMW','MAD','MZN']
 
 declare module 'next-auth' {
@@ -152,6 +154,10 @@ export const BalanceSchema = z.object({
     note: z.preprocess((val) => val ?? "", z.string().optional()),
     userId: z.string(),
     user: UserSchema.optional(),
+    priceStatus: z.enum(['pending', 'success', 'failed']).default('success'),
+    priceFetchedAt: z.date().nullable().optional(),
+    priceSource: z.string().nullable().optional(),
+    priceError: z.string().nullable().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })
@@ -229,3 +235,71 @@ export const currencyExchangeRateUpdateSchema = currencyExchangeRateCreateSchema
 export type CurrencyExchangeRate = z.infer<typeof currencyExchangeRateSchema>
 export type CurrencyExchangeRateCreateType = z.infer<typeof currencyExchangeRateCreateSchema>
 export type CurrencyExchangeRateUpdateType = z.infer<typeof currencyExchangeRateUpdateSchema>
+
+
+export const MonthlyRefreshJobSchema = z.object({
+    id: z.number(),
+    targetMonth: z.date(),
+    status: z.enum(['pending', 'running', 'partial_complete', 'completed', 'failed']),
+    lastCursor: z.string().nullable().optional(),
+    attemptCount: z.number(),
+    startedAt: z.date().nullable().optional(),
+    completedAt: z.date().nullable().optional(),
+    errorSummary: z.string().nullable().optional(),
+    userId: z.string(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+export const MonthlyRefreshJobCreateSchema = MonthlyRefreshJobSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+export const MonthlyRefreshJobUpdateSchema = MonthlyRefreshJobCreateSchema.partial().extend({
+    id: z.number(),
+})
+
+export type MonthlyRefreshJob = z.infer<typeof MonthlyRefreshJobSchema>
+export type MonthlyRefreshJobCreateType = z.infer<typeof MonthlyRefreshJobCreateSchema>
+export type MonthlyRefreshJobUpdateType = z.infer<typeof MonthlyRefreshJobUpdateSchema>
+
+export const MonthlyRefreshOverviewSchema = z.object({
+    jobId: z.number().optional(),
+    status: z.enum(['idle', 'pending', 'running', 'partial_complete', 'completed', 'failed']),
+    pendingCount: z.number(),
+    failedCount: z.number(),
+    estimatedCount: z.number(),
+    completedCount: z.number(),
+    targetMonth: z.date(),
+    updatedAt: z.date().optional(),
+})
+
+export type MonthlyRefreshOverview = z.infer<typeof MonthlyRefreshOverviewSchema>
+
+export const AssetPriceSnapshotSchema = z.object({
+    id: z.number(),
+    targetMonth: z.date(),
+    provider: z.string(),
+    sourceKey: z.string(),
+    price: z.number().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    fetchedAt: z.date().nullable().optional(),
+    status: z.enum(['pending', 'success', 'failed']),
+    error: z.string().nullable().optional(),
+    userId: z.string(),
+    jobId: z.number().nullable().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+export const AssetPriceSnapshotCreateSchema = AssetPriceSnapshotSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+export const AssetPriceSnapshotUpdateSchema = AssetPriceSnapshotCreateSchema.partial().extend({
+    id: z.number(),
+})
+
+export type AssetPriceSnapshot = z.infer<typeof AssetPriceSnapshotSchema>
+export type AssetPriceSnapshotCreateType = z.infer<typeof AssetPriceSnapshotCreateSchema>
+export type AssetPriceSnapshotUpdateType = z.infer<typeof AssetPriceSnapshotUpdateSchema>

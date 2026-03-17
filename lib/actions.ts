@@ -34,15 +34,31 @@ import {
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { delay, getUTCDateString } from "./utils";
+import { firstDateOfMonth } from "./utils";
 import bcrypt from 'bcryptjs';
 import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
+import { fetchCurrencyExchangeRates, getConvertedCurrency } from "./fx";
+import {
+    createMonthlyBalancesAndJob,
+    fetchMonthlyRefreshOverview,
+    rebuildValueDataForMonth,
+    retryFailedMonthlyRefreshForMonth,
+} from "./monthly-refresh";
+import {
+    fetchCryptoPriceFromAPI as fetchCryptoPrice,
+    fetchListedStockPriceFromAPI as fetchListedStockPrice,
+} from "./pricing";
 
 
 export async function fetchLastDateOfBalance(){
+    const session = await auth();
+    if(!session) return;
     try {
         const lastDate = await prisma.balance.findMany({
+            where:{
+                userId: session.user.id,
+            },
             take: 1,
             select:{
                 date: true,
@@ -285,6 +301,25 @@ export async function fetchValueData(){
     }
 }
 
+export { fetchCurrencyExchangeRates, getConvertedCurrency };
+
+export async function fetchMonthlyRefreshState(date: Date) {
+    const session = await auth();
+    if (!session) return;
+
+    return fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
+}
+
+export async function retryFailedMonthlyRefresh(date: Date) {
+    const session = await auth();
+    if (!session) return;
+
+    await retryFailedMonthlyRefreshForMonth(session.user.id, firstDateOfMonth(date));
+    await rebuildValueDataForMonth(session.user.id, firstDateOfMonth(date));
+    revalidatePath(`/balance/?date=${date.toUTCString()}`);
+    revalidatePath(`/dashboard/?date=${date.toUTCString()}`);
+}
+
 //TODO: error handling sample
 export async function createBalance( balance: BalanceCreateType ){
     try {
@@ -313,7 +348,7 @@ export async function createBalance( balance: BalanceCreateType ){
             console.log(`Fail to parse balance for valueData: ${parsedBalance.error}`);
         }else{
             console.log(`[createBalance] Proceed to update valueData`);
-            updateValueData(parsedBalance.data);
+            await updateValueData(parsedBalance.data);
         }
             
 
@@ -328,63 +363,21 @@ export async function createBalance( balance: BalanceCreateType ){
 }
 
 export async function createMonthBalances( date: Date , balances: Balance[] ){
-    let updatedBalances: BalanceCreateType[] = [];
-    
     try {
-        for(const balance of balances){
-            let newPrice = balance.price;
-            let newCurrency = balance.currency;
-            const { holding, user, id, updatedAt, createdAt, ...balanceData } = balance;
-            //TODO: error handling when fetch price failed
-            if(holding?.sourceId){
-                console.log(`Fetching price for holding: ${holding.name}(${holding.symbol}) (sourceId: ${holding.sourceId})`);
-                if(holding.category?.name === 'Cryptocurrency'){
-                    newPrice = await fetchCryptoPriceFromAPI(holding.sourceId);
-                    newCurrency = 'USD'
-                }else if(holding.category?.name === 'Listed stock'){
-                    newPrice = await fetchListedStockPriceFromAPI(holding.sourceId);
-                    newCurrency = 'USD'
-                }
-            }
-            updatedBalances.push({
-                ...balanceData,
-                date: date,
-                price: newPrice,
-                value: newPrice * balance.quantity,
-                currency: newCurrency,
-            })
-
-            await delay(2100);
-        }
-
-        const createdBalances = await prisma.balance.createManyAndReturn({
-            data: updatedBalances,
-            include:{
-                holding:{
-                    include:{
-                        category:true,
-                        type:true,
-                    }
-                }
-            }
-        })
-
-        const parsedBalances = BalanceSchema.array().safeParse(createdBalances);
-        if(!parsedBalances.success){
-            console.log(`Fail to parse balance for valueData: ${parsedBalances.error}`);
-        }else{
-            await createValueData(parsedBalances.data)
-        }
-        
         const session = await auth();
         if(!session) return;
-        await updateSetting(session.user.id, { accountingDate:date })
+        await createMonthlyBalancesAndJob({
+            targetMonth: firstDateOfMonth(date),
+            userId: session.user.id,
+            sourceBalances: balances,
+        });
     
     } catch (error) {
         throw new Error('Failed to create monthly balances.');
     }
 
     revalidatePath(`/balance/?date=${date.toUTCString()}`);
+    revalidatePath(`/dashboard/?date=${date.toUTCString()}`);
     redirect(`/balance/?date=${date.toUTCString()}`);
 }
 
@@ -395,7 +388,7 @@ export async function deleteBalance( id: number, balance: Balance ){
                 id: id
             }
         })
-        updateValueData(balance);        
+        await updateValueData(balance);        
         revalidatePath(`/balance/?date=${balance.date.toUTCString()}`);
     } catch (error) {
         console.error('Fail to delete balance', error);
@@ -404,7 +397,6 @@ export async function deleteBalance( id: number, balance: Balance ){
 }
 
 export async function updateBalance( balance: BalanceUpdateType, backDate?: Date ){
-    //BUG: update data can not contain id
     const { id, ...balanceWithoutId } = balance;
     try {
         const result = await prisma.balance.update({
@@ -621,27 +613,7 @@ export async function fetchCryptosFromAPI(query: string) {
 }
 
 export async function fetchCryptoPriceFromAPI(id: string){
-    const API_KEY = process.env.CMC_API_KEY
-    const fetchURL = "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?"
-    if (!API_KEY) {
-        throw new Error("API key is missing");
-    }
-    const header = {
-        headers:{
-            "X-CMC_PRO_API_KEY": API_KEY,
-        }
-    }
-    
-    const response = await fetch(`${fetchURL}id=${id}`, header)
-    if (!response.ok) {
-        console.log("Failed to fetch cryptocurrency data");
-        return 99999999
-    }
-
-    const data = await response.json();
-    const price = data['data'][id.toString()].quote.USD.price
-        
-    return price
+    return fetchCryptoPrice(id);
 }
 
 // export async function fetchListedStocksFromAVSAPI(query: string){
@@ -707,24 +679,7 @@ export async function fetchListedStocksFromAPI(query: string){
 }
 
 export async function fetchListedStockPriceFromAPI( symbol: string ){
-    const API_KEY = process.env.FMP_STOCK_API_KEY;
-    const fetchURL = `https://financialmodelingprep.com/api/v3/otc/real-time-price/${symbol}?apikey=${API_KEY}`
-    try {
-        const response = await fetch(fetchURL);
-        const data = await response.json();
-
-        console.log(`fetch listed stock price: ${data}`);
-        
-        const price = data.map((stock: any) => ({
-            symbol: stock["symbol"],
-            lastSalePrice: stock["lastSalePrice"],
-        }))[0].lastSalePrice;
-
-        return price;
-    } catch (error) {
-        console.error("Fail to fetch listed stock price", error);
-        return 999999
-    }
+    return fetchListedStockPrice(symbol);
 }
 
 //Category
@@ -806,110 +761,5 @@ export async function updateSetting( userId: string, setting: SettingUpdateType 
         return parsed.data;
     } catch (error) {
         console.error(`Fail to update setting with userId:${userId} and setting:${setting}, error:${error}`)
-    }
-}
-
-let usdExchangeRateCache= new Map<string, number>();
-
-//Currency
-export async function getConvertedCurrency(fromCurrency:currencyType, toCurrency:currencyType, amount:number, date: Date){
-    try {
-        //console.log(`[getConvertedCurrency] fromCurrency: ${fromCurrency}, toCurrency: ${toCurrency}, amount: ${amount}, date: ${date}`);
-        
-        if(fromCurrency === toCurrency) return amount;
-        let fromCurrencyRate, toCurrencyRate;
-        const fromCacheKey = `${fromCurrency}-${date.toISOString().split('T')[0]}`;
-        const toCacheKey = `${toCurrency}-${date.toISOString().split('T')[0]}`;      
-        if( usdExchangeRateCache.has(fromCacheKey) && usdExchangeRateCache.has(toCacheKey)){
-            fromCurrencyRate = usdExchangeRateCache.get(fromCacheKey);
-            toCurrencyRate = usdExchangeRateCache.get(toCacheKey);
-            //console.log(`[getConvertedCurrency catch] fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
-            
-            if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined) return amount * toCurrencyRate / fromCurrencyRate;
-        }
-        
-        const rateData = await prisma.currencyExchangeRate.findMany({
-            where:{
-                OR:[
-                    {date: date, currency: fromCurrency},
-                    {date: date, currency: toCurrency},
-                ] 
-            }
-        })
-        if(rateData.length === 0){
-            const currencyData = await fetchCurrencyExchangeRates(date);
-            //TODO: use insert?
-            if(currencyData){
-                await prisma.currencyExchangeRate.createMany({data: currencyData});
-                //catch the rate
-                fromCurrencyRate = currencyData.find( (data:any) => data.currency === fromCurrency)?.rate;
-                if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
-                toCurrencyRate = currencyData.find( (data:any) => data.currency === toCurrency)?.rate;
-                if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
-                //console.log(`[getConvertedCurrency] fetch fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
-                
-            }
-        }else{
-            //catch the rate
-            fromCurrencyRate = rateData.find( (data:any) => data.currency === fromCurrency)?.rate;
-            if(fromCurrencyRate !== undefined) usdExchangeRateCache.set(fromCacheKey, fromCurrencyRate);
-            toCurrencyRate = rateData.find( (data:any) => data.currency === toCurrency)?.rate;
-            if(toCurrencyRate !== undefined) usdExchangeRateCache.set(toCacheKey, toCurrencyRate);
-            //console.log(`[getConvertedCurrency] db fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
-            
-        } 
-        let convertedResult = 0;
-        //console.log(`[getConvertedCurrency] final fromCurrencyRate: ${fromCurrencyRate}, toCurrencyRate: ${toCurrencyRate}`);
-        
-        if(fromCurrencyRate !== undefined && toCurrencyRate !== undefined){
-            convertedResult = amount * toCurrencyRate / fromCurrencyRate;
-        }else{
-            convertedResult = -1;
-        }
-        //console.log(`[getConvertedCurrency] convertedResult: ${convertedResult}`);
-        
-        return convertedResult;
-    } catch (error) {
-        console.log(`Fail to get converted currency: ${error}`);   
-    }
-}
-
-let stopCount  = 0;
-//Backup currency A=api
-export const fetchCurrencyExchangeRates = async (date: Date) => {
-    stopCount++;
-    if(stopCount > 3){
-        console.log(`[fetchCurrencyExchangeRates] stopCount: ${stopCount}`);
-        return [];
-    }
-    try {
-        const isHistoricalData = date < (new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
-        const API_KEY = process.env.CURRENCYAPI_API_KEY;
-        if (!API_KEY) { throw new Error("Currency exchange API key is missing");}
-        
-        const header = { headers: { "apikey": API_KEY, }}
-        const API_url = `https://api.currencyapi.com/v3/${isHistoricalData ? "historical" : "latest"}?`    
-        const currencies = currencySymbols.join('%2C');
-        const queryURL = isHistoricalData
-                            ? `${API_url}currencies=${currencies}&date=${getUTCDateString(date)}`
-                            : `${API_url}currencies=${currencies}`;
-        const response = await fetch(queryURL, header);
-        await delay(6100);
-        
-        if (!response.ok) {
-            const errorText = await response.text(); // Read raw response
-            console.error("Failed response body:", errorText);
-            return [];
-            throw new Error(`Response status: ${response.status}`);
-        }
-        const result = await response.json();
-        const currencyData: CurrencyExchangeRateCreateType[] = Object.values(result.data).map((data: any) => ({
-            currency: data.code, 
-            rate: data.value, 
-            date: date
-        }))
-        return currencyData;
-    } catch (error) {
-        console.log(`Fail to fetch currency exchange rates: ${error}`); 
     }
 }

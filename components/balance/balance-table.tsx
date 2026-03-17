@@ -1,6 +1,6 @@
 'use client'
 
-import { FlattedBalanceType } from "@/lib/definitions";
+import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import { DataTable } from "../data-table";
 import { columns } from "./balance-columns";
 import BalanceTableToolbar from "@/components/balance/balance-table-toolbar";
@@ -15,16 +15,16 @@ import {
     VisibilityState,
 } from "@tanstack/react-table";
 import { Table } from "@tanstack/react-table";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { MonthBalanceContext } from "@/context/monthBalanceContext";
 import { SettingContext } from "@/context/settingContext";
 
 export default function BalanceTable({
     queryDate,
-    data,
+    refreshState,
 }:{
     queryDate:Date,
-    data: FlattedBalanceType[]
+    refreshState?: MonthlyRefreshOverview,
 }){
 
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -34,7 +34,7 @@ export default function BalanceTable({
     if(!monthBalanceContext){
         throw Error ("Setting must be used within a setting provider")
     }
-    const { monthBalanceData, updateMonthBalanceData } = monthBalanceContext;  
+    const { monthBalanceData } = monthBalanceContext;  
     const settingContext = useContext(SettingContext);
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
@@ -61,6 +61,7 @@ export default function BalanceTable({
             <BalanceTableToolbar 
                 queryDate={queryDate}
                 table={table}
+                refreshState={refreshState}
             />
             <div className="w-full hidden sm:block">
                 <DataTable
@@ -71,12 +72,17 @@ export default function BalanceTable({
             </div>
             <div className="w-full sm:hidden">
                 {
-                    data.map((balance) => (
+                    monthBalanceData.map((balance) => (
                         <div key={balance.id} className="rounded-md border my-2">
                             <div className="flex flex-row justify-between gap-2 p-2">
                                 <div className="flex flex-col justify-center items-start w-52">
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
                                     <span className="text-xs text-muted-foreground">{balance.holdingName}</span>
+                                    {balance.priceStatus !== 'success' && (
+                                        <span className="mt-1 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
+                                            {balance.priceStatus === 'failed' ? 'Price failed' : 'Estimated'}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex flex-col justify-center items-end">
                                     <span className="text-sm font-semibold">{`${balance.quantity}`}</span>

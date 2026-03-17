@@ -128,18 +128,22 @@ export default function CreateBalanceForm({
 
     useEffect(() => {
         form.setValue('value', price*quantity)
-    }, [price, quantity])
+    }, [price, quantity, form])
 
     const fetchAndUpdatePrice = async (holding: Holding) => {
         if(isListedStockOrCrypto && holding.sourceId){
-            if(selectedCategory.name === 'Cryptocurrency'){
-                const price = await fetchCryptoPriceFromAPI(holding.sourceId.toString())
-                form.setValue('price', price);
-            }else if(selectedCategory.name === 'Listed stock'){
-                console.log(`get listed stock's price with: ${holding.sourceId.toString}`);
-                
-                const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
-                form.setValue('price', price);
+            try {
+                if(selectedCategory.name === 'Cryptocurrency'){
+                    const price = await fetchCryptoPriceFromAPI(holding.sourceId.toString())
+                    form.setValue('price', price);
+                }else if(selectedCategory.name === 'Listed stock'){
+                    console.log(`get listed stock's price with: ${holding.sourceId.toString}`);
+                    
+                    const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
+                    form.setValue('price', price);
+                }
+            } catch (error) {
+                console.error('Failed to fetch quote for holding', error);
             }
         }
     }

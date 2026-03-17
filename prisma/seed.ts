@@ -1,12 +1,29 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-    await prisma.user.create({
-        data: {
-            account: 'linehome',
-            password: '29694946',
+    const seedAccount = process.env.SEED_ACCOUNT;
+    const seedPassword = process.env.SEED_PASSWORD;
+
+    if (!seedAccount || !seedPassword) {
+        console.log('Skipping seed user creation because SEED_ACCOUNT or SEED_PASSWORD is missing.');
+        return;
+    }
+
+    const hashedPassword = await bcrypt.hash(seedPassword, 10);
+
+    await prisma.user.upsert({
+        where: {
+            account: seedAccount,
+        },
+        create: {
+            account: seedAccount,
+            password: hashedPassword,
+        },
+        update: {
+            password: hashedPassword,
         },
     });
 }

@@ -6,11 +6,26 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum PriceStatus {
+  pending
+  success
+  failed
+}
+
+enum RefreshJobStatus {
+  pending
+  running
+  partial_complete
+  completed
+  failed
 }
 
 model User {
@@ -24,6 +39,8 @@ model User {
   holdings      Holding[]
   settings      Setting?
   valueData     ValueData[]
+  refreshJobs   MonthlyRefreshJob[]
+  priceSnapshots AssetPriceSnapshot[]
 }
 
 model Balance {
@@ -38,6 +55,10 @@ model Balance {
   note         String?    // Optional notes related to this balance
   user         User       @relation(fields: [userId], references: [id])
   userId       String
+  priceStatus  PriceStatus @default(success)
+  priceFetchedAt DateTime?
+  priceSource  String?
+  priceError   String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
@@ -116,4 +137,42 @@ model CurrencyExchangeRate {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt  
   @@unique([date,currency])     
+}
+
+model MonthlyRefreshJob {
+  id            Int              @id @default(autoincrement())
+  targetMonth   DateTime
+  status        RefreshJobStatus @default(pending)
+  lastCursor    String?
+  attemptCount  Int              @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  errorSummary  String?
+  userId        String           @db.VarChar(30)
+  user          User             @relation(fields: [userId], references: [id])
+  snapshots     AssetPriceSnapshot[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([userId, targetMonth])
+}
+
+model AssetPriceSnapshot {
+  id            Int         @id @default(autoincrement())
+  targetMonth   DateTime
+  provider      String
+  sourceKey     String
+  price         Float?
+  currency      String?
+  fetchedAt     DateTime?
+  status        PriceStatus @default(pending)
+  error         String?
+  userId        String      @db.VarChar(30)
+  user          User        @relation(fields: [userId], references: [id])
+  jobId         Int?
+  job           MonthlyRefreshJob? @relation(fields: [jobId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([userId, targetMonth, provider, sourceKey])
 }

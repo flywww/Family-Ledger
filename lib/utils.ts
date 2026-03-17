@@ -34,6 +34,36 @@ export const getUTCDateString = (date: Date) => {
   return `${year}-${month}-${day}`
 }
 
+export const APP_TIME_ZONE = process.env.APP_TIME_ZONE || 'Asia/Taipei';
+
+export const getDatePartsInTimeZone = (date: Date, timeZone = APP_TIME_ZONE) => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date).reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') {
+      acc[part.type] = part.value;
+    }
+    return acc;
+  }, {});
+
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour),
+  };
+}
+
+export const isSameMonth = (left: Date, right: Date) =>
+  left.getUTCFullYear() === right.getUTCFullYear() &&
+  left.getUTCMonth() === right.getUTCMonth();
+
 //Timer
 export function delay(ms: number){
   return new Promise( resolve => setTimeout(resolve, ms));

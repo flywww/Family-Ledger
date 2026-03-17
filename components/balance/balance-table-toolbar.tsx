@@ -16,37 +16,24 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
-import { createMonthBalances, fetchMonthlyBalance } from "@/lib/actions";
-import { FlattedBalanceType } from "@/lib/definitions";
+import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import Link from "next/link"
-import { useEffect, useState, useContext, Suspense } from "react";
-import { firstDateOfMonth, getLastMonth, getCalculatedMonth } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { useContext, Suspense } from "react";
 import { SettingContext } from "@/context/settingContext";
 
 export default function BalanceTableToolbar({ 
     table, 
-    queryDate 
+    queryDate,
+    refreshState,
 }:{
     table: Table<FlattedBalanceType>,
-    queryDate: Date
+    queryDate: Date,
+    refreshState?: MonthlyRefreshOverview,
 }){
     const settingContext = useContext(SettingContext);
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
     }
-    const { setting } = settingContext;
-    const lastMonth = getLastMonth(new Date());
-    const [isOutdated, setIsOutdated] = useState<boolean>(false);
-    const { data: session } = useSession();
-
-    useEffect(() => {
-        (async function(){
-            if(session && setting){
-                setIsOutdated(setting.accountingDate < lastMonth)
-            }
-        })();
-    }, [setting])
 
     return(
             <div className="flex items-center justify-between ">
@@ -73,18 +60,11 @@ export default function BalanceTableToolbar({
                         <DropdownMenuItem>
                             <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
                         </DropdownMenuItem>
-                        {isOutdated && <DropdownMenuItem onClick={
-                            async () => {
-                                if(setting){
-                                    const balances = await fetchMonthlyBalance(setting.accountingDate);
-                                    if(balances){
-                                        await createMonthBalances( firstDateOfMonth(getCalculatedMonth(setting.accountingDate, 1)), balances)
-                                    }
-                                }
-                            }
-                        }>
-                            New month balance
-                        </DropdownMenuItem>}
+                        {refreshState && refreshState.status !== 'idle' && (
+                            <DropdownMenuItem disabled>
+                                {refreshState.status === 'partial_complete' ? 'Partial Complete' : 'Monthly refresh active'}
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSub>
                             <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
