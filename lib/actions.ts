@@ -43,6 +43,7 @@ import {
     createMonthlyBalancesAndJob,
     fetchMonthlyRefreshOverview,
     MONTHLY_REFRESH_DAILY_LIMIT,
+    prepareNextMonthBalancesFromSourceMonth,
     rebuildValueDataForMonth,
     processMonthlyRefreshBatch,
     retryFailedMonthlyRefreshForMonth,
@@ -510,37 +511,16 @@ export async function startMonthlyRefreshCronTest() {
         return { error: "Next month already has a refresh job. Clear it before running the cron test." };
     }
 
-    const sourceBalances = await prisma.balance.findMany({
-        where: {
-            userId: session.user.id,
-            date: sourceMonth,
-        },
-        include: {
-            holding: {
-                include: {
-                    category: true,
-                    type: true,
-                },
-            },
-            user: true,
-        },
-        orderBy: {
-            id: "asc",
-        },
-    });
-
-    const parsedBalances = BalanceSchema.array().safeParse(sourceBalances);
-    if (!parsedBalances.success || parsedBalances.data.length === 0) {
-        return { error: "Current month has no balances to copy." };
-    }
-
-    await createMonthlyBalancesAndJob({
-        targetMonth,
+    const prepared = await prepareNextMonthBalancesFromSourceMonth({
         userId: session.user.id,
-        sourceBalances: parsedBalances.data,
+        sourceMonth,
         updateAccountingDate: false,
         isTestData: true,
     });
+
+    if ("error" in prepared && prepared.error) {
+        return { error: "Current accounting month has no balances to copy." };
+    }
 
     await prisma.setting.update({
         where: {
@@ -646,6 +626,35 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
     revalidatePath(`/balance/?date=${date.toUTCString()}`);
     revalidatePath(`/dashboard/?date=${date.toUTCString()}`);
     redirect(`/balance/?date=${date.toUTCString()}`);
+}
+
+export async function createNextMonthBalancesFromMonth(sourceMonth: Date) {
+    const session = await auth();
+    if (!session) {
+        return { error: "Unauthorized" };
+    }
+
+    const prepared = await prepareNextMonthBalancesFromSourceMonth({
+        userId: session.user.id,
+        sourceMonth,
+    });
+
+    if ("error" in prepared && prepared.error) {
+        return {
+            error: prepared.error,
+            targetMonth: prepared.targetMonth,
+        };
+    }
+
+    revalidatePath(`/balance/?date=${prepared.sourceMonth.toUTCString()}`);
+    revalidatePath(`/balance/?date=${prepared.targetMonth.toUTCString()}`);
+    revalidatePath(`/dashboard/?date=${prepared.targetMonth.toUTCString()}`);
+
+    return {
+        success: true,
+        created: prepared.created,
+        targetMonth: prepared.targetMonth,
+    };
 }
 
 export async function deleteBalance( id: number, balance: Balance ){

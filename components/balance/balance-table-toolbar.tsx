@@ -16,10 +16,13 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
+import { createNextMonthBalancesFromMonth } from "@/lib/actions";
 import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import Link from "next/link"
-import { useContext, Suspense } from "react";
+import { useContext, Suspense, useTransition } from "react";
 import { SettingContext } from "@/context/settingContext";
+import { useRouter } from "next/navigation";
+import { getCalculatedMonth } from "@/lib/utils";
 
 export default function BalanceTableToolbar({ 
     table, 
@@ -33,9 +36,13 @@ export default function BalanceTableToolbar({
     onMonthChangePending?: (pending: boolean) => void,
 }){
     const settingContext = useContext(SettingContext);
+    const router = useRouter();
+    const [isCreatingMonth, startCreateMonthTransition] = useTransition();
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
     }
+
+    const nextMonth = getCalculatedMonth(queryDate, 1);
 
     return(
             <div className="flex items-center justify-between ">
@@ -61,6 +68,26 @@ export default function BalanceTableToolbar({
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem>
                             <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            disabled={isCreatingMonth}
+                            onSelect={(event) => {
+                                event.preventDefault();
+                                startCreateMonthTransition(async () => {
+                                    const result = await createNextMonthBalancesFromMonth(queryDate);
+                                    if (result?.error) {
+                                        window.alert(result.error);
+                                        return;
+                                    }
+                                    const targetMonth = result?.targetMonth
+                                        ? new Date(result.targetMonth)
+                                        : nextMonth;
+                                    router.push(`/balance/?date=${targetMonth.toUTCString()}`);
+                                    router.refresh();
+                                });
+                            }}
+                        >
+                            {isCreatingMonth ? "Creating next month..." : "Create next month"}
                         </DropdownMenuItem>
                         {refreshState && refreshState.status !== 'idle' && (
                             <DropdownMenuItem disabled>

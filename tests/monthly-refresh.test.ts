@@ -1,8 +1,9 @@
 import prisma from "../lib/prisma";
 import { vi, beforeEach, afterAll, describe, expect, it } from "vitest";
 
-const { fetchQuoteForSourceMock } = vi.hoisted(() => ({
+const { fetchQuoteForSourceMock, fetchCryptoQuotesBatchFromAPIMock } = vi.hoisted(() => ({
   fetchQuoteForSourceMock: vi.fn(),
+  fetchCryptoQuotesBatchFromAPIMock: vi.fn(),
 }));
 const TEST_TIMEOUT_MS = 15_000;
 
@@ -10,6 +11,7 @@ vi.mock("../lib/pricing", async () => {
   const actual = await vi.importActual<typeof import("../lib/pricing")>("../lib/pricing");
   return {
     ...actual,
+    fetchCryptoQuotesBatchFromAPI: fetchCryptoQuotesBatchFromAPIMock,
     fetchQuoteForSource: fetchQuoteForSourceMock,
   };
 });
@@ -18,6 +20,7 @@ import {
   autoCreateMonthlyRefreshJobs,
   createMonthlyBalancesAndJob,
   fetchMonthlyRefreshOverview,
+  prepareNextMonthBalancesFromSourceMonth,
   processMonthlyRefreshBatch,
   retryFailedMonthlyRefreshForMonth,
   runRateLimitedTasks,
@@ -270,6 +273,7 @@ async function seedManyCryptoSourceData(count: number) {
 
 beforeEach(async () => {
   fetchQuoteForSourceMock.mockReset();
+  fetchCryptoQuotesBatchFromAPIMock.mockReset();
   await resetDatabase();
 });
 
@@ -316,6 +320,7 @@ describe("monthly refresh workflow", () => {
 
     expect(result.createdUsers).toEqual([user.id]);
     expect(fetchQuoteForSourceMock).not.toHaveBeenCalled();
+    expect(fetchCryptoQuotesBatchFromAPIMock).not.toHaveBeenCalled();
 
     const aprilBalances = await prisma.balance.findMany({
       where: {
@@ -351,16 +356,16 @@ describe("monthly refresh workflow", () => {
       sourceBalances: sourceBalances as any,
     });
 
+    fetchCryptoQuotesBatchFromAPIMock.mockResolvedValue({
+      "btc-1": {
+        quote: {
+          USD: {
+            price: 91000,
+          },
+        },
+      },
+    });
     fetchQuoteForSourceMock.mockImplementation(async (source) => {
-      if (source.provider === "coinmarketcap") {
-        return {
-          ...source,
-          price: 91000,
-          currency: "USD",
-          fetchedAt: new Date("2026-04-01T02:15:00+08:00"),
-        };
-      }
-
       throw new Error("FMP unavailable");
     });
 
@@ -370,7 +375,8 @@ describe("monthly refresh workflow", () => {
     );
 
     expect(firstBatch.processedAssets).toBe(2);
-    expect(fetchQuoteForSourceMock).toHaveBeenCalledTimes(2);
+    expect(fetchCryptoQuotesBatchFromAPIMock).toHaveBeenCalledTimes(1);
+    expect(fetchQuoteForSourceMock).toHaveBeenCalledTimes(1);
 
     const firstOverview = await fetchMonthlyRefreshOverview(user.id, nextMonth);
     expect(firstOverview.completedCount).toBe(2);
@@ -475,12 +481,20 @@ describe("monthly refresh workflow", () => {
     });
     expect(createdValueData.every((item) => item.isTestData)).toBe(true);
 
-    fetchQuoteForSourceMock.mockImplementation(async (source) => ({
-      ...source,
-      price: 777,
-      currency: "USD",
-      fetchedAt: new Date("2026-04-01T02:10:00+08:00"),
-    }));
+    fetchCryptoQuotesBatchFromAPIMock.mockImplementation(async (ids: string[]) =>
+      Object.fromEntries(
+        ids.map((id) => [
+          id,
+          {
+            quote: {
+              USD: {
+                price: 777,
+              },
+            },
+          },
+        ]),
+      ),
+    );
 
     const batch = await processMonthlyRefreshBatch(
       new Date("2026-04-01T02:10:00+08:00"),
@@ -494,6 +508,8 @@ describe("monthly refresh workflow", () => {
     expect(batch.processedAssets).toBe(50);
     expect(batch.providerCounts.coinmarketcap).toBe(50);
     expect(batch.status).toBe("completed");
+    expect(fetchCryptoQuotesBatchFromAPIMock).toHaveBeenCalledTimes(7);
+    expect(fetchQuoteForSourceMock).not.toHaveBeenCalled();
 
     const refreshedJob = await prisma.monthlyRefreshJob.findUnique({
       where: {
@@ -522,4 +538,45 @@ describe("monthly refresh workflow", () => {
       process.env.CMC_REQUESTS_PER_MINUTE = previousRateLimit;
     }
   }, 40_000);
+
+  it("prepares next month balances manually and leaves price refresh pending for cron", async () => {
+    const { user, previousMonth } = await seedMonthlySourceData();
+
+    const result = await prepareNextMonthBalancesFromSourceMonth({
+      userId: user.id,
+      sourceMonth: previousMonth,
+    });
+
+    expect(result.created).toBe(true);
+    expect(result.targetMonth.toISOString()).toBe(new Date("2026-04-01T00:00:00+08:00").toISOString());
+
+    const setting = await prisma.setting.findUnique({
+      where: {
+        userId: user.id,
+      },
+    });
+    expect(setting?.accountingDate.toISOString()).toBe(result.targetMonth.toISOString());
+
+    const aprilBalances = await prisma.balance.findMany({
+      where: {
+        userId: user.id,
+        date: result.targetMonth,
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
+    expect(aprilBalances).toHaveLength(3);
+    expect(aprilBalances.filter((balance) => balance.priceStatus === "pending")).toHaveLength(3);
+
+    const aprilJob = await prisma.monthlyRefreshJob.findUnique({
+      where: {
+        userId_targetMonth: {
+          userId: user.id,
+          targetMonth: result.targetMonth,
+        },
+      },
+    });
+    expect(aprilJob?.status).toBe("pending");
+  });
 });

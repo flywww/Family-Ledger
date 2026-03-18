@@ -13,6 +13,8 @@ export type QuoteResult = QuoteSource & {
   fetchedAt: Date;
 };
 
+export const CMC_IDS_PER_CALL = 8;
+
 export function getHoldingQuoteSource(
   holding: Pick<Holding, "sourceId" | "category" | "symbol">,
 ): QuoteSource | null {
@@ -38,14 +40,26 @@ export function getHoldingQuoteSource(
   return null;
 }
 
-export async function fetchCryptoPriceFromAPI(id: string) {
+export async function fetchCryptoQuotesBatchFromAPI(ids: string[]) {
   const apiKey = process.env.CMC_API_KEY;
   if (!apiKey) {
     throw new Error("CMC API key is missing");
   }
 
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => id.trim()).filter((id) => id.length > 0)),
+  );
+  if (uniqueIds.length === 0) {
+    return {};
+  }
+  if (uniqueIds.length > CMC_IDS_PER_CALL) {
+    throw new Error(
+      `CoinMarketCap batch size exceeds supported limit of ${CMC_IDS_PER_CALL} ids per request`,
+    );
+  }
+
   const response = await fetch(
-    `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?id=${id}`,
+    `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?id=${uniqueIds.join(",")}`,
     {
       headers: {
         "X-CMC_PRO_API_KEY": apiKey,
@@ -60,7 +74,12 @@ export async function fetchCryptoPriceFromAPI(id: string) {
   }
 
   const data = await response.json();
-  const price = data?.data?.[id?.toString()]?.quote?.USD?.price;
+  return data?.data ?? {};
+}
+
+export async function fetchCryptoPriceFromAPI(id: string) {
+  const data = await fetchCryptoQuotesBatchFromAPI([id]);
+  const price = data?.[id?.toString()]?.quote?.USD?.price;
   if (typeof price !== "number") {
     throw new Error(`CoinMarketCap returned an invalid price for ${id}`);
   }

@@ -8,7 +8,9 @@ import {
 } from "./definitions";
 import { getConvertedCurrency } from "./fx";
 import {
+  CMC_IDS_PER_CALL,
   QuoteProvider,
+  fetchCryptoQuotesBatchFromAPI,
   fetchQuoteForSource,
   getHoldingQuoteSource,
 } from "./pricing";
@@ -18,6 +20,7 @@ export const MONTHLY_REFRESH_BATCH_SIZE = 5;
 export const MONTHLY_REFRESH_DAILY_LIMIT = 50;
 export const MONTHLY_REFRESH_FETCH_CONCURRENCY = 5;
 export const CMC_REQUESTS_PER_MINUTE = 25;
+export const CMC_BATCH_SIZE = CMC_IDS_PER_CALL;
 
 type RefreshBatchEntry = {
   source: NonNullable<ReturnType<typeof getHoldingQuoteSource>>;
@@ -171,6 +174,11 @@ function chunkEntries<T>(items: T[], size: number) {
   }
 
   return chunks;
+}
+
+function getConfiguredPositiveInteger(value: string | undefined, fallback: number) {
+  const parsed = Number.parseInt(value ?? `${fallback}`, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 export async function rebuildValueDataForMonth(
@@ -359,6 +367,61 @@ export async function createMonthlyBalancesAndJob(params: {
     createdBalances: result.createdBalances,
     jobId: result.job.id,
   };
+}
+
+export async function prepareNextMonthBalancesFromSourceMonth(params: {
+  userId: string;
+  sourceMonth: Date;
+  updateAccountingDate?: boolean;
+  isTestData?: boolean;
+}) {
+  const sourceMonth = firstDateOfMonth(params.sourceMonth);
+  const targetMonth = firstDateOfMonth(
+    new Date(sourceMonth.getFullYear(), sourceMonth.getMonth() + 1, 1),
+  );
+
+  const sourceBalances = await prisma.balance.findMany({
+    where: {
+      userId: params.userId,
+      date: sourceMonth,
+    },
+    include: {
+      holding: {
+        include: {
+          category: true,
+          type: true,
+        },
+      },
+      user: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+
+  const parsedBalances = BalanceSchema.array().safeParse(sourceBalances);
+  if (!parsedBalances.success || parsedBalances.data.length === 0) {
+    return {
+      created: false,
+      sourceMonth,
+      targetMonth,
+      error: "Selected month has no balances to copy.",
+    } as const;
+  }
+
+  const result = await createMonthlyBalancesAndJob({
+    targetMonth,
+    userId: params.userId,
+    sourceBalances: parsedBalances.data,
+    updateAccountingDate: params.updateAccountingDate,
+    isTestData: params.isTestData,
+  });
+
+  return {
+    ...result,
+    sourceMonth,
+    targetMonth,
+  } as const;
 }
 
 export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
@@ -654,6 +717,72 @@ async function processQuoteEntry(params: {
   }
 }
 
+async function processCryptoBatchEntries(params: {
+  entries: RefreshBatchEntry[];
+  jobId: number;
+  userId: string;
+  targetMonth: Date;
+  isTestData: boolean;
+}) {
+  const ids = params.entries.map((entry) => entry.source.sourceKey);
+
+  try {
+    const quotesById = await fetchCryptoQuotesBatchFromAPI(ids);
+    const fetchedAt = new Date();
+
+    await Promise.all(
+      params.entries.map(async (entry) => {
+        const balanceIds = entry.balances.map((balance) => balance.id);
+        const price = quotesById?.[entry.source.sourceKey]?.quote?.USD?.price;
+
+        if (typeof price !== "number") {
+          await applyQuoteFailure({
+            balanceIds,
+            jobId: params.jobId,
+            userId: params.userId,
+            targetMonth: params.targetMonth,
+            provider: entry.source.provider,
+            sourceKey: entry.source.sourceKey,
+            error: `CoinMarketCap returned an invalid price for ${entry.source.sourceKey}`,
+            isTestData: params.isTestData,
+          });
+          return;
+        }
+
+        await applyQuoteSuccess({
+          balanceIds,
+          jobId: params.jobId,
+          userId: params.userId,
+          targetMonth: params.targetMonth,
+          provider: entry.source.provider,
+          sourceKey: entry.source.sourceKey,
+          price,
+          currency: "USD",
+          fetchedAt,
+          isTestData: params.isTestData,
+        });
+      }),
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown quote refresh error";
+
+    await Promise.all(
+      params.entries.map((entry) =>
+        applyQuoteFailure({
+          balanceIds: entry.balances.map((balance) => balance.id),
+          jobId: params.jobId,
+          userId: params.userId,
+          targetMonth: params.targetMonth,
+          provider: entry.source.provider,
+          sourceKey: entry.source.sourceKey,
+          error: message,
+          isTestData: params.isTestData,
+        }),
+      ),
+    );
+  }
+}
+
 export async function processMonthlyRefreshBatch(
   referenceDate = new Date(),
   limit = MONTHLY_REFRESH_BATCH_SIZE,
@@ -763,22 +892,26 @@ export async function processMonthlyRefreshBatch(
     (entry) => entry.source.provider === "financialmodelingprep",
   );
 
-  const configuredCmcRequestsPerMinute = Number.parseInt(
-    process.env.CMC_REQUESTS_PER_MINUTE ?? `${CMC_REQUESTS_PER_MINUTE}`,
-    10,
+  const cmcRequestsPerMinute = getConfiguredPositiveInteger(
+    process.env.CMC_REQUESTS_PER_MINUTE,
+    CMC_REQUESTS_PER_MINUTE,
   );
-  const cmcRequestsPerMinute =
-    Number.isFinite(configuredCmcRequestsPerMinute) && configuredCmcRequestsPerMinute > 0
-      ? configuredCmcRequestsPerMinute
-      : CMC_REQUESTS_PER_MINUTE;
+  const cmcIdsPerCall = getConfiguredPositiveInteger(
+    process.env.CMC_IDS_PER_CALL,
+    CMC_BATCH_SIZE,
+  );
+  const cryptoEntryBatches = chunkEntries(
+    cryptoEntries,
+    Math.min(cmcIdsPerCall, CMC_BATCH_SIZE),
+  );
 
   await Promise.all([
-    runRateLimitedTasks(cryptoEntries, {
+    runRateLimitedTasks(cryptoEntryBatches, {
       concurrency: MONTHLY_REFRESH_FETCH_CONCURRENCY,
       maxStartsPerMinute: cmcRequestsPerMinute,
-      task: async (entry) =>
-        processQuoteEntry({
-          entry,
+      task: async (entries) =>
+        processCryptoBatchEntries({
+          entries,
           jobId: job.id,
           userId: job.userId,
           targetMonth: job.targetMonth,

@@ -65,7 +65,7 @@ describe("monthly refresh cron route", () => {
     const response = await POST(request);
     const json = await response.json();
 
-    expect(maxDuration).toBe(300);
+    expect(maxDuration).toBe(60);
     expect(response.status).toBe(200);
     expect(json.ok).toBe(true);
     expect(json.createdUsers).toEqual(["user-1"]);
