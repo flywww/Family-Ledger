@@ -50,7 +50,20 @@ const PercentageCell = ({ value }: { value: number }) => {
         maximumFractionDigits: 0,
     }).format(value)
 
-    return <div className="w-14 text-right font-medium tabular-nums">{formattedPercentage}</div>
+    return <div className="w-20 pr-2 text-right font-medium tabular-nums">{formattedPercentage}</div>
+}
+
+const PercentageHeader = ({ column }: { column: Column<FlattedBalanceType> }) => {
+    return (
+        <Button
+            variant="ghost"
+            className="w-full justify-end px-2"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+            %
+            <ArrowUpDown className="ml-1 h-4 w-4"/>
+        </Button>
+    )
 }
 
 const getSortedHeader = ( column: Column<FlattedBalanceType>, headerName:string ) => {
@@ -182,10 +195,10 @@ const NoteCell = ({ row }: { row: any }) => {
 export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "percentage",
-        size: 56,
-        minSize: 56,
-        maxSize: 56,
-        header: ({column}) => getSortedHeader(column, "%"),
+        size: 80,
+        minSize: 80,
+        maxSize: 80,
+        header: ({column}) => <PercentageHeader column={column} />,
         cell:({row}) => <PercentageCell value={row.original.percentage} />
     },
     {
