@@ -46,11 +46,11 @@ const MoneyCellFormatter = ({ value }: { value: number }) => {
 const PercentageCell = ({ value }: { value: number }) => {
     const formattedPercentage = new Intl.NumberFormat("en-US", {
         style: "percent",
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(value)
 
-    return <div className="text-right font-medium">{formattedPercentage}</div>
+    return <div className="w-14 text-right font-medium tabular-nums">{formattedPercentage}</div>
 }
 
 const getSortedHeader = ( column: Column<FlattedBalanceType>, headerName:string ) => {
@@ -182,7 +182,10 @@ const NoteCell = ({ row }: { row: any }) => {
 export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "percentage",
-        header: ({column}) => getSortedHeader(column, "Percentage"),
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
+        header: ({column}) => getSortedHeader(column, "%"),
         cell:({row}) => <PercentageCell value={row.original.percentage} />
     },
     {

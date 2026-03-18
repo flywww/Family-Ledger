@@ -21,6 +21,18 @@ interface DataTableProps<TData, TValue>{
     table: TableType<FlattedBalanceType>
 }
 
+const getFixedColumnStyle = (columnDef: ColumnDef<any, any>, size: number) => {
+    if (typeof columnDef.size !== "number") {
+        return undefined;
+    }
+
+    return {
+        width: size,
+        minWidth: typeof columnDef.minSize === "number" ? columnDef.minSize : size,
+        maxWidth: typeof columnDef.maxSize === "number" ? columnDef.maxSize : size,
+    };
+};
+
 export function DataTable<TData, TValue>({
     columns,
     data,
@@ -37,7 +49,10 @@ export function DataTable<TData, TValue>({
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {
                                         return(
-                                            <TableHead key={header.id}>
+                                            <TableHead
+                                                key={header.id}
+                                                style={getFixedColumnStyle(header.column.columnDef, header.getSize())}
+                                            >
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
@@ -58,7 +73,10 @@ export function DataTable<TData, TValue>({
                                     data-state={row.getIsSelected() && "Selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell
+                                            key={cell.id}
+                                            style={getFixedColumnStyle(cell.column.columnDef, cell.column.getSize())}
+                                        >
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}

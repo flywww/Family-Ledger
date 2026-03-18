@@ -105,8 +105,8 @@ export default function BalanceTable({
                                     <span className="text-xs font-medium text-muted-foreground">
                                         {new Intl.NumberFormat("en-US", {
                                             style: "percent",
-                                            minimumFractionDigits: 1,
-                                            maximumFractionDigits: 1,
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
                                         }).format(balance.percentage)}
                                     </span>
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
