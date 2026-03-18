@@ -376,9 +376,7 @@ export async function prepareNextMonthBalancesFromSourceMonth(params: {
   isTestData?: boolean;
 }) {
   const sourceMonth = firstDateOfMonth(params.sourceMonth);
-  const targetMonth = firstDateOfMonth(
-    new Date(sourceMonth.getFullYear(), sourceMonth.getMonth() + 1, 1),
-  );
+  const targetMonth = firstDateOfMonth(getCalculatedMonth(sourceMonth, 1));
 
   const sourceBalances = await prisma.balance.findMany({
     where: {

@@ -37,6 +37,7 @@ import { redirect } from 'next/navigation';
 import {
     MonthKey,
     firstDateOfMonth,
+    getCalculatedMonth,
     getMonthKey,
     monthKeyToDate,
 } from "./utils";
@@ -517,9 +518,7 @@ export async function startMonthlyRefreshCronTest(sourceMonthKey?: MonthKey) {
     }
 
     const sourceMonth = monthKeyToDate(sourceMonthKey);
-    const expectedTargetMonth = firstDateOfMonth(new Date(
-        sourceMonth.getTime() + 32 * 24 * 60 * 60 * 1000,
-    ));
+    const expectedTargetMonth = firstDateOfMonth(getCalculatedMonth(sourceMonth, 1));
 
     const existingTargetBalance = await prisma.balance.count({
         where: {
