@@ -15,16 +15,19 @@ import {
     VisibilityState,
 } from "@tanstack/react-table";
 import { Table } from "@tanstack/react-table";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MonthBalanceContext } from "@/context/monthBalanceContext";
 import { SettingContext } from "@/context/settingContext";
 import BalanceTableSkeleton from "./skeleton/balance-table-skeleton";
+import { MonthKey } from "@/lib/utils";
 
 export default function BalanceTable({
     queryDate,
+    queryMonthKey,
     refreshState,
 }:{
     queryDate:Date,
+    queryMonthKey: MonthKey,
     refreshState?: MonthlyRefreshOverview,
 }){
 
@@ -42,6 +45,11 @@ export default function BalanceTable({
         throw Error ("Setting must be used within a setting provider")
     }
     const { setting } = settingContext;
+
+    useEffect(() => {
+        setIsMonthChangePending(false);
+    }, [queryDate]);
+
     const table: Table<FlattedBalanceType> = useReactTable({
         data: monthBalanceData,
         columns,
@@ -62,12 +70,13 @@ export default function BalanceTable({
         <div className="flex flex-col gap-4">
             <BalanceTableToolbar 
                 queryDate={queryDate}
+                queryMonthKey={queryMonthKey}
                 table={table}
                 refreshState={refreshState}
                 onMonthChangePending={setIsMonthChangePending}
             />
             {isMonthChangePending ? (
-                <BalanceTableSkeleton />
+                <BalanceTableSkeleton showToolbar={false} />
             ) : (
                 <>
             <div className="w-full hidden sm:block">

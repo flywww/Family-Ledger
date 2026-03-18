@@ -1,4 +1,4 @@
-import { getCalculatedMonth } from "@/lib/utils";
+import { getCalculatedMonth, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
 import Search from "@/components/search";
 import CategorySelector from "@/components/dashboard/category-selector";
 import SummarySection from "@/components/dashboard/summary-section";
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 export default async function Page(
   props:{
     searchParams?: Promise<{
+      month?: string
       date?: string
       categories?: string,
       currency?: string,
@@ -31,7 +32,13 @@ export default async function Page(
   }
 ) {
   const searchParams = await props.searchParams;
-  const queryDate = searchParams?.date ? new Date(searchParams.date) : (await fetchLastDateOfBalance()) || getCalculatedMonth(new Date(), -1)
+  const fallbackDate = (await fetchLastDateOfBalance()) || getCalculatedMonth(new Date(), -1);
+  const queryMonthKey = resolveMonthKey({
+    month: searchParams?.month,
+    date: searchParams?.date,
+    fallback: fallbackDate,
+  });
+  const queryDate = monthKeyToDate(queryMonthKey);
   const categoryData = await fetchCategories();
   const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
@@ -61,7 +68,7 @@ export default async function Page(
       <MonthlyRefreshStatus overview={refreshState} />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Suspense>
-          <Search queryDate={queryDate}/>
+          <Search queryDate={queryDate} queryMonthKey={queryMonthKey}/>
         </Suspense>
         <Suspense>
           <CategorySelector 

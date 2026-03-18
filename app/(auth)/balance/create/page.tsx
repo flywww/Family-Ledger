@@ -1,17 +1,22 @@
 import  CreateBalanceForm  from "@/components/balance/balance-create-form"
-import { firstDateOfMonth } from "@/lib/utils";
+import { firstDateOfMonth, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
 
 export default async function Page(
     props:{
         searchParams?: Promise<{
+            month?: string
             date?: string
         }>
     }
 ) {
     const searchParams = await props.searchParams;
-    let initialDate = firstDateOfMonth(new Date());
-    if(searchParams?.date) initialDate = new Date(searchParams.date);
-    const backURL = `/balance?date=${initialDate}`
+    const initialMonthKey = resolveMonthKey({
+        month: searchParams?.month,
+        date: searchParams?.date,
+        fallback: firstDateOfMonth(new Date()),
+    });
+    const initialDate = monthKeyToDate(initialMonthKey);
+    const backURL = `/balance?month=${initialMonthKey}`
 
     return(
         <div className="flex flex-col gap-3 ml-6">

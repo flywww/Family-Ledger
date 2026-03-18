@@ -86,6 +86,7 @@ export const getUTCDateString = (date: Date) => {
 }
 
 export const APP_TIME_ZONE = process.env.APP_TIME_ZONE || 'Asia/Taipei';
+export type MonthKey = `${number}-${string}`;
 
 export const getDatePartsInTimeZone = (date: Date, timeZone = APP_TIME_ZONE) => {
   const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -110,6 +111,44 @@ export const getDatePartsInTimeZone = (date: Date, timeZone = APP_TIME_ZONE) => 
     hour: Number(parts.hour),
   };
 }
+
+export const getMonthKey = (date: Date, timeZone = APP_TIME_ZONE): MonthKey => {
+  const parts = getDatePartsInTimeZone(date, timeZone);
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}` as MonthKey;
+}
+
+export const isMonthKey = (value?: string | null): value is MonthKey =>
+  typeof value === "string" && /^\d{4}-\d{2}$/.test(value);
+
+export const monthKeyToDate = (monthKey: MonthKey, timeZone = APP_TIME_ZONE) => {
+  const [yearString, monthString] = monthKey.split("-");
+  const year = Number(yearString);
+  const month = Number(monthString);
+
+  return createDateAtStartOfDayInTimeZone(year, month - 1, 1, timeZone);
+};
+
+export const addMonthsToMonthKey = (monthKey: MonthKey, addMonth: number): MonthKey =>
+  getMonthKey(getCalculatedMonth(monthKeyToDate(monthKey), addMonth));
+
+export const resolveMonthKey = (params: {
+  month?: string | null;
+  date?: string | null;
+  fallback: Date;
+}) => {
+  if (isMonthKey(params.month)) {
+    return params.month;
+  }
+
+  if (params.date) {
+    const parsedDate = new Date(params.date);
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return getMonthKey(parsedDate);
+    }
+  }
+
+  return getMonthKey(params.fallback);
+};
 
 export const isSameMonth = (left: Date, right: Date) =>
   left.getUTCFullYear() === right.getUTCFullYear() &&

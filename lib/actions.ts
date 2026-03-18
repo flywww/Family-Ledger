@@ -34,7 +34,12 @@ import {
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { firstDateOfMonth } from "./utils";
+import {
+    MonthKey,
+    firstDateOfMonth,
+    getMonthKey,
+    monthKeyToDate,
+} from "./utils";
 import bcrypt from 'bcryptjs';
 import { auth, signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -314,6 +319,24 @@ export async function fetchMonthlyRefreshState(date: Date) {
     return fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
 }
 
+export async function fetchBalanceMonthKeys(userId: string) {
+    const months = await prisma.balance.findMany({
+        where: {
+            userId,
+            isTestData: false,
+        },
+        select: {
+            date: true,
+        },
+        distinct: ["date"],
+        orderBy: {
+            date: "desc",
+        },
+    });
+
+    return months.map((item) => getMonthKey(item.date));
+}
+
 export async function retryFailedMonthlyRefresh(date: Date) {
     const session = await auth();
     if (!session) return;
@@ -437,6 +460,7 @@ export async function fetchCronTestState(userId: string) {
     });
 
     const testMonths = await listCronTestDataMonths(userId);
+    const availableSourceMonthKeys = await fetchBalanceMonthKeys(userId);
     const activeTargetMonth = setting?.cronTestTargetMonth
         ? firstDateOfMonth(setting.cronTestTargetMonth)
         : null;
@@ -453,10 +477,12 @@ export async function fetchCronTestState(userId: string) {
         staleTestData: testMonths.length > 0 && !activeTargetMonth,
         testMonthCount: testMonths.length,
         overview,
+        availableSourceMonthKeys,
+        defaultSourceMonthKey: availableSourceMonthKeys[0] ?? null,
     };
 }
 
-export async function startMonthlyRefreshCronTest() {
+export async function startMonthlyRefreshCronTest(sourceMonthKey?: MonthKey) {
     const session = await auth();
     if (!session) {
         return { error: "Unauthorized" };
@@ -481,29 +507,16 @@ export async function startMonthlyRefreshCronTest() {
         return { error: "Existing cron test data was found. Clean it before starting a new test." };
     }
 
-    const accountingSourceMonth = firstDateOfMonth(setting.accountingDate);
-    const accountingSourceCount = await prisma.balance.count({
-        where: {
-            userId: session.user.id,
-            date: accountingSourceMonth,
-        },
-    });
+    if (!sourceMonthKey) {
+        return { error: "Select a source month first." };
+    }
 
-    const latestBalance = accountingSourceCount > 0
-        ? null
-        : await prisma.balance.findFirst({
-            where: {
-                userId: session.user.id,
-            },
-            select: {
-                date: true,
-            },
-            orderBy: {
-                date: "desc",
-            },
-        });
+    const availableSourceMonthKeys = await fetchBalanceMonthKeys(session.user.id);
+    if (!availableSourceMonthKeys.includes(sourceMonthKey)) {
+        return { error: "Selected source month has no balances." };
+    }
 
-    const sourceMonth = latestBalance ? firstDateOfMonth(latestBalance.date) : accountingSourceMonth;
+    const sourceMonth = monthKeyToDate(sourceMonthKey);
     const expectedTargetMonth = firstDateOfMonth(new Date(
         sourceMonth.getTime() + 32 * 24 * 60 * 60 * 1000,
     ));
@@ -553,13 +566,15 @@ export async function startMonthlyRefreshCronTest() {
         },
     });
 
+    const targetMonthKey = getMonthKey(prepared.targetMonth);
     revalidatePath("/setting");
-    revalidatePath(`/balance/?date=${prepared.targetMonth.toISOString()}`);
-    revalidatePath(`/dashboard/?date=${prepared.targetMonth.toISOString()}`);
+    revalidatePath(`/balance/?month=${targetMonthKey}`);
+    revalidatePath(`/dashboard/?month=${targetMonthKey}`);
 
     return {
         success: true,
         targetMonth: prepared.targetMonth,
+        targetMonthKey,
     };
 }
 
@@ -649,15 +664,20 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
     redirect(`/balance/?date=${date.toUTCString()}`);
 }
 
-export async function createNextMonthBalancesFromMonth(sourceMonth: Date) {
+export async function createNextMonthBalancesFromMonth(sourceMonthKey: MonthKey) {
     const session = await auth();
     if (!session) {
         return { error: "Unauthorized" };
     }
 
+    const availableSourceMonthKeys = await fetchBalanceMonthKeys(session.user.id);
+    if (!availableSourceMonthKeys.includes(sourceMonthKey)) {
+        return { error: "Selected month has no balances to copy." };
+    }
+
     const prepared = await prepareNextMonthBalancesFromSourceMonth({
         userId: session.user.id,
-        sourceMonth,
+        sourceMonth: monthKeyToDate(sourceMonthKey),
     });
 
     if ("error" in prepared && prepared.error) {
@@ -668,13 +688,15 @@ export async function createNextMonthBalancesFromMonth(sourceMonth: Date) {
     }
 
     revalidatePath(`/balance/?date=${prepared.sourceMonth.toUTCString()}`);
-    revalidatePath(`/balance/?date=${prepared.targetMonth.toUTCString()}`);
-    revalidatePath(`/dashboard/?date=${prepared.targetMonth.toUTCString()}`);
+    revalidatePath(`/balance/?month=${sourceMonthKey}`);
+    revalidatePath(`/balance/?month=${getMonthKey(prepared.targetMonth)}`);
+    revalidatePath(`/dashboard/?month=${getMonthKey(prepared.targetMonth)}`);
 
     return {
         success: true,
         created: prepared.created,
         targetMonth: prepared.targetMonth,
+        targetMonthKey: getMonthKey(prepared.targetMonth),
     };
 }
 

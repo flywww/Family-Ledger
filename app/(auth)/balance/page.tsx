@@ -9,7 +9,7 @@ import {
 import { currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
-import { getCalculatedMonth } from "@/lib/utils";
+import { getCalculatedMonth, getMonthKey, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
 import { Metadata } from "next";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
@@ -21,13 +21,20 @@ export const metadata: Metadata = {
 export default async function Page(
   props:{
     searchParams?: Promise<{
+      month?: string;
       date?: string;
       currency?: string,
     }>
   }
 ) {
   const searchParams = await props.searchParams;
-  const queryDate = searchParams?.date ? new Date(searchParams.date) : (await fetchLastDateOfBalance()) || getCalculatedMonth(new Date(), -1);
+  const fallbackDate = (await fetchLastDateOfBalance()) || getCalculatedMonth(new Date(), -1);
+  const queryMonthKey = resolveMonthKey({
+    month: searchParams?.month,
+    date: searchParams?.date,
+    fallback: fallbackDate,
+  });
+  const queryDate = monthKeyToDate(queryMonthKey);
   const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
   const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
@@ -57,6 +64,7 @@ export default async function Page(
           {flattedBalanceData &&
               <BalanceTable 
                 queryDate={ queryDate } 
+                queryMonthKey={queryMonthKey}
                 refreshState={refreshState}
               />
           }

@@ -22,16 +22,18 @@ import Link from "next/link"
 import { useContext, Suspense, useTransition } from "react";
 import { SettingContext } from "@/context/settingContext";
 import { useRouter } from "next/navigation";
-import { getCalculatedMonth } from "@/lib/utils";
+import { addMonthsToMonthKey, MonthKey } from "@/lib/utils";
 
 export default function BalanceTableToolbar({ 
     table, 
     queryDate,
+    queryMonthKey,
     refreshState,
     onMonthChangePending,
 }:{
     table: Table<FlattedBalanceType>,
     queryDate: Date,
+    queryMonthKey: MonthKey,
     refreshState?: MonthlyRefreshOverview,
     onMonthChangePending?: (pending: boolean) => void,
 }){
@@ -42,13 +44,17 @@ export default function BalanceTableToolbar({
         throw Error ("Setting must be used within a setting provider")
     }
 
-    const nextMonth = getCalculatedMonth(queryDate, 1);
+    const nextMonthKey = addMonthsToMonthKey(queryMonthKey, 1);
 
     return(
             <div className="flex items-center justify-between ">
                 <div className="w-full flex flex-col justify-start items-center gap-2 sm:flex-row">
                     <Suspense>
-                        <Search queryDate={queryDate} onPendingChange={onMonthChangePending} />
+                        <Search
+                            queryDate={queryDate}
+                            queryMonthKey={queryMonthKey}
+                            onPendingChange={onMonthChangePending}
+                        />
                     </Suspense>
                     <Input
                         placeholder="Filter balances"
@@ -67,22 +73,20 @@ export default function BalanceTableToolbar({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem>
-                            <Link href={`/balance/create?date=${queryDate}`}> New balance </Link>
+                            <Link href={`/balance/create?month=${queryMonthKey}`}> New balance </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             disabled={isCreatingMonth}
                             onSelect={(event) => {
                                 event.preventDefault();
                                 startCreateMonthTransition(async () => {
-                                    const result = await createNextMonthBalancesFromMonth(queryDate);
+                                    const result = await createNextMonthBalancesFromMonth(queryMonthKey);
                                     if (result?.error) {
                                         window.alert(result.error);
                                         return;
                                     }
-                                    const targetMonth = result?.targetMonth
-                                        ? new Date(result.targetMonth)
-                                        : nextMonth;
-                                    router.push(`/balance/?date=${targetMonth.toISOString()}`);
+                                    const targetMonthKey = result?.targetMonthKey ?? nextMonthKey;
+                                    router.push(`/balance/?month=${targetMonthKey}`);
                                     router.refresh();
                                 });
                             }}

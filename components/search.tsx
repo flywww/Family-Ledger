@@ -1,35 +1,43 @@
 'use client'
 
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
-import { getYearList, minYear } from "@/lib/data";
+import { minYear } from "@/lib/data";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { cn, getLastMonth, getCalculatedMonth } from "@/lib/utils";
+import { MonthKey, addMonthsToMonthKey, cn, getCalculatedMonth, getLastMonth, getMonthKey } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
 import { useTransition } from "react";
 
 
 export default function Search({
     queryDate,
+    queryMonthKey,
     onPendingChange,
 }:{
     queryDate: Date,
+    queryMonthKey: MonthKey,
     onPendingChange?: (pending: boolean) => void,
 }){
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const previousMonth = addMonthsToMonthKey(queryMonthKey, -1);
+    const nextMonth = addMonthsToMonthKey(queryMonthKey, 1);
+    const minMonth = getMonthKey(new Date(minYear,1,1));
+    const maxMonth = getMonthKey(getLastMonth(new Date()));
 
     const handleDateSearch = (date: Date) => {
-        if (date.getTime() === queryDate.getTime()) {
+        const nextMonthKey = getMonthKey(date);
+        if (nextMonthKey === queryMonthKey) {
             return;
         }
 
         const params = new URLSearchParams(searchParams);
-        params.set('date', date.toISOString());
+        params.set('month', nextMonthKey);
+        params.delete('date');
         onPendingChange?.(true);
         startTransition(() => {
             router.replace(`${pathname}?${params.toString()}`);
@@ -43,7 +51,7 @@ export default function Search({
                     variant="outline" 
                     size="icon"
                     onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,-1))}
-                    disabled={isPending || getCalculatedMonth(queryDate,-1) < new Date(minYear,1,1)}
+                    disabled={isPending || previousMonth < minMonth}
                 > 
                 <ChevronLeft/>
             </Button>
@@ -71,7 +79,7 @@ export default function Search({
                 variant="outline" 
                 size="icon"
                 onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,1))}
-                disabled={isPending || getCalculatedMonth(queryDate,1) > getLastMonth(new Date())}
+                disabled={isPending || nextMonth > maxMonth}
             > 
                 <ChevronRight/>
             </Button>

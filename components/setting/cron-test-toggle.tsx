@@ -7,6 +7,14 @@ import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MonthlyRefreshOverview } from "@/lib/definitions";
+import { MonthKey, monthKeyToDate } from "@/lib/utils";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function CronTestToggle({
     activeTargetMonth,
@@ -16,6 +24,8 @@ export default function CronTestToggle({
     staleTestData,
     testMonthCount,
     overview,
+    availableSourceMonthKeys,
+    defaultSourceMonthKey,
 }:{
     activeTargetMonth?: Date | null,
     displayTargetMonth?: Date | null,
@@ -24,6 +34,8 @@ export default function CronTestToggle({
     staleTestData: boolean,
     testMonthCount: number,
     overview?: MonthlyRefreshOverview,
+    availableSourceMonthKeys: MonthKey[],
+    defaultSourceMonthKey?: MonthKey | null,
 }){
     const [isPending, startTransition] = useTransition();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -36,6 +48,9 @@ export default function CronTestToggle({
     );
     const [hasCurrentTestData, setHasCurrentTestData] = useState(hasTestData);
     const [hasStaleTestData, setHasStaleTestData] = useState(staleTestData);
+    const [selectedSourceMonthKey, setSelectedSourceMonthKey] = useState<MonthKey | "">(
+        defaultSourceMonthKey ?? "",
+    );
     const router = useRouter();
 
     useEffect(() => {
@@ -54,6 +69,10 @@ export default function CronTestToggle({
         setHasStaleTestData(staleTestData);
     }, [staleTestData]);
 
+    useEffect(() => {
+        setSelectedSourceMonthKey(defaultSourceMonthKey ?? "");
+    }, [defaultSourceMonthKey]);
+
     const handleClick = () => {
         setErrorMessage(null);
         setSuccessMessage(null);
@@ -62,7 +81,9 @@ export default function CronTestToggle({
             void (async () => {
                 const result = currentTargetMonth || hasCurrentTestData
                     ? await stopMonthlyRefreshCronTest()
-                    : await startMonthlyRefreshCronTest();
+                    : await startMonthlyRefreshCronTest(
+                        selectedSourceMonthKey || undefined,
+                    );
 
                 if (result?.error) {
                     setErrorMessage(result.error);
@@ -99,6 +120,26 @@ export default function CronTestToggle({
                     Start test only prepares next-month test data. Use the deployed cron route to
                     run the real refresh flow. Clean test data removes all tagged test artifacts.
                 </p>
+                {!hasCurrentTestData && (
+                    <div className="space-y-2 pt-1">
+                        <p className="text-sm text-slate-600">Source month</p>
+                        <Select
+                            value={selectedSourceMonthKey}
+                            onValueChange={(value) => setSelectedSourceMonthKey(value as MonthKey)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select a month to copy" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableSourceMonthKeys.map((monthKey) => (
+                                    <SelectItem key={monthKey} value={monthKey}>
+                                        {format(monthKeyToDate(monthKey), "MMM yyyy")}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
                 {currentDisplayMonth && (
                     <p className="text-sm text-slate-600">
                         Testing month: {format(currentDisplayMonth, "MMM yyyy")}
@@ -116,7 +157,11 @@ export default function CronTestToggle({
                 )}
             </div>
             <div className="flex items-center gap-3">
-                <Button type="button" onClick={handleClick} disabled={isPending}>
+                <Button
+                    type="button"
+                    onClick={handleClick}
+                    disabled={isPending || (!hasCurrentTestData && !selectedSourceMonthKey)}
+                >
                     {isPending
                         ? currentTargetMonth || hasCurrentTestData
                             ? "Cleaning test data..."
@@ -127,7 +172,7 @@ export default function CronTestToggle({
                 </Button>
                 {currentDisplayMonth && (
                     <Button asChild variant="outline">
-                        <Link href={`/balance?date=${currentDisplayMonth.toISOString()}`}>
+                        <Link href={`/balance?month=${format(currentDisplayMonth, "yyyy-MM")}`}>
                             Open test month
                         </Link>
                     </Button>
