@@ -5,7 +5,7 @@ import {
   processMonthlyRefreshBatch,
 } from "@/lib/monthly-refresh";
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 function isAuthorized(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
