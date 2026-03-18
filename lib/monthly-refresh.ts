@@ -11,6 +11,8 @@ import { fetchQuoteForSource, getHoldingQuoteSource } from "./pricing";
 import { firstDateOfMonth, getCalculatedMonth, getDatePartsInTimeZone } from "./utils";
 
 export const MONTHLY_REFRESH_BATCH_SIZE = 5;
+export const MONTHLY_REFRESH_DAILY_LIMIT = 50;
+export const MONTHLY_REFRESH_FETCH_CONCURRENCY = 5;
 
 type BalanceWithRelations = Balance;
 
@@ -60,6 +62,19 @@ async function convertToValueData(balances: BalanceWithRelations[]) {
   }
 
   return Object.values(valueData);
+}
+
+function chunkEntries<T>(items: T[], size: number) {
+  if (size <= 0) {
+    return [items];
+  }
+
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+
+  return chunks;
 }
 
 export async function rebuildValueDataForMonth(userId: string, targetMonth: Date) {
@@ -564,33 +579,37 @@ export async function processMonthlyRefreshBatch(referenceDate = new Date(), lim
 
   const batchEntries = Array.from(groupedBalances.values()).slice(0, limit);
 
-  for (const entry of batchEntries) {
-    const balanceIds = entry.balances.map((balance) => balance.id);
-    try {
-      const quote = await fetchQuoteForSource(entry.source);
-      await applyQuoteSuccess({
-        balanceIds,
-        jobId: job.id,
-        userId: job.userId,
-        targetMonth: job.targetMonth,
-        provider: quote.provider,
-        sourceKey: quote.sourceKey,
-        price: quote.price,
-        currency: quote.currency,
-        fetchedAt: quote.fetchedAt,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown quote refresh error";
-      await applyQuoteFailure({
-        balanceIds,
-        jobId: job.id,
-        userId: job.userId,
-        targetMonth: job.targetMonth,
-        provider: entry.source.provider,
-        sourceKey: entry.source.sourceKey,
-        error: message,
-      });
-    }
+  for (const chunk of chunkEntries(batchEntries, MONTHLY_REFRESH_FETCH_CONCURRENCY)) {
+    await Promise.all(
+      chunk.map(async (entry) => {
+        const balanceIds = entry.balances.map((balance) => balance.id);
+        try {
+          const quote = await fetchQuoteForSource(entry.source);
+          await applyQuoteSuccess({
+            balanceIds,
+            jobId: job.id,
+            userId: job.userId,
+            targetMonth: job.targetMonth,
+            provider: quote.provider,
+            sourceKey: quote.sourceKey,
+            price: quote.price,
+            currency: quote.currency,
+            fetchedAt: quote.fetchedAt,
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown quote refresh error";
+          await applyQuoteFailure({
+            balanceIds,
+            jobId: job.id,
+            userId: job.userId,
+            targetMonth: job.targetMonth,
+            provider: entry.source.provider,
+            sourceKey: entry.source.sourceKey,
+            error: message,
+          });
+        }
+      }),
+    );
   }
 
   await rebuildValueDataForMonth(job.userId, job.targetMonth);

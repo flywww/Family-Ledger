@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   autoCreateMonthlyRefreshJobs,
+  MONTHLY_REFRESH_DAILY_LIMIT,
   processMonthlyRefreshBatch,
 } from "@/lib/monthly-refresh";
 
@@ -21,7 +22,16 @@ async function handleCron(request: NextRequest) {
 
   const referenceDate = new Date();
   const created = await autoCreateMonthlyRefreshJobs(referenceDate);
-  const processed = await processMonthlyRefreshBatch(referenceDate);
+  const configuredLimit = Number.parseInt(
+    process.env.MONTHLY_REFRESH_DAILY_LIMIT ?? `${MONTHLY_REFRESH_DAILY_LIMIT}`,
+    10,
+  );
+  const processed = await processMonthlyRefreshBatch(
+    referenceDate,
+    Number.isFinite(configuredLimit) && configuredLimit > 0
+      ? configuredLimit
+      : MONTHLY_REFRESH_DAILY_LIMIT,
+  );
 
   return NextResponse.json({
     ok: true,
