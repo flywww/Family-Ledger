@@ -50,6 +50,8 @@ export const SettingSchema = z.object({
     accountingDate: z.date(),
     displayCurrency: z.enum([...currencySymbols] as [string, ...string[]]),
     displayCategories: z.string(),
+    cronTestTargetMonth: z.date().nullable().optional(),
+    cronTestStartedAt: z.date().nullable().optional(),
     userId: z.string(),
     updatedAt: z.date(),
     createdAt: z.date(),

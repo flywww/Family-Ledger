@@ -192,11 +192,6 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         cell:({row}) => <QuantityCell row={row} />
     },
     {
-        accessorKey: "priceStatus",
-        header: "Status",
-        cell:({row}) => <PriceStatusCell value={row.original.priceStatus} />
-    },
-    {
         accessorKey: "price",
         header: ({column}) => getSortedHeader(column, "Price"),
         cell:({row}) => {
@@ -214,6 +209,11 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         accessorKey: "note",
         header: "Note",
         cell:({row}) => <NoteCell row={row} />
+    },
+    {
+        accessorKey: "priceStatus",
+        header: "Status",
+        cell:({row}) => <PriceStatusCell value={row.original.priceStatus} />
     },
     {
         id: "actions",

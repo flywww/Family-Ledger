@@ -14,6 +14,11 @@ export const MONTHLY_REFRESH_BATCH_SIZE = 5;
 export const MONTHLY_REFRESH_DAILY_LIMIT = 50;
 export const MONTHLY_REFRESH_FETCH_CONCURRENCY = 5;
 
+type MonthlyRefreshJobFilter = {
+  userId?: string;
+  targetMonth?: Date;
+};
+
 type BalanceWithRelations = Balance;
 
 function isRetryWindow(referenceDate: Date, targetMonth: Date) {
@@ -496,12 +501,21 @@ async function applyQuoteSuccess(params: {
   }
 }
 
-export async function processMonthlyRefreshBatch(referenceDate = new Date(), limit = MONTHLY_REFRESH_BATCH_SIZE) {
+export async function processMonthlyRefreshBatch(
+  referenceDate = new Date(),
+  limit = MONTHLY_REFRESH_BATCH_SIZE,
+  filter?: MonthlyRefreshJobFilter,
+) {
+  const normalizedTargetMonth = filter?.targetMonth
+    ? firstDateOfMonth(filter.targetMonth)
+    : undefined;
   const job = await prisma.monthlyRefreshJob.findFirst({
     where: {
       status: {
         in: ["pending", "partial_complete"],
       },
+      ...(filter?.userId ? { userId: filter.userId } : {}),
+      ...(normalizedTargetMonth ? { targetMonth: normalizedTargetMonth } : {}),
     },
     orderBy: [
       { targetMonth: "asc" },

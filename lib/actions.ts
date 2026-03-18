@@ -42,7 +42,9 @@ import { fetchCurrencyExchangeRates, getConvertedCurrency } from "./fx";
 import {
     createMonthlyBalancesAndJob,
     fetchMonthlyRefreshOverview,
+    MONTHLY_REFRESH_DAILY_LIMIT,
     rebuildValueDataForMonth,
+    processMonthlyRefreshBatch,
     retryFailedMonthlyRefreshForMonth,
 } from "./monthly-refresh";
 import {
@@ -318,6 +320,181 @@ export async function retryFailedMonthlyRefresh(date: Date) {
     await rebuildValueDataForMonth(session.user.id, firstDateOfMonth(date));
     revalidatePath(`/balance/?date=${date.toUTCString()}`);
     revalidatePath(`/dashboard/?date=${date.toUTCString()}`);
+}
+
+export async function startMonthlyRefreshCronTest() {
+    const session = await auth();
+    if (!session) {
+        return { error: "Unauthorized" };
+    }
+
+    const setting = await prisma.setting.findUnique({
+        where: {
+            userId: session.user.id,
+        },
+    });
+
+    if (!setting) {
+        return { error: "Setting not found." };
+    }
+
+    if (setting.cronTestTargetMonth) {
+        return { error: "A cron job test is already active." };
+    }
+
+    const sourceMonth = firstDateOfMonth(setting.accountingDate);
+    const targetMonth = firstDateOfMonth(new Date(
+        sourceMonth.getFullYear(),
+        sourceMonth.getMonth() + 1,
+        1,
+    ));
+
+    const existingTargetBalance = await prisma.balance.count({
+        where: {
+            userId: session.user.id,
+            date: targetMonth,
+        },
+    });
+
+    if (existingTargetBalance > 0) {
+        return { error: "Next month already has balances. Remove them before running the cron test." };
+    }
+
+    const existingTargetJob = await prisma.monthlyRefreshJob.findUnique({
+        where: {
+            userId_targetMonth: {
+                userId: session.user.id,
+                targetMonth,
+            },
+        },
+    });
+
+    if (existingTargetJob) {
+        return { error: "Next month already has a refresh job. Clear it before running the cron test." };
+    }
+
+    const sourceBalances = await prisma.balance.findMany({
+        where: {
+            userId: session.user.id,
+            date: sourceMonth,
+        },
+        include: {
+            holding: {
+                include: {
+                    category: true,
+                    type: true,
+                },
+            },
+            user: true,
+        },
+        orderBy: {
+            id: "asc",
+        },
+    });
+
+    const parsedBalances = BalanceSchema.array().safeParse(sourceBalances);
+    if (!parsedBalances.success || parsedBalances.data.length === 0) {
+        return { error: "Current month has no balances to copy." };
+    }
+
+    await createMonthlyBalancesAndJob({
+        targetMonth,
+        userId: session.user.id,
+        sourceBalances: parsedBalances.data,
+        updateAccountingDate: false,
+    });
+
+    await prisma.setting.update({
+        where: {
+            userId: session.user.id,
+        },
+        data: {
+            cronTestTargetMonth: targetMonth,
+            cronTestStartedAt: new Date(),
+        },
+    });
+
+    await processMonthlyRefreshBatch(
+        targetMonth,
+        MONTHLY_REFRESH_DAILY_LIMIT,
+        {
+            userId: session.user.id,
+            targetMonth,
+        },
+    );
+
+    revalidatePath("/setting");
+    revalidatePath(`/balance/?date=${targetMonth.toUTCString()}`);
+    revalidatePath(`/dashboard/?date=${targetMonth.toUTCString()}`);
+
+    return {
+        success: true,
+        targetMonth,
+    };
+}
+
+export async function stopMonthlyRefreshCronTest() {
+    const session = await auth();
+    if (!session) {
+        return { error: "Unauthorized" };
+    }
+
+    const setting = await prisma.setting.findUnique({
+        where: {
+            userId: session.user.id,
+        },
+    });
+
+    if (!setting?.cronTestTargetMonth) {
+        return { error: "No cron job test is active." };
+    }
+
+    const targetMonth = firstDateOfMonth(setting.cronTestTargetMonth);
+
+    await prisma.$transaction([
+        prisma.assetPriceSnapshot.deleteMany({
+            where: {
+                userId: session.user.id,
+                targetMonth,
+            },
+        }),
+        prisma.monthlyRefreshJob.deleteMany({
+            where: {
+                userId: session.user.id,
+                targetMonth,
+            },
+        }),
+        prisma.valueData.deleteMany({
+            where: {
+                userId: session.user.id,
+                date: targetMonth,
+            },
+        }),
+        prisma.balance.deleteMany({
+            where: {
+                userId: session.user.id,
+                date: targetMonth,
+            },
+        }),
+        prisma.setting.update({
+            where: {
+                userId: session.user.id,
+            },
+            data: {
+                cronTestTargetMonth: null,
+                cronTestStartedAt: null,
+            },
+        }),
+    ]);
+
+    revalidatePath("/setting");
+    revalidatePath(`/balance/?date=${targetMonth.toUTCString()}`);
+    revalidatePath(`/dashboard/?date=${targetMonth.toUTCString()}`);
+
+    return {
+        success: true,
+        targetMonth,
+    };
 }
 
 //TODO: error handling sample
