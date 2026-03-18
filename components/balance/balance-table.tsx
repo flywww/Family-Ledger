@@ -1,6 +1,6 @@
 'use client'
 
-import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
+import { balanceAnalysisViewType, FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import { DataTable } from "../data-table";
 import { columns } from "./balance-columns";
 import BalanceTableToolbar from "@/components/balance/balance-table-toolbar";
@@ -24,11 +24,13 @@ import { MonthKey } from "@/lib/utils";
 export default function BalanceTable({
     queryDate,
     queryMonthKey,
+    queryView,
     refreshState,
     currentMonthCreationState,
 }:{
     queryDate:Date,
     queryMonthKey: MonthKey,
+    queryView: balanceAnalysisViewType,
     refreshState?: MonthlyRefreshOverview,
     currentMonthCreationState?: {
         canCreateCurrentMonthBalance: boolean,
@@ -77,6 +79,7 @@ export default function BalanceTable({
             <BalanceTableToolbar 
                 queryDate={queryDate}
                 queryMonthKey={queryMonthKey}
+                queryView={queryView}
                 table={table}
                 refreshState={refreshState}
                 currentMonthCreationState={currentMonthCreationState}
@@ -99,6 +102,13 @@ export default function BalanceTable({
                         <div key={balance.id} className="rounded-md border my-2">
                             <div className="flex flex-row justify-between gap-2 p-2">
                                 <div className="flex flex-col justify-center items-start w-52">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                        {new Intl.NumberFormat("en-US", {
+                                            style: "percent",
+                                            minimumFractionDigits: 1,
+                                            maximumFractionDigits: 1,
+                                        }).format(balance.percentage)}
+                                    </span>
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
                                     <span className="text-xs text-muted-foreground">{balance.holdingName}</span>
                                     {balance.priceStatus !== 'success' && (

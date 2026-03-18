@@ -10,14 +10,30 @@ export default function BalanceTableSkeleton({
     return(
         <div className="flex flex-col gap-4">
             {showToolbar && (
-                <div className="flex flex-col gap-3 sm:flex-row">
-                    <div className="flex flex-row gap-1 justify-center w-full items-center sm:justify-start sm:w-72">
-                        <Skeleton className="min-w-12 h-9"/>
-                        <Skeleton className="w-full justify-start h-9"/>
-                        <Skeleton className="min-w-12  h-9"/>
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <div className="flex flex-row gap-1 justify-center w-full items-center sm:justify-start sm:w-72">
+                                <Skeleton className="min-w-12 h-9"/>
+                                <Skeleton className="w-full justify-start h-9"/>
+                                <Skeleton className="min-w-12 h-9"/>
+                            </div>
+                            <Skeleton className="w-full h-9 sm:w-48"/>
+                            <div className="flex flex-row flex-wrap gap-2">
+                                <Skeleton className="h-9 w-20"/>
+                                <Skeleton className="h-9 w-20"/>
+                                <Skeleton className="h-9 w-32"/>
+                                <Skeleton className="h-9 w-20"/>
+                            </div>
+                        </div>
+                        <div className="hidden items-center gap-2 sm:flex">
+                            <Skeleton className="h-9 w-40"/>
+                            <Skeleton className="h-9 w-24"/>
+                        </div>
                     </div>
-                    <div>
-                        <Skeleton className="w-full sm:w-48 h-9 hidden sm:block"/>
+                    <div className="flex flex-row gap-2 sm:hidden">
+                        <Skeleton className="min-w-12 h-9"/>
+                        <Skeleton className="w-24 h-9"/>
                     </div>
                 </div>
             )}

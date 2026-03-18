@@ -5,6 +5,7 @@ export type currencyType = 'TWD' | 'USD' | 'EUR' | 'JPY' | 'GBP' | 'CNY' | 'KRW'
 export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unlisted stock';
 export type typeListType = 'Assets' | 'Liabilities'
 export type priceStatusType = 'pending' | 'success' | 'failed';
+export type balanceAnalysisViewType = 'all' | 'cash' | 'crypto' | 'stock';
 export type refreshJobStatusType = 'pending' | 'running' | 'partial_complete' | 'completed' | 'failed';
 export type cronRunTriggerType = 'scheduled' | 'manual_test' | 'manual_create';
 export type cronRunStatusType = 'idle' | 'pending' | 'running' | 'partial_complete' | 'completed' | 'failed';
@@ -181,6 +182,7 @@ export const FlattedBalanceSchema = BalanceSchema.extend({
     holdingSymbol: z.string(),
     holdingCategoryName: z.string(),
     holdingTypeName: z.string(),
+    percentage: z.number().default(0),
 })
 
 export type Balance = z.infer<typeof BalanceSchema>

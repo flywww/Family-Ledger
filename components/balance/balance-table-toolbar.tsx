@@ -17,17 +17,19 @@ import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
 import { createCurrentMonthBalance } from "@/lib/actions";
-import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
+import { balanceAnalysisViewType, FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import Link from "next/link"
 import { useContext, Suspense, useTransition } from "react";
 import { SettingContext } from "@/context/settingContext";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MonthKey } from "@/lib/utils";
+import { BALANCE_ANALYSIS_VIEW_LABELS } from "@/lib/balance-analysis";
 
 export default function BalanceTableToolbar({ 
     table, 
     queryDate,
     queryMonthKey,
+    queryView,
     refreshState,
     currentMonthCreationState,
     onMonthChangePending,
@@ -35,6 +37,7 @@ export default function BalanceTableToolbar({
     table: Table<FlattedBalanceType>,
     queryDate: Date,
     queryMonthKey: MonthKey,
+    queryView: balanceAnalysisViewType,
     refreshState?: MonthlyRefreshOverview,
     currentMonthCreationState?: {
         canCreateCurrentMonthBalance: boolean,
@@ -45,14 +48,27 @@ export default function BalanceTableToolbar({
 }){
     const settingContext = useContext(SettingContext);
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [isCreatingMonth, startCreateMonthTransition] = useTransition();
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
     }
 
+    const handleViewChange = (view: balanceAnalysisViewType) => {
+        if (view === queryView) {
+            return;
+        }
+
+        const params = new URLSearchParams(searchParams);
+        params.set("view", view);
+        onMonthChangePending?.(true);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
     return(
-            <div className="flex items-center justify-between ">
-                <div className="w-full flex flex-col justify-start items-center gap-2 sm:flex-row">
+            <div className="flex items-start justify-between gap-2">
+                <div className="w-full flex flex-col justify-start items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                     <Suspense>
                         <Search
                             queryDate={queryDate}
@@ -66,8 +82,21 @@ export default function BalanceTableToolbar({
                         onChange={(event) => 
                             table.setGlobalFilter(String(event.target.value))
                         }
-                        className="hidden w-full sm:max-w-48 sm:block text-base sm:text-sm"
+                        className="w-full text-base sm:max-w-48 sm:text-sm"
                     /> 
+                    <div className="flex flex-row flex-wrap gap-2 sm:ml-2">
+                        {Object.entries(BALANCE_ANALYSIS_VIEW_LABELS).map(([view, label]) => (
+                            <Button
+                                key={view}
+                                type="button"
+                                variant={queryView === view ? "default" : "outline"}
+                                className="text-sm"
+                                onClick={() => handleViewChange(view as balanceAnalysisViewType)}
+                            >
+                                {label}
+                            </Button>
+                        ))}
+                    </div>
                 </div>
                 <div className="ml-auto hidden items-center gap-2 sm:flex">
                     {currentMonthCreationState?.canCreateCurrentMonthBalance && (
@@ -89,7 +118,11 @@ export default function BalanceTableToolbar({
                                         );
                                     }
 
-                                    router.push(`/balance/?month=${result?.targetMonthKey ?? currentMonthCreationState.currentMonthKey}`);
+                                    const params = new URLSearchParams(searchParams);
+                                    params.set("month", result?.targetMonthKey ?? currentMonthCreationState.currentMonthKey);
+                                    params.set("view", queryView);
+                                    params.delete("date");
+                                    router.push(`/balance/?${params.toString()}`);
                                     router.refresh();
                                 });
                             }}

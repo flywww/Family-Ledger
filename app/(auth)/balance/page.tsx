@@ -7,13 +7,14 @@ import {
   fetchSetting,
   getConvertedCurrency,
 } from "@/lib/actions";
-import { currencyType, FlattedBalanceType } from "@/lib/definitions";
+import { balanceAnalysisViewType, currencyType, FlattedBalanceType } from "@/lib/definitions";
 import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
-import { getCalculatedMonth, getMonthKey, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
+import { getCalculatedMonth, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
 import { Metadata } from "next";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
+import { applyBalanceAnalysisView, resolveBalanceAnalysisView } from "@/lib/balance-analysis";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -25,6 +26,7 @@ export default async function Page(
       month?: string;
       date?: string;
       currency?: string,
+      view?: string,
     }>
   }
 ) {
@@ -39,6 +41,7 @@ export default async function Page(
   const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
   const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
+  const queryView = resolveBalanceAnalysisView(searchParams?.view) as balanceAnalysisViewType;
   const balanceData = await fetchMonthlyBalance(queryDate);
   const refreshState = await fetchMonthlyRefreshState(queryDate);
   const currentMonthCreationState = session
@@ -52,10 +55,12 @@ export default async function Page(
       holdingSymbol: balance?.holding?.symbol,
       holdingCategoryName: balance?.holding?.category?.name,
       holdingTypeName: balance?.holding?.type?.name,
+      percentage: 0,
   })) as Promise<FlattedBalanceType>[]);
+  const analyzedBalanceData = applyBalanceAnalysisView(flattedBalanceData || [], queryView);
   //TODO: long loading while switch date
   return (
-    <MonthBalanceProvider initialData={flattedBalanceData || []}>
+    <MonthBalanceProvider initialData={analyzedBalanceData}>
       <div className="flex flex-col gap-4">
           <MonthlyRefreshStatus
             overview={refreshState}
@@ -65,10 +70,11 @@ export default async function Page(
               ) : undefined
             }
           />
-          {flattedBalanceData &&
+          {analyzedBalanceData &&
               <BalanceTable 
                 queryDate={ queryDate } 
                 queryMonthKey={queryMonthKey}
+                queryView={queryView}
                 refreshState={refreshState}
                 currentMonthCreationState={currentMonthCreationState}
               />
