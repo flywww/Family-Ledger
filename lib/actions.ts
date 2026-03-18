@@ -504,14 +504,14 @@ export async function startMonthlyRefreshCronTest() {
         });
 
     const sourceMonth = latestBalance ? firstDateOfMonth(latestBalance.date) : accountingSourceMonth;
-    const targetMonth = firstDateOfMonth(new Date(
+    const expectedTargetMonth = firstDateOfMonth(new Date(
         sourceMonth.getTime() + 32 * 24 * 60 * 60 * 1000,
     ));
 
     const existingTargetBalance = await prisma.balance.count({
         where: {
             userId: session.user.id,
-            date: targetMonth,
+            date: expectedTargetMonth,
         },
     });
 
@@ -523,7 +523,7 @@ export async function startMonthlyRefreshCronTest() {
         where: {
             userId_targetMonth: {
                 userId: session.user.id,
-                targetMonth,
+                targetMonth: expectedTargetMonth,
             },
         },
     });
@@ -548,18 +548,18 @@ export async function startMonthlyRefreshCronTest() {
             userId: session.user.id,
         },
         data: {
-            cronTestTargetMonth: targetMonth,
+            cronTestTargetMonth: prepared.targetMonth,
             cronTestStartedAt: new Date(),
         },
     });
 
     revalidatePath("/setting");
-    revalidatePath(`/balance/?date=${targetMonth.toUTCString()}`);
-    revalidatePath(`/dashboard/?date=${targetMonth.toUTCString()}`);
+    revalidatePath(`/balance/?date=${prepared.targetMonth.toISOString()}`);
+    revalidatePath(`/dashboard/?date=${prepared.targetMonth.toISOString()}`);
 
     return {
         success: true,
-        targetMonth,
+        targetMonth: prepared.targetMonth,
     };
 }
 

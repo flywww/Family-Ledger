@@ -417,6 +417,23 @@ export async function prepareNextMonthBalancesFromSourceMonth(params: {
     isTestData: params.isTestData,
   });
 
+  const createdBalanceCount = await prisma.balance.count({
+    where: {
+      userId: params.userId,
+      date: targetMonth,
+      ...(params.isTestData !== undefined ? { isTestData: params.isTestData } : {}),
+    },
+  });
+
+  if (createdBalanceCount === 0) {
+    return {
+      created: false,
+      sourceMonth,
+      targetMonth,
+      error: "Prepared month was not created successfully.",
+    } as const;
+  }
+
   return {
     ...result,
     sourceMonth,
