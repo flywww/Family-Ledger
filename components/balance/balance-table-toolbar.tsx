@@ -25,10 +25,12 @@ export default function BalanceTableToolbar({
     table, 
     queryDate,
     refreshState,
+    onMonthChangePending,
 }:{
     table: Table<FlattedBalanceType>,
     queryDate: Date,
     refreshState?: MonthlyRefreshOverview,
+    onMonthChangePending?: (pending: boolean) => void,
 }){
     const settingContext = useContext(SettingContext);
     if(!settingContext){
@@ -39,7 +41,7 @@ export default function BalanceTableToolbar({
             <div className="flex items-center justify-between ">
                 <div className="w-full flex flex-col justify-start items-center gap-2 sm:flex-row">
                     <Suspense>
-                        <Search queryDate={queryDate}/>
+                        <Search queryDate={queryDate} onPendingChange={onMonthChangePending} />
                     </Suspense>
                     <Input
                         placeholder="Filter balances"

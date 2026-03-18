@@ -9,13 +9,14 @@ import { format } from "date-fns";
 import { cn, getLastMonth, getCalculatedMonth } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
 import { useTransition } from "react";
-import BalanceTableSkeleton from "./balance/skeleton/balance-table-skeleton";
 
 
 export default function Search({
-    queryDate
+    queryDate,
+    onPendingChange,
 }:{
-    queryDate: Date
+    queryDate: Date,
+    onPendingChange?: (pending: boolean) => void,
 }){
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -29,13 +30,13 @@ export default function Search({
 
         const params = new URLSearchParams(searchParams);
         params.set('date', date.toUTCString());
+        onPendingChange?.(true);
         startTransition(() => {
             router.replace(`${pathname}?${params.toString()}`);
         });
     }
 
     return(
-        <>
         <div className="flex flex-row gap-1 justify-center w-full items-center sm:justify-start sm:w-72">
             <Button 
                     className="min-w-12"
@@ -75,13 +76,5 @@ export default function Search({
                 <ChevronRight/>
             </Button>
         </div>
-        {isPending && (
-            <div className="fixed inset-0 z-50 overflow-auto bg-background/80 px-4 py-6 backdrop-blur-sm sm:px-6">
-                <div className="mx-auto max-w-7xl pt-16">
-                    <BalanceTableSkeleton />
-                </div>
-            </div>
-        )}
-        </>
     )
 }

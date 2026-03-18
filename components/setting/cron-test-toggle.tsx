@@ -1,10 +1,11 @@
 'use client'
 
-import { useTransition, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { startMonthlyRefreshCronTest, stopMonthlyRefreshCronTest } from "@/lib/actions";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function CronTestToggle({
     activeTargetMonth,
@@ -14,7 +15,14 @@ export default function CronTestToggle({
     const [isPending, startTransition] = useTransition();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [currentTargetMonth, setCurrentTargetMonth] = useState<Date | null>(
+        activeTargetMonth ?? null,
+    );
     const router = useRouter();
+
+    useEffect(() => {
+        setCurrentTargetMonth(activeTargetMonth ?? null);
+    }, [activeTargetMonth]);
 
     const handleClick = () => {
         setErrorMessage(null);
@@ -22,7 +30,7 @@ export default function CronTestToggle({
 
         startTransition(() => {
             void (async () => {
-                const result = activeTargetMonth
+                const result = currentTargetMonth
                     ? await stopMonthlyRefreshCronTest()
                     : await startMonthlyRefreshCronTest();
 
@@ -31,8 +39,9 @@ export default function CronTestToggle({
                     return;
                 }
 
+                setCurrentTargetMonth(result?.targetMonth ?? null);
                 setSuccessMessage(
-                    activeTargetMonth
+                    currentTargetMonth
                         ? "Cron job testing data restored."
                         : "Cron job test created and executed for next month.",
                 );
@@ -49,22 +58,29 @@ export default function CronTestToggle({
                     Start a test to copy the current accounting month into next month and run the
                     monthly refresh job immediately. Stop test removes the generated month data.
                 </p>
-                {activeTargetMonth && (
+                {currentTargetMonth && (
                     <p className="text-sm text-slate-600">
-                        Testing month: {format(activeTargetMonth, "MMM yyyy")}
+                        Testing month: {format(currentTargetMonth, "MMM yyyy")}
                     </p>
                 )}
             </div>
             <div className="flex items-center gap-3">
                 <Button type="button" onClick={handleClick} disabled={isPending}>
                     {isPending
-                        ? activeTargetMonth
+                        ? currentTargetMonth
                             ? "Stopping test..."
                             : "Starting test..."
-                        : activeTargetMonth
+                        : currentTargetMonth
                             ? "Stop test"
                             : "Start test"}
                 </Button>
+                {currentTargetMonth && (
+                    <Button asChild variant="outline">
+                        <Link href={`/balance?date=${currentTargetMonth.toUTCString()}`}>
+                            Open test month
+                        </Link>
+                    </Button>
+                )}
             </div>
             {errorMessage && <p className="text-sm text-rose-600">{errorMessage}</p>}
             {successMessage && <p className="text-sm text-emerald-600">{successMessage}</p>}

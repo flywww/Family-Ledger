@@ -18,6 +18,7 @@ import { Table } from "@tanstack/react-table";
 import { useContext, useState } from "react";
 import { MonthBalanceContext } from "@/context/monthBalanceContext";
 import { SettingContext } from "@/context/settingContext";
+import BalanceTableSkeleton from "./skeleton/balance-table-skeleton";
 
 export default function BalanceTable({
     queryDate,
@@ -30,6 +31,7 @@ export default function BalanceTable({
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [isMonthChangePending, setIsMonthChangePending] = useState(false);
     const monthBalanceContext = useContext(MonthBalanceContext);
     if(!monthBalanceContext){
         throw Error ("Setting must be used within a setting provider")
@@ -62,7 +64,12 @@ export default function BalanceTable({
                 queryDate={queryDate}
                 table={table}
                 refreshState={refreshState}
+                onMonthChangePending={setIsMonthChangePending}
             />
+            {isMonthChangePending ? (
+                <BalanceTableSkeleton />
+            ) : (
+                <>
             <div className="w-full hidden sm:block">
                 <DataTable
                     columns={columns as ColumnDef<FlattedBalanceType | null, any>[]} 
@@ -92,6 +99,8 @@ export default function BalanceTable({
                         </div>))
                 }
             </div>
+                </>
+            )}
         </div>
     )
 }
