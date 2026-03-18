@@ -7,24 +7,75 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 //Date
-export const lastDateOfMonth = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth() + 1, 0);
+const parseTimeZoneOffsetMinutes = (value: string) => {
+  const match = value.match(/(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?$/);
+  if (!match) {
+    return 0;
+  }
 
-export const firstDateOfMonth = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth() , 1);
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = Number(match[3] ?? "0");
+  return sign * (hours * 60 + minutes);
+};
+
+const getTimeZoneOffsetMinutes = (date: Date, timeZone = APP_TIME_ZONE) => {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    timeZoneName: "shortOffset",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const offset = parts.find((part) => part.type === "timeZoneName")?.value ?? "GMT+0";
+  return parseTimeZoneOffsetMinutes(offset);
+};
+
+const createDateAtStartOfDayInTimeZone = (
+  year: number,
+  monthIndex: number,
+  day: number,
+  timeZone = APP_TIME_ZONE,
+) => {
+  let result = new Date(Date.UTC(year, monthIndex, day, 0, 0, 0));
+  for (let index = 0; index < 2; index += 1) {
+    const offsetMinutes = getTimeZoneOffsetMinutes(result, timeZone);
+    result = new Date(Date.UTC(year, monthIndex, day, 0, 0, 0) - offsetMinutes * 60_000);
+  }
+  return result;
+};
+
+const daysInMonth = (year: number, monthIndex: number) =>
+  new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+
+export const lastDateOfMonth = (date: Date) => {
+  const parts = getDatePartsInTimeZone(date);
+  return createDateAtStartOfDayInTimeZone(
+    parts.year,
+    parts.month - 1,
+    daysInMonth(parts.year, parts.month - 1),
+  );
+};
+
+export const firstDateOfMonth = (date: Date) => {
+  const parts = getDatePartsInTimeZone(date);
+  return createDateAtStartOfDayInTimeZone(parts.year, parts.month - 1, 1);
+};
 
 export const getLastMonth = (date: Date) => {
   return getCalculatedMonth(firstDateOfMonth(date), -1);
 }
 
 export const getCalculatedMonth = (date: Date, addMonth: number) => {
-  const calculatedDate = new Date(date);
-  const originalDate = calculatedDate.getDate();
-  calculatedDate.setMonth(calculatedDate.getMonth() + addMonth );
-  if(calculatedDate.getDate() !== originalDate){
-    calculatedDate.setDate(0);
-  }
-  return calculatedDate;
+  const parts = getDatePartsInTimeZone(date);
+  const sourceMonthIndex = parts.month - 1;
+  const rawMonthIndex = sourceMonthIndex + addMonth;
+  const normalizedMonthIndex = ((rawMonthIndex % 12) + 12) % 12;
+  const normalizedYear = parts.year + Math.floor(rawMonthIndex / 12);
+  const day = Math.min(parts.day, daysInMonth(normalizedYear, normalizedMonthIndex));
+
+  return createDateAtStartOfDayInTimeZone(normalizedYear, normalizedMonthIndex, day);
 }
 
 export const getUTCDateString = (date: Date) => {

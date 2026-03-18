@@ -480,11 +480,31 @@ export async function startMonthlyRefreshCronTest() {
         return { error: "Existing cron test data was found. Clean it before starting a new test." };
     }
 
-    const sourceMonth = firstDateOfMonth(setting.accountingDate);
+    const accountingSourceMonth = firstDateOfMonth(setting.accountingDate);
+    const accountingSourceCount = await prisma.balance.count({
+        where: {
+            userId: session.user.id,
+            date: accountingSourceMonth,
+        },
+    });
+
+    const latestBalance = accountingSourceCount > 0
+        ? null
+        : await prisma.balance.findFirst({
+            where: {
+                userId: session.user.id,
+            },
+            select: {
+                date: true,
+            },
+            orderBy: {
+                date: "desc",
+            },
+        });
+
+    const sourceMonth = latestBalance ? firstDateOfMonth(latestBalance.date) : accountingSourceMonth;
     const targetMonth = firstDateOfMonth(new Date(
-        sourceMonth.getFullYear(),
-        sourceMonth.getMonth() + 1,
-        1,
+        sourceMonth.getTime() + 32 * 24 * 60 * 60 * 1000,
     ));
 
     const existingTargetBalance = await prisma.balance.count({
@@ -519,7 +539,7 @@ export async function startMonthlyRefreshCronTest() {
     });
 
     if ("error" in prepared && prepared.error) {
-        return { error: "Current accounting month has no balances to copy." };
+        return { error: "No balances were found to copy into a test month." };
     }
 
     await prisma.setting.update({

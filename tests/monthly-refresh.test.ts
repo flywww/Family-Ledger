@@ -579,4 +579,26 @@ describe("monthly refresh workflow", () => {
     });
     expect(aprilJob?.status).toBe("pending");
   });
+
+  it("prepares the correct month when the source month arrives from a UTC-serialized query string", async () => {
+    const { user } = await seedMonthlySourceData();
+
+    const serializedMonthMarker = new Date("2026-02-28T16:00:00.000Z");
+    const result = await prepareNextMonthBalancesFromSourceMonth({
+      userId: user.id,
+      sourceMonth: serializedMonthMarker,
+    });
+
+    expect(result.created).toBe(true);
+    expect(result.sourceMonth.toISOString()).toBe(new Date("2026-03-01T00:00:00+08:00").toISOString());
+    expect(result.targetMonth.toISOString()).toBe(new Date("2026-04-01T00:00:00+08:00").toISOString());
+
+    const aprilBalances = await prisma.balance.findMany({
+      where: {
+        userId: user.id,
+        date: result.targetMonth,
+      },
+    });
+    expect(aprilBalances).toHaveLength(3);
+  });
 });
