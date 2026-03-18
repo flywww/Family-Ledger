@@ -28,6 +28,21 @@ enum RefreshJobStatus {
   failed
 }
 
+enum CronRunTriggerType {
+  scheduled
+  manual_test
+  manual_create
+}
+
+enum CronRunStatus {
+  idle
+  pending
+  running
+  partial_complete
+  completed
+  failed
+}
+
 model User {
   id        String        @id @default(cuid()) @db.VarChar(30)
   account   String        @unique
@@ -41,6 +56,7 @@ model User {
   valueData     ValueData[]
   refreshJobs   MonthlyRefreshJob[]
   priceSnapshots AssetPriceSnapshot[]
+  cronRunLogs   CronRunLog[]
 }
 
 model Balance {
@@ -159,6 +175,7 @@ model MonthlyRefreshJob {
   userId        String           @db.VarChar(30)
   user          User             @relation(fields: [userId], references: [id])
   snapshots     AssetPriceSnapshot[]
+  runLogs       CronRunLog[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -184,4 +201,22 @@ model AssetPriceSnapshot {
   updatedAt     DateTime    @updatedAt
 
   @@unique([userId, targetMonth, provider, sourceKey])
+}
+
+model CronRunLog {
+  id             Int                @id @default(autoincrement())
+  targetMonth    DateTime
+  triggerType    CronRunTriggerType
+  status         CronRunStatus
+  processedAssets Int               @default(0)
+  message        String
+  providerCounts Json?
+  startedAt      DateTime
+  finishedAt     DateTime?
+  userId         String             @db.VarChar(30)
+  user           User               @relation(fields: [userId], references: [id])
+  jobId          Int?
+  job            MonthlyRefreshJob? @relation(fields: [jobId], references: [id])
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 }

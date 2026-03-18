@@ -28,6 +28,8 @@ export default async function Page() {
           overview={cronTestState?.overview}
           availableSourceMonthKeys={cronTestState?.availableSourceMonthKeys ?? []}
           defaultSourceMonthKey={cronTestState?.defaultSourceMonthKey ?? null}
+          nextCronRunAt={cronTestState?.nextCronRunAt}
+          cronRunLogs={cronTestState?.cronRunLogs ?? []}
         />
         <ChangePasswordForm/>
       </div>

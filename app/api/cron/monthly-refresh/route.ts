@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   autoCreateMonthlyRefreshJobs,
+  createCronRunLog,
+  getRefreshLogMessage,
   MONTHLY_REFRESH_DAILY_LIMIT,
   processMonthlyRefreshBatch,
 } from "@/lib/monthly-refresh";
@@ -35,6 +37,29 @@ async function handleCron(request: NextRequest) {
       ? configuredLimit
       : MONTHLY_REFRESH_DAILY_LIMIT,
   );
+  const triggerType =
+    request.headers.get("x-cron-trigger") === "manual_test"
+      ? "manual_test"
+      : "scheduled";
+  const finishedAt = new Date();
+  if (processed.userId && processed.targetMonth) {
+    await createCronRunLog({
+      userId: processed.userId,
+      targetMonth: processed.targetMonth,
+      triggerType,
+      status: processed.status,
+      message: getRefreshLogMessage({
+        status: processed.status,
+        processedAssets: processed.processedAssets,
+        overview: processed.overview,
+      }),
+      processedAssets: processed.processedAssets,
+      providerCounts: processed.providerCounts,
+      startedAt: new Date(requestStartedAt),
+      finishedAt,
+      jobId: processed.jobId,
+    });
+  }
 
   const durationMs = Date.now() - requestStartedAt;
   console.log(

@@ -6,7 +6,7 @@ import { startMonthlyRefreshCronTest, stopMonthlyRefreshCronTest } from "@/lib/a
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MonthlyRefreshOverview } from "@/lib/definitions";
+import { CronRunLog, MonthlyRefreshOverview } from "@/lib/definitions";
 import { MonthKey, monthKeyToDate } from "@/lib/utils";
 import {
     Select,
@@ -26,6 +26,8 @@ export default function CronTestToggle({
     overview,
     availableSourceMonthKeys,
     defaultSourceMonthKey,
+    nextCronRunAt,
+    cronRunLogs,
 }:{
     activeTargetMonth?: Date | null,
     displayTargetMonth?: Date | null,
@@ -36,6 +38,8 @@ export default function CronTestToggle({
     overview?: MonthlyRefreshOverview,
     availableSourceMonthKeys: MonthKey[],
     defaultSourceMonthKey?: MonthKey | null,
+    nextCronRunAt?: Date,
+    cronRunLogs: CronRunLog[],
 }){
     const [isPending, startTransition] = useTransition();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -113,24 +117,24 @@ export default function CronTestToggle({
     };
 
     return(
-        <div className="flex w-full max-w-xl flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex w-full max-w-3xl flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950 p-5 text-slate-100 shadow-sm">
             <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-slate-900">Cron Job Test</h2>
-                <p className="text-sm text-slate-500">
+                <h2 className="text-lg font-semibold text-slate-100">Cron Job Test</h2>
+                <p className="text-sm text-slate-300">
                     Start test only prepares next-month test data. Use the deployed cron route to
                     run the real refresh flow. Clean test data removes all tagged test artifacts.
                 </p>
                 {!hasCurrentTestData && (
                     <div className="space-y-2 pt-1">
-                        <p className="text-sm text-slate-600">Source month</p>
+                        <p className="text-sm text-slate-300">Source month</p>
                         <Select
                             value={selectedSourceMonthKey}
                             onValueChange={(value) => setSelectedSourceMonthKey(value as MonthKey)}
                         >
-                            <SelectTrigger className="w-full">
+                            <SelectTrigger className="w-full border-slate-700 bg-slate-900 text-slate-100 [&>span]:text-slate-100">
                                 <SelectValue placeholder="Select a month to copy" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="border-slate-700 bg-slate-900 text-slate-100">
                                 {availableSourceMonthKeys.map((monthKey) => (
                                     <SelectItem key={monthKey} value={monthKey}>
                                         {format(monthKeyToDate(monthKey), "MMM yyyy")}
@@ -138,20 +142,30 @@ export default function CronTestToggle({
                                 ))}
                             </SelectContent>
                         </Select>
+                        {selectedSourceMonthKey && (
+                            <p className="text-xs text-slate-400">
+                                Selected source month: {format(monthKeyToDate(selectedSourceMonthKey), "MMM yyyy")}
+                            </p>
+                        )}
                     </div>
                 )}
+                {nextCronRunAt && (
+                    <p className="text-sm text-slate-300">
+                        Next cron job run on {format(nextCronRunAt, "yyyy-MM-dd HH:mm:ss")}
+                    </p>
+                )}
                 {currentDisplayMonth && (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-300">
                         Testing month: {format(currentDisplayMonth, "MMM yyyy")}
                     </p>
                 )}
                 {startedAt && hasCurrentTestData && (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-300">
                         Prepared at: {format(startedAt, "yyyy-MM-dd HH:mm")}
                     </p>
                 )}
                 {hasStaleTestData && (
-                    <p className="text-sm text-amber-600">
+                    <p className="text-sm text-amber-400">
                         Stale test data was detected. Clean it before starting a new test.
                     </p>
                 )}
@@ -179,15 +193,16 @@ export default function CronTestToggle({
                 )}
             </div>
             {hasCurrentTestData && (
-                <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                    <p className="font-medium text-slate-900">Run the deployed cron route</p>
+                <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-200">
+                    <p className="font-medium text-slate-100">Run the deployed cron route</p>
                     <p>
                         Manual production test uses the real cron endpoint. Replace the placeholders
                         with your deployed domain and secret.
                     </p>
                     <pre className="overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
 {`curl -i -X GET https://YOUR_DOMAIN/api/cron/monthly-refresh \\
-  -H "Authorization: Bearer YOUR_CRON_SECRET"`}
+  -H "Authorization: Bearer YOUR_CRON_SECRET" \\
+  -H "x-cron-trigger: manual_test"`}
                     </pre>
                     <p>
                         Manual calls appear in Vercel Runtime Logs. Scheduled cron calls appear in
@@ -196,17 +211,37 @@ export default function CronTestToggle({
                 </div>
             )}
             {overview && currentDisplayMonth && (
-                <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 sm:grid-cols-2">
-                    <p>Status: <span className="font-medium text-slate-900">{overview.status}</span></p>
-                    <p>Pending: <span className="font-medium text-slate-900">{overview.pendingCount}</span></p>
-                    <p>Completed: <span className="font-medium text-slate-900">{overview.completedCount}</span></p>
-                    <p>Failed: <span className="font-medium text-slate-900">{overview.failedCount}</span></p>
-                    <p>Last run assets: <span className="font-medium text-slate-900">{overview.lastProcessedAssets ?? 0}</span></p>
-                    <p>Last run duration: <span className="font-medium text-slate-900">{overview.lastDurationMs ?? 0} ms</span></p>
-                    <p>Last run at: <span className="font-medium text-slate-900">{overview.lastRunAt ? format(overview.lastRunAt, "yyyy-MM-dd HH:mm:ss") : "Not yet"}</span></p>
-                    <p>Tracked test months: <span className="font-medium text-slate-900">{testMonthCount}</span></p>
+                <div className="grid gap-2 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-200 sm:grid-cols-2">
+                    <p>Status: <span className="font-medium text-slate-100">{overview.status}</span></p>
+                    <p>Pending: <span className="font-medium text-slate-100">{overview.pendingCount}</span></p>
+                    <p>Completed: <span className="font-medium text-slate-100">{overview.completedCount}</span></p>
+                    <p>Failed: <span className="font-medium text-slate-100">{overview.failedCount}</span></p>
+                    <p>Last run assets: <span className="font-medium text-slate-100">{overview.lastProcessedAssets ?? 0}</span></p>
+                    <p>Last run duration: <span className="font-medium text-slate-100">{overview.lastDurationMs ?? 0} ms</span></p>
+                    <p>Last run at: <span className="font-medium text-slate-100">{overview.lastRunAt ? format(overview.lastRunAt, "yyyy-MM-dd HH:mm:ss") : "Not yet"}</span></p>
+                    <p>Tracked test months: <span className="font-medium text-slate-100">{testMonthCount}</span></p>
                 </div>
             )}
+            <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-200">
+                <p className="font-medium text-slate-100">Cron job log</p>
+                {cronRunLogs.length === 0 ? (
+                    <p className="text-slate-400">No cron logs yet.</p>
+                ) : (
+                    <div className="space-y-2">
+                        {cronRunLogs.map((log) => (
+                            <div key={log.id} className="grid gap-1 rounded-md border border-slate-800 bg-slate-950 p-3 sm:grid-cols-[180px_120px_120px_1fr]">
+                                <p>{format(log.startedAt, "yyyy-MM-dd HH:mm:ss")}</p>
+                                <p>{format(log.targetMonth, "MMM yyyy")}</p>
+                                <p className="capitalize">{log.triggerType.replace("_", " ")}</p>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-slate-100">{log.status}</p>
+                                    <p className="text-slate-300">{log.message}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
             {errorMessage && <p className="text-sm text-rose-600">{errorMessage}</p>}
             {successMessage && <p className="text-sm text-emerald-600">{successMessage}</p>}
         </div>

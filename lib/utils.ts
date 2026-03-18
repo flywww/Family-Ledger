@@ -150,6 +150,24 @@ export const resolveMonthKey = (params: {
   return getMonthKey(params.fallback);
 };
 
+export const getNextCronRunAt = (referenceDate = new Date()) => {
+  const nextRun = new Date(Date.UTC(
+    referenceDate.getUTCFullYear(),
+    referenceDate.getUTCMonth(),
+    referenceDate.getUTCDate(),
+    18,
+    0,
+    0,
+    0,
+  ));
+
+  if (referenceDate.getTime() >= nextRun.getTime()) {
+    nextRun.setUTCDate(nextRun.getUTCDate() + 1);
+  }
+
+  return nextRun;
+};
+
 export const isSameMonth = (left: Date, right: Date) =>
   left.getUTCFullYear() === right.getUTCFullYear() &&
   left.getUTCMonth() === right.getUTCMonth();

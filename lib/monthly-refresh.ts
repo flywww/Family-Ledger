@@ -3,6 +3,8 @@ import {
   Balance,
   BalanceCreateType,
   BalanceSchema,
+  cronRunStatusType,
+  cronRunTriggerType,
   MonthlyRefreshOverview,
   ValueDataCreateSchema,
 } from "./definitions";
@@ -33,6 +35,9 @@ type ProcessMonthlyRefreshBatchResult = {
   overview?: MonthlyRefreshOverview;
   providerCounts: Partial<Record<QuoteProvider, number>>;
   durationMs: number;
+  userId?: string;
+  targetMonth?: Date;
+  jobId?: number;
 };
 
 type MonthlyRefreshJobFilter = {
@@ -41,6 +46,19 @@ type MonthlyRefreshJobFilter = {
 };
 
 type BalanceWithRelations = Balance;
+
+type CronRunLogParams = {
+  userId: string;
+  targetMonth: Date;
+  triggerType: cronRunTriggerType;
+  status: cronRunStatusType;
+  message: string;
+  startedAt: Date;
+  finishedAt?: Date;
+  processedAssets?: number;
+  providerCounts?: Partial<Record<QuoteProvider, number>>;
+  jobId?: number;
+};
 
 function delay(ms: number) {
   return new Promise((resolve) => {
@@ -179,6 +197,81 @@ function chunkEntries<T>(items: T[], size: number) {
 function getConfiguredPositiveInteger(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? `${fallback}`, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+export async function createCronRunLog(params: CronRunLogParams) {
+  return prisma.cronRunLog.create({
+    data: {
+      userId: params.userId,
+      targetMonth: firstDateOfMonth(params.targetMonth),
+      triggerType: params.triggerType,
+      status: params.status,
+      message: params.message,
+      processedAssets: params.processedAssets ?? 0,
+      providerCounts: params.providerCounts ?? undefined,
+      startedAt: params.startedAt,
+      finishedAt: params.finishedAt ?? params.startedAt,
+      jobId: params.jobId,
+    },
+  });
+}
+
+export async function fetchCronRunLogs(userId: string, limit = 10) {
+  const logs = await prisma.cronRunLog.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      startedAt: "desc",
+    },
+    take: limit,
+  });
+
+  return logs.map((log) => {
+    const providerCounts =
+      log.providerCounts &&
+      typeof log.providerCounts === "object" &&
+      !Array.isArray(log.providerCounts)
+        ? Object.fromEntries(
+            Object.entries(log.providerCounts).flatMap(([key, value]) =>
+              typeof value === "number" ? [[key, value]] : [],
+            ),
+          )
+        : null;
+
+    return {
+      ...log,
+      providerCounts,
+    };
+  });
+}
+
+export function getRefreshLogMessage(params: {
+  status: cronRunStatusType;
+  processedAssets: number;
+  overview?: MonthlyRefreshOverview;
+}) {
+  if (params.status === "idle") {
+    return "No pending refresh job was available.";
+  }
+
+  const completed = params.overview?.completedCount ?? 0;
+  const estimated = params.overview?.estimatedCount ?? 0;
+  const failed = params.overview?.failedCount ?? 0;
+
+  if (params.status === "completed") {
+    return `Processed ${params.processedAssets} asset sources. ${completed} assets are now fresh.`;
+  }
+
+  if (params.status === "partial_complete") {
+    return `Processed ${params.processedAssets} asset sources. ${failed} assets still failed and ${estimated} remain estimated.`;
+  }
+
+  if (params.status === "pending" || params.status === "running") {
+    return `Processed ${params.processedAssets} asset sources. ${estimated} assets remain estimated.`;
+  }
+
+  return `Processed ${params.processedAssets} asset sources.`;
 }
 
 export async function rebuildValueDataForMonth(
@@ -827,6 +920,7 @@ export async function processMonthlyRefreshBatch(
       status: "idle",
       providerCounts: {},
       durationMs: Date.now() - batchStartedAt,
+      targetMonth: normalizedTargetMonth,
     };
   }
 
@@ -985,6 +1079,9 @@ export async function processMonthlyRefreshBatch(
     overview,
     providerCounts,
     durationMs: Date.now() - batchStartedAt,
+    userId: job.userId,
+    targetMonth: job.targetMonth,
+    jobId: job.id,
   };
 }
 

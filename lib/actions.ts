@@ -38,6 +38,7 @@ import {
     MonthKey,
     firstDateOfMonth,
     getCalculatedMonth,
+    getNextCronRunAt,
     getMonthKey,
     monthKeyToDate,
 } from "./utils";
@@ -47,6 +48,9 @@ import { AuthError } from "next-auth";
 import { fetchCurrencyExchangeRates, getConvertedCurrency } from "./fx";
 import {
     createMonthlyBalancesAndJob,
+    createCronRunLog,
+    fetchCronRunLogs,
+    getRefreshLogMessage,
     fetchMonthlyRefreshOverview,
     MONTHLY_REFRESH_DAILY_LIMIT,
     prepareNextMonthBalancesFromSourceMonth,
@@ -338,6 +342,41 @@ export async function fetchBalanceMonthKeys(userId: string) {
     return months.map((item) => getMonthKey(item.date));
 }
 
+export async function fetchCurrentMonthBalanceCreationState(userId: string, viewedMonthKey: MonthKey) {
+    const currentMonth = firstDateOfMonth(new Date());
+    const currentMonthKey = getMonthKey(currentMonth);
+    const previousMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
+    const previousMonthKey = getMonthKey(previousMonth);
+
+    const [currentMonthBalanceCount, previousMonthBalanceCount] = await Promise.all([
+        prisma.balance.count({
+            where: {
+                userId,
+                date: currentMonth,
+                isTestData: false,
+            },
+        }),
+        prisma.balance.count({
+            where: {
+                userId,
+                date: previousMonth,
+                isTestData: false,
+            },
+        }),
+    ]);
+
+    const canCreateCurrentMonthBalance =
+        viewedMonthKey === currentMonthKey &&
+        currentMonthBalanceCount === 0 &&
+        previousMonthBalanceCount > 0;
+
+    return {
+        canCreateCurrentMonthBalance,
+        currentMonthKey,
+        previousMonthKey,
+    };
+}
+
 export async function retryFailedMonthlyRefresh(date: Date) {
     const session = await auth();
     if (!session) return;
@@ -469,6 +508,7 @@ export async function fetchCronTestState(userId: string) {
     const overview = displayTargetMonth
         ? await fetchMonthlyRefreshOverview(userId, displayTargetMonth)
         : undefined;
+    const cronRunLogs = await fetchCronRunLogs(userId);
 
     return {
         activeTargetMonth,
@@ -480,6 +520,8 @@ export async function fetchCronTestState(userId: string) {
         overview,
         availableSourceMonthKeys,
         defaultSourceMonthKey: availableSourceMonthKeys[0] ?? null,
+        nextCronRunAt: getNextCronRunAt(),
+        cronRunLogs,
     };
 }
 
@@ -591,8 +633,9 @@ export async function stopMonthlyRefreshCronTest() {
 
     revalidatePath("/setting");
     for (const cleanedMonth of cleanup.cleanedMonths) {
-        revalidatePath(`/balance/?date=${cleanedMonth.toUTCString()}`);
-        revalidatePath(`/dashboard/?date=${cleanedMonth.toUTCString()}`);
+        const monthKey = getMonthKey(cleanedMonth);
+        revalidatePath(`/balance/?month=${monthKey}`);
+        revalidatePath(`/dashboard/?month=${monthKey}`);
     }
 
     return {
@@ -663,20 +706,45 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
     redirect(`/balance/?date=${date.toUTCString()}`);
 }
 
-export async function createNextMonthBalancesFromMonth(sourceMonthKey: MonthKey) {
+export async function createCurrentMonthBalance() {
     const session = await auth();
     if (!session) {
         return { error: "Unauthorized" };
     }
 
-    const availableSourceMonthKeys = await fetchBalanceMonthKeys(session.user.id);
-    if (!availableSourceMonthKeys.includes(sourceMonthKey)) {
-        return { error: "Selected month has no balances to copy." };
+    const currentMonth = firstDateOfMonth(new Date());
+    const currentMonthKey = getMonthKey(currentMonth);
+    const previousMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
+    const previousMonthKey = getMonthKey(previousMonth);
+
+    const [currentMonthBalanceCount, previousMonthBalanceCount] = await Promise.all([
+        prisma.balance.count({
+            where: {
+                userId: session.user.id,
+                date: currentMonth,
+                isTestData: false,
+            },
+        }),
+        prisma.balance.count({
+            where: {
+                userId: session.user.id,
+                date: previousMonth,
+                isTestData: false,
+            },
+        }),
+    ]);
+
+    if (currentMonthBalanceCount > 0) {
+        return { error: "Current month balance already exists." };
+    }
+
+    if (previousMonthBalanceCount === 0) {
+        return { error: "Previous month has no balances to copy." };
     }
 
     const prepared = await prepareNextMonthBalancesFromSourceMonth({
         userId: session.user.id,
-        sourceMonth: monthKeyToDate(sourceMonthKey),
+        sourceMonth: previousMonth,
     });
 
     if ("error" in prepared && prepared.error) {
@@ -686,16 +754,52 @@ export async function createNextMonthBalancesFromMonth(sourceMonthKey: MonthKey)
         };
     }
 
-    revalidatePath(`/balance/?date=${prepared.sourceMonth.toUTCString()}`);
-    revalidatePath(`/balance/?month=${sourceMonthKey}`);
-    revalidatePath(`/balance/?month=${getMonthKey(prepared.targetMonth)}`);
-    revalidatePath(`/dashboard/?month=${getMonthKey(prepared.targetMonth)}`);
+    const immediateLimit = Number.parseInt(
+        process.env.MANUAL_CREATE_IMMEDIATE_LIMIT ?? "10",
+        10,
+    );
+    const refreshStartedAt = new Date();
+    const processed = await processMonthlyRefreshBatch(
+        refreshStartedAt,
+        Number.isFinite(immediateLimit) && immediateLimit > 0 ? immediateLimit : 10,
+        {
+            userId: session.user.id,
+            targetMonth: prepared.targetMonth,
+        },
+    );
+    const refreshFinishedAt = new Date();
+    const message = getRefreshLogMessage({
+        status: processed.status,
+        processedAssets: processed.processedAssets,
+        overview: processed.overview,
+    });
+
+    await createCronRunLog({
+        userId: session.user.id,
+        targetMonth: prepared.targetMonth,
+        triggerType: "manual_create",
+        status: processed.status,
+        message,
+        processedAssets: processed.processedAssets,
+        providerCounts: processed.providerCounts,
+        startedAt: refreshStartedAt,
+        finishedAt: refreshFinishedAt,
+        jobId: processed.jobId,
+    });
+
+    revalidatePath(`/balance/?month=${previousMonthKey}`);
+    revalidatePath(`/balance/?month=${currentMonthKey}`);
+    revalidatePath(`/dashboard/?month=${currentMonthKey}`);
+    revalidatePath("/setting");
 
     return {
         success: true,
         created: prepared.created,
         targetMonth: prepared.targetMonth,
         targetMonthKey: getMonthKey(prepared.targetMonth),
+        processedAssets: processed.processedAssets,
+        remainingEstimated: processed.overview?.estimatedCount ?? 0,
+        message,
     };
 }
 

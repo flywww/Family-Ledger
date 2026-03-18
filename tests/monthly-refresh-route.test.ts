@@ -3,12 +3,16 @@ import { NextRequest } from "next/server";
 
 const monthlyRefreshMocks = vi.hoisted(() => ({
   autoCreateMonthlyRefreshJobsMock: vi.fn(),
+  createCronRunLogMock: vi.fn(),
+  getRefreshLogMessageMock: vi.fn(),
   processMonthlyRefreshBatchMock: vi.fn(),
 }));
 
 vi.mock("../lib/monthly-refresh", () => ({
   MONTHLY_REFRESH_DAILY_LIMIT: 50,
   autoCreateMonthlyRefreshJobs: monthlyRefreshMocks.autoCreateMonthlyRefreshJobsMock,
+  createCronRunLog: monthlyRefreshMocks.createCronRunLogMock,
+  getRefreshLogMessage: monthlyRefreshMocks.getRefreshLogMessageMock,
   processMonthlyRefreshBatch: monthlyRefreshMocks.processMonthlyRefreshBatchMock,
 }));
 
@@ -17,8 +21,11 @@ import { GET, POST, maxDuration } from "../app/api/cron/monthly-refresh/route";
 describe("monthly refresh cron route", () => {
   beforeEach(() => {
     monthlyRefreshMocks.autoCreateMonthlyRefreshJobsMock.mockReset();
+    monthlyRefreshMocks.createCronRunLogMock.mockReset();
+    monthlyRefreshMocks.getRefreshLogMessageMock.mockReset();
     monthlyRefreshMocks.processMonthlyRefreshBatchMock.mockReset();
     process.env.CRON_SECRET = "secret";
+    monthlyRefreshMocks.getRefreshLogMessageMock.mockReturnValue("Processed 2 asset sources.");
   });
 
   afterEach(() => {
@@ -45,6 +52,9 @@ describe("monthly refresh cron route", () => {
         financialmodelingprep: 1,
       },
       status: "completed",
+      userId: "user-1",
+      targetMonth: new Date("2026-04-01T00:00:00.000Z"),
+      jobId: 42,
       overview: {
         status: "completed",
         pendingCount: 0,
@@ -60,6 +70,7 @@ describe("monthly refresh cron route", () => {
       method: "POST",
       headers: {
         authorization: "Bearer secret",
+        "x-cron-trigger": "manual_test",
       },
     });
     const response = await POST(request);
@@ -76,5 +87,13 @@ describe("monthly refresh cron route", () => {
     });
     expect(json.status).toBe("completed");
     expect(json.durationMs).toBeTypeOf("number");
+    expect(monthlyRefreshMocks.createCronRunLogMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "user-1",
+        triggerType: "manual_test",
+        status: "completed",
+        jobId: 42,
+      }),
+    );
   });
 });

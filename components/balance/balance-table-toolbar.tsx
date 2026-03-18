@@ -16,25 +16,31 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
-import { createNextMonthBalancesFromMonth } from "@/lib/actions";
+import { createCurrentMonthBalance } from "@/lib/actions";
 import { FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import Link from "next/link"
 import { useContext, Suspense, useTransition } from "react";
 import { SettingContext } from "@/context/settingContext";
 import { useRouter } from "next/navigation";
-import { addMonthsToMonthKey, MonthKey } from "@/lib/utils";
+import { MonthKey } from "@/lib/utils";
 
 export default function BalanceTableToolbar({ 
     table, 
     queryDate,
     queryMonthKey,
     refreshState,
+    currentMonthCreationState,
     onMonthChangePending,
 }:{
     table: Table<FlattedBalanceType>,
     queryDate: Date,
     queryMonthKey: MonthKey,
     refreshState?: MonthlyRefreshOverview,
+    currentMonthCreationState?: {
+        canCreateCurrentMonthBalance: boolean,
+        currentMonthKey: MonthKey,
+        previousMonthKey: MonthKey,
+    },
     onMonthChangePending?: (pending: boolean) => void,
 }){
     const settingContext = useContext(SettingContext);
@@ -43,8 +49,6 @@ export default function BalanceTableToolbar({
     if(!settingContext){
         throw Error ("Setting must be used within a setting provider")
     }
-
-    const nextMonthKey = addMonthsToMonthKey(queryMonthKey, 1);
 
     return(
             <div className="flex items-center justify-between ">
@@ -65,64 +69,75 @@ export default function BalanceTableToolbar({
                         className="hidden w-full sm:max-w-48 sm:block text-base sm:text-sm"
                     /> 
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="default" className="hidden sm:flex ml-auto">
-                            More <ChevronDownIcon className="ml-2 h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                            <Link href={`/balance/create?month=${queryMonthKey}`}> New balance </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
+                <div className="ml-auto hidden items-center gap-2 sm:flex">
+                    {currentMonthCreationState?.canCreateCurrentMonthBalance && (
+                        <Button
+                            type="button"
+                            variant="secondary"
                             disabled={isCreatingMonth}
-                            onSelect={(event) => {
-                                event.preventDefault();
+                            onClick={() => {
                                 startCreateMonthTransition(async () => {
-                                    const result = await createNextMonthBalancesFromMonth(queryMonthKey);
+                                    const result = await createCurrentMonthBalance();
                                     if (result?.error) {
                                         window.alert(result.error);
                                         return;
                                     }
-                                    const targetMonthKey = result?.targetMonthKey ?? nextMonthKey;
-                                    router.push(`/balance/?month=${targetMonthKey}`);
+
+                                    if (result?.message) {
+                                        window.alert(
+                                            `Created monthly balance. ${result.message} Remaining estimated: ${result.remainingEstimated ?? 0}.`,
+                                        );
+                                    }
+
+                                    router.push(`/balance/?month=${result?.targetMonthKey ?? currentMonthCreationState.currentMonthKey}`);
                                     router.refresh();
                                 });
                             }}
                         >
-                            {isCreatingMonth ? "Creating next month..." : "Create next month"}
-                        </DropdownMenuItem>
-                        {refreshState && refreshState.status !== 'idle' && (
-                            <DropdownMenuItem disabled>
-                                {refreshState.status === 'partial_complete' ? 'Partial Complete' : 'Monthly refresh active'}
+                            {isCreatingMonth ? "Creating monthly balance..." : "Create monthly balance"}
+                        </Button>
+                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="default">
+                            More <ChevronDownIcon className="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                                <Link href={`/balance/create?month=${queryMonthKey}`}> New balance </Link>
                             </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                {table
-                                    .getAllColumns()
-                                    .filter((column) => column.getCanHide())
-                                    .map((column) => {
-                                        return(
-                                            <DropdownMenuCheckboxItem
-                                                key={column.id}
-                                                className="capitalize"
-                                                checked={column.getIsVisible()}
-                                                onCheckedChange={(value) => {
-                                                    column.toggleVisibility(!!value)
-                                                }}
-                                            >
-                                                {column.id}
-                                            </DropdownMenuCheckboxItem>
-                                )})}
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            {refreshState && refreshState.status !== 'idle' && (
+                                <DropdownMenuItem disabled>
+                                    {refreshState.status === 'partial_complete' ? 'Partial Complete' : 'Monthly refresh active'}
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger> Column setting</DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                    {table
+                                        .getAllColumns()
+                                        .filter((column) => column.getCanHide())
+                                        .map((column) => {
+                                            return(
+                                                <DropdownMenuCheckboxItem
+                                                    key={column.id}
+                                                    className="capitalize"
+                                                    checked={column.getIsVisible()}
+                                                    onCheckedChange={(value) => {
+                                                        column.toggleVisibility(!!value)
+                                                    }}
+                                                >
+                                                    {column.id}
+                                                </DropdownMenuCheckboxItem>
+                                    )})}
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
     )
 }

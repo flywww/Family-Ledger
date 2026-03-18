@@ -25,10 +25,16 @@ export default function BalanceTable({
     queryDate,
     queryMonthKey,
     refreshState,
+    currentMonthCreationState,
 }:{
     queryDate:Date,
     queryMonthKey: MonthKey,
     refreshState?: MonthlyRefreshOverview,
+    currentMonthCreationState?: {
+        canCreateCurrentMonthBalance: boolean,
+        currentMonthKey: MonthKey,
+        previousMonthKey: MonthKey,
+    },
 }){
 
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -73,6 +79,7 @@ export default function BalanceTable({
                 queryMonthKey={queryMonthKey}
                 table={table}
                 refreshState={refreshState}
+                currentMonthCreationState={currentMonthCreationState}
                 onMonthChangePending={setIsMonthChangePending}
             />
             {isMonthChangePending ? (

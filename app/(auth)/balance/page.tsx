@@ -1,5 +1,6 @@
 import BalanceTable from "@/components/balance/balance-table";
 import {
+  fetchCurrentMonthBalanceCreationState,
   fetchLastDateOfBalance,
   fetchMonthlyBalance,
   fetchMonthlyRefreshState,
@@ -40,6 +41,9 @@ export default async function Page(
   const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
   const balanceData = await fetchMonthlyBalance(queryDate);
   const refreshState = await fetchMonthlyRefreshState(queryDate);
+  const currentMonthCreationState = session
+    ? await fetchCurrentMonthBalanceCreationState(session.user.id, queryMonthKey)
+    : undefined;
   const flattedBalanceData = await Promise.all(balanceData?.map(async (balance) => ({
       ...balance,
       price: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.price, balance.date),
@@ -66,6 +70,7 @@ export default async function Page(
                 queryDate={ queryDate } 
                 queryMonthKey={queryMonthKey}
                 refreshState={refreshState}
+                currentMonthCreationState={currentMonthCreationState}
               />
           }
       </div>

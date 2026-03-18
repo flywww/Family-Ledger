@@ -27,6 +27,7 @@ import {
 } from "../lib/monthly-refresh";
 
 async function resetDatabase() {
+  await prisma.cronRunLog.deleteMany();
   await prisma.assetPriceSnapshot.deleteMany();
   await prisma.monthlyRefreshJob.deleteMany();
   await prisma.valueData.deleteMany();

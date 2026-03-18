@@ -6,6 +6,8 @@ export type categoryListType = 'Cash' | 'Cryptocurrency' | 'Listed stock' | 'Unl
 export type typeListType = 'Assets' | 'Liabilities'
 export type priceStatusType = 'pending' | 'success' | 'failed';
 export type refreshJobStatusType = 'pending' | 'running' | 'partial_complete' | 'completed' | 'failed';
+export type cronRunTriggerType = 'scheduled' | 'manual_test' | 'manual_create';
+export type cronRunStatusType = 'idle' | 'pending' | 'running' | 'partial_complete' | 'completed' | 'failed';
 export const currencySymbols = ['TWD','USD','EUR','JPY','GBP','CNY','KRW','HKD','AUD','CAD','SGD','CHF','SEK','NZD','THB','PHP','IDR','VND','MYR','ZAR','BRL','INR','RUB','DKK','NOK','TRY','MXN','PLN','ILS','HUF','CZK','CLP','EGP','AED','COP','SAR','PKR','KWD','QAR','OMR','BHD','RSD','HRK','BGN','RON','LKR','BDT','DZD','KES','NGN','UGX','GHS','ZMW','MAD','MZN']
 
 declare module 'next-auth' {
@@ -287,6 +289,34 @@ export const MonthlyRefreshOverviewSchema = z.object({
 })
 
 export type MonthlyRefreshOverview = z.infer<typeof MonthlyRefreshOverviewSchema>
+
+export const CronRunLogSchema = z.object({
+    id: z.number(),
+    targetMonth: z.date(),
+    triggerType: z.enum(['scheduled', 'manual_test', 'manual_create']),
+    status: z.enum(['idle', 'pending', 'running', 'partial_complete', 'completed', 'failed']),
+    processedAssets: z.number(),
+    message: z.string(),
+    providerCounts: z.record(z.string(), z.number()).nullable().optional(),
+    startedAt: z.date(),
+    finishedAt: z.date().nullable().optional(),
+    userId: z.string(),
+    jobId: z.number().nullable().optional(),
+    updatedAt: z.date(),
+    createdAt: z.date(),
+})
+export const CronRunLogCreateSchema = CronRunLogSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+})
+export const CronRunLogUpdateSchema = CronRunLogCreateSchema.partial().extend({
+    id: z.number(),
+})
+
+export type CronRunLog = z.infer<typeof CronRunLogSchema>
+export type CronRunLogCreateType = z.infer<typeof CronRunLogCreateSchema>
+export type CronRunLogUpdateType = z.infer<typeof CronRunLogUpdateSchema>
 
 export const AssetPriceSnapshotSchema = z.object({
     id: z.number(),
