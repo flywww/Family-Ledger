@@ -127,7 +127,7 @@ export default function CronTestToggle({
                 </Button>
                 {currentDisplayMonth && (
                     <Button asChild variant="outline">
-                        <Link href={`/balance?date=${currentDisplayMonth.toUTCString()}`}>
+                        <Link href={`/balance?date=${currentDisplayMonth.toISOString()}`}>
                             Open test month
                         </Link>
                     </Button>

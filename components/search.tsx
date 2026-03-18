@@ -29,7 +29,7 @@ export default function Search({
         }
 
         const params = new URLSearchParams(searchParams);
-        params.set('date', date.toUTCString());
+        params.set('date', date.toISOString());
         onPendingChange?.(true);
         startTransition(() => {
             router.replace(`${pathname}?${params.toString()}`);

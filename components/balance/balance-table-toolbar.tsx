@@ -82,7 +82,7 @@ export default function BalanceTableToolbar({
                                     const targetMonth = result?.targetMonth
                                         ? new Date(result.targetMonth)
                                         : nextMonth;
-                                    router.push(`/balance/?date=${targetMonth.toUTCString()}`);
+                                    router.push(`/balance/?date=${targetMonth.toISOString()}`);
                                     router.refresh();
                                 });
                             }}

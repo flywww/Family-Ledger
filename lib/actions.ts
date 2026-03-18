@@ -112,8 +112,9 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
     const session = await auth()
     if(!session) return
     try {
+        const normalizedDate = firstDateOfMonth(queryDate);
         const data = await prisma.balance.findMany({
-            where:{ date: queryDate, userId: session.user.id },
+            where:{ date: normalizedDate, userId: session.user.id },
             include: { 
                 holding: {
                     include:{
