@@ -322,6 +322,138 @@ export async function retryFailedMonthlyRefresh(date: Date) {
     revalidatePath(`/dashboard/?date=${date.toUTCString()}`);
 }
 
+async function listCronTestDataMonths(userId: string) {
+    const [settings, jobMonths, snapshotMonths, balanceMonths, valueDataMonths] = await Promise.all([
+        prisma.setting.findUnique({
+            where: { userId },
+            select: { cronTestTargetMonth: true },
+        }),
+        prisma.monthlyRefreshJob.findMany({
+            where: { userId, isTestData: true },
+            select: { targetMonth: true },
+            distinct: ["targetMonth"],
+        }),
+        prisma.assetPriceSnapshot.findMany({
+            where: { userId, isTestData: true },
+            select: { targetMonth: true },
+            distinct: ["targetMonth"],
+        }),
+        prisma.balance.findMany({
+            where: { userId, isTestData: true },
+            select: { date: true },
+            distinct: ["date"],
+        }),
+        prisma.valueData.findMany({
+            where: { userId, isTestData: true },
+            select: { date: true },
+            distinct: ["date"],
+        }),
+    ]);
+
+    const months = new Map<string, Date>();
+    const pushMonth = (value?: Date | null) => {
+        if (!value) return;
+        const month = firstDateOfMonth(value);
+        months.set(month.toISOString(), month);
+    };
+
+    pushMonth(settings?.cronTestTargetMonth);
+    for (const item of jobMonths) pushMonth(item.targetMonth);
+    for (const item of snapshotMonths) pushMonth(item.targetMonth);
+    for (const item of balanceMonths) pushMonth(item.date);
+    for (const item of valueDataMonths) pushMonth(item.date);
+
+    return Array.from(months.values()).sort((a, b) => a.getTime() - b.getTime());
+}
+
+async function cleanupCronTestData(userId: string, targetMonth?: Date | null) {
+    const normalizedTargetMonth = targetMonth ? firstDateOfMonth(targetMonth) : null;
+    const cleanedMonths = await listCronTestDataMonths(userId);
+    const monthsToClean = normalizedTargetMonth
+        ? cleanedMonths.filter((month) => month.getTime() === normalizedTargetMonth.getTime())
+        : cleanedMonths;
+
+    if (monthsToClean.length === 0) {
+        return { cleanedMonths: [] as Date[] };
+    }
+
+    const monthFilters = monthsToClean.map((month) => ({ targetMonth: month }));
+    const balanceFilters = monthsToClean.map((month) => ({ date: month }));
+
+    await prisma.$transaction([
+        prisma.assetPriceSnapshot.deleteMany({
+            where: {
+                userId,
+                isTestData: true,
+                OR: monthFilters,
+            },
+        }),
+        prisma.monthlyRefreshJob.deleteMany({
+            where: {
+                userId,
+                isTestData: true,
+                OR: monthFilters,
+            },
+        }),
+        prisma.valueData.deleteMany({
+            where: {
+                userId,
+                isTestData: true,
+                OR: balanceFilters,
+            },
+        }),
+        prisma.balance.deleteMany({
+            where: {
+                userId,
+                isTestData: true,
+                OR: balanceFilters,
+            },
+        }),
+        prisma.setting.update({
+            where: {
+                userId,
+            },
+            data: {
+                cronTestTargetMonth: null,
+                cronTestStartedAt: null,
+            },
+        }),
+    ]);
+
+    return { cleanedMonths: monthsToClean };
+}
+
+export async function fetchCronTestState(userId: string) {
+    const setting = await prisma.setting.findUnique({
+        where: {
+            userId,
+        },
+        select: {
+            cronTestTargetMonth: true,
+            cronTestStartedAt: true,
+        },
+    });
+
+    const testMonths = await listCronTestDataMonths(userId);
+    const activeTargetMonth = setting?.cronTestTargetMonth
+        ? firstDateOfMonth(setting.cronTestTargetMonth)
+        : null;
+    const displayTargetMonth = activeTargetMonth ?? testMonths.at(0) ?? null;
+    const overview = displayTargetMonth
+        ? await fetchMonthlyRefreshOverview(userId, displayTargetMonth)
+        : undefined;
+
+    return {
+        activeTargetMonth,
+        displayTargetMonth,
+        startedAt: setting?.cronTestStartedAt ?? null,
+        hasTestData: testMonths.length > 0,
+        staleTestData: testMonths.length > 0 && !activeTargetMonth,
+        testMonthCount: testMonths.length,
+        overview,
+    };
+}
+
 export async function startMonthlyRefreshCronTest() {
     const session = await auth();
     if (!session) {
@@ -340,6 +472,11 @@ export async function startMonthlyRefreshCronTest() {
 
     if (setting.cronTestTargetMonth) {
         return { error: "A cron job test is already active." };
+    }
+
+    const existingTestMonths = await listCronTestDataMonths(session.user.id);
+    if (existingTestMonths.length > 0) {
+        return { error: "Existing cron test data was found. Clean it before starting a new test." };
     }
 
     const sourceMonth = firstDateOfMonth(setting.accountingDate);
@@ -402,6 +539,7 @@ export async function startMonthlyRefreshCronTest() {
         userId: session.user.id,
         sourceBalances: parsedBalances.data,
         updateAccountingDate: false,
+        isTestData: true,
     });
 
     await prisma.setting.update({
@@ -413,15 +551,6 @@ export async function startMonthlyRefreshCronTest() {
             cronTestStartedAt: new Date(),
         },
     });
-
-    await processMonthlyRefreshBatch(
-        targetMonth,
-        MONTHLY_REFRESH_DAILY_LIMIT,
-        {
-            userId: session.user.id,
-            targetMonth,
-        },
-    );
 
     revalidatePath("/setting");
     revalidatePath(`/balance/?date=${targetMonth.toUTCString()}`);
@@ -439,61 +568,22 @@ export async function stopMonthlyRefreshCronTest() {
         return { error: "Unauthorized" };
     }
 
-    const setting = await prisma.setting.findUnique({
-        where: {
-            userId: session.user.id,
-        },
-    });
+    const cleanup = await cleanupCronTestData(session.user.id);
 
-    if (!setting?.cronTestTargetMonth) {
-        return { error: "No cron job test is active." };
+    if (cleanup.cleanedMonths.length === 0) {
+        return { error: "No cron test data was found." };
     }
 
-    const targetMonth = firstDateOfMonth(setting.cronTestTargetMonth);
-
-    await prisma.$transaction([
-        prisma.assetPriceSnapshot.deleteMany({
-            where: {
-                userId: session.user.id,
-                targetMonth,
-            },
-        }),
-        prisma.monthlyRefreshJob.deleteMany({
-            where: {
-                userId: session.user.id,
-                targetMonth,
-            },
-        }),
-        prisma.valueData.deleteMany({
-            where: {
-                userId: session.user.id,
-                date: targetMonth,
-            },
-        }),
-        prisma.balance.deleteMany({
-            where: {
-                userId: session.user.id,
-                date: targetMonth,
-            },
-        }),
-        prisma.setting.update({
-            where: {
-                userId: session.user.id,
-            },
-            data: {
-                cronTestTargetMonth: null,
-                cronTestStartedAt: null,
-            },
-        }),
-    ]);
-
     revalidatePath("/setting");
-    revalidatePath(`/balance/?date=${targetMonth.toUTCString()}`);
-    revalidatePath(`/dashboard/?date=${targetMonth.toUTCString()}`);
+    for (const cleanedMonth of cleanup.cleanedMonths) {
+        revalidatePath(`/balance/?date=${cleanedMonth.toUTCString()}`);
+        revalidatePath(`/dashboard/?date=${cleanedMonth.toUTCString()}`);
+    }
 
     return {
         success: true,
-        targetMonth,
+        targetMonth: cleanup.cleanedMonths.at(0) ?? null,
+        cleanedMonths: cleanup.cleanedMonths,
     };
 }
 

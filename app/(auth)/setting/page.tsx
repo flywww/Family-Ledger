@@ -2,7 +2,7 @@ import ChangePasswordForm from "@/components/setting/change-password-form";
 import CronTestToggle from "@/components/setting/cron-test-toggle";
 import { Metadata }  from "next";
 import { auth } from "@/auth";
-import { fetchSetting } from "@/lib/actions";
+import { fetchCronTestState } from "@/lib/actions";
 
 export const metadata: Metadata = {
 	title: 'Setting',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const session = await auth();
-  const setting = session ? await fetchSetting(session.user.id) : undefined;
+  const cronTestState = session ? await fetchCronTestState(session.user.id) : undefined;
 
   return (
       <div className="flex flex-col gap-4 justify-start items-center">
@@ -18,7 +18,15 @@ export default async function Page() {
           <h1 className="text-3xl max-w-40">{session?.user.account}</h1>
           <p className="text-sm text-slate-500">{session?.user.id}</p>
         </div>
-        <CronTestToggle activeTargetMonth={setting?.cronTestTargetMonth} />
+        <CronTestToggle
+          activeTargetMonth={cronTestState?.activeTargetMonth}
+          displayTargetMonth={cronTestState?.displayTargetMonth}
+          startedAt={cronTestState?.startedAt}
+          hasTestData={cronTestState?.hasTestData ?? false}
+          staleTestData={cronTestState?.staleTestData ?? false}
+          testMonthCount={cronTestState?.testMonthCount ?? 0}
+          overview={cronTestState?.overview}
+        />
         <ChangePasswordForm/>
       </div>
       

@@ -7,12 +7,30 @@ import {
   ValueDataCreateSchema,
 } from "./definitions";
 import { getConvertedCurrency } from "./fx";
-import { fetchQuoteForSource, getHoldingQuoteSource } from "./pricing";
+import {
+  QuoteProvider,
+  fetchQuoteForSource,
+  getHoldingQuoteSource,
+} from "./pricing";
 import { firstDateOfMonth, getCalculatedMonth, getDatePartsInTimeZone } from "./utils";
 
 export const MONTHLY_REFRESH_BATCH_SIZE = 5;
 export const MONTHLY_REFRESH_DAILY_LIMIT = 50;
 export const MONTHLY_REFRESH_FETCH_CONCURRENCY = 5;
+export const CMC_REQUESTS_PER_MINUTE = 25;
+
+type RefreshBatchEntry = {
+  source: NonNullable<ReturnType<typeof getHoldingQuoteSource>>;
+  balances: BalanceWithRelations[];
+};
+
+type ProcessMonthlyRefreshBatchResult = {
+  processedAssets: number;
+  status: "idle" | "pending" | "completed" | "partial_complete";
+  overview?: MonthlyRefreshOverview;
+  providerCounts: Partial<Record<QuoteProvider, number>>;
+  durationMs: number;
+};
 
 type MonthlyRefreshJobFilter = {
   userId?: string;
@@ -20,6 +38,79 @@ type MonthlyRefreshJobFilter = {
 };
 
 type BalanceWithRelations = Balance;
+
+function delay(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+type RateLimitedRunnerOptions<T> = {
+  concurrency: number;
+  maxStartsPerMinute?: number;
+  task: (item: T) => Promise<void>;
+  now?: () => number;
+  sleep?: (ms: number) => Promise<void>;
+  onStart?: (item: T, startedAtMs: number) => void;
+};
+
+export async function runRateLimitedTasks<T>(
+  items: T[],
+  options: RateLimitedRunnerOptions<T>,
+) {
+  const now = options.now ?? (() => Date.now());
+  const sleep = options.sleep ?? delay;
+  const maxStartsPerMinute =
+    options.maxStartsPerMinute && options.maxStartsPerMinute > 0
+      ? options.maxStartsPerMinute
+      : null;
+
+  const startTimes: number[] = [];
+  let cursor = 0;
+
+  async function waitForSlot() {
+    if (!maxStartsPerMinute) {
+      return now();
+    }
+
+    while (true) {
+      const currentTime = now();
+      while (startTimes.length > 0 && currentTime - startTimes[0] >= 60_000) {
+        startTimes.shift();
+      }
+
+      if (startTimes.length < maxStartsPerMinute) {
+        startTimes.push(currentTime);
+        return currentTime;
+      }
+
+      const waitMs = Math.max(1, 60_000 - (currentTime - startTimes[0]));
+      await sleep(waitMs);
+    }
+  }
+
+  async function worker() {
+    while (true) {
+      if (cursor >= items.length) {
+        return;
+      }
+
+      const item = items[cursor];
+      cursor += 1;
+
+      const startedAtMs = await waitForSlot();
+      options.onStart?.(item, startedAtMs);
+      await options.task(item);
+    }
+  }
+
+  await Promise.all(
+    Array.from(
+      { length: Math.max(1, Math.min(options.concurrency, items.length)) },
+      () => worker(),
+    ),
+  );
+}
 
 function isRetryWindow(referenceDate: Date, targetMonth: Date) {
   const reference = getDatePartsInTimeZone(referenceDate);
@@ -82,7 +173,11 @@ function chunkEntries<T>(items: T[], size: number) {
   return chunks;
 }
 
-export async function rebuildValueDataForMonth(userId: string, targetMonth: Date) {
+export async function rebuildValueDataForMonth(
+  userId: string,
+  targetMonth: Date,
+  options?: { isTestData?: boolean },
+) {
   const balances = await prisma.balance.findMany({
     where: {
       userId,
@@ -122,7 +217,10 @@ export async function rebuildValueDataForMonth(userId: string, targetMonth: Date
 
   if (parsedValueData.data.length > 0) {
     await prisma.valueData.createMany({
-      data: parsedValueData.data,
+      data: parsedValueData.data.map((item) => ({
+        ...item,
+        isTestData: options?.isTestData ?? false,
+      })),
       skipDuplicates: true,
     });
   }
@@ -141,6 +239,7 @@ export async function createMonthlyBalancesAndJob(params: {
   userId: string;
   sourceBalances: BalanceWithRelations[];
   updateAccountingDate?: boolean;
+  isTestData?: boolean;
 }) {
   const targetMonth = firstDateOfMonth(params.targetMonth);
   const existingBalanceCount = await prisma.balance.count({
@@ -174,6 +273,7 @@ export async function createMonthlyBalancesAndJob(params: {
       priceFetchedAt: priceStatus === "success" ? new Date() : null,
       priceSource: source?.provider ?? "copied",
       priceError: null,
+      isTestData: params.isTestData ?? false,
     };
   });
 
@@ -205,6 +305,7 @@ export async function createMonthlyBalancesAndJob(params: {
         startedAt: new Date(),
         completedAt: initialJobStatus === "completed" ? new Date() : null,
         errorSummary: null,
+        isTestData: params.isTestData ?? false,
       },
       create: {
         userId: params.userId,
@@ -212,6 +313,7 @@ export async function createMonthlyBalancesAndJob(params: {
         status: initialJobStatus,
         startedAt: new Date(),
         completedAt: initialJobStatus === "completed" ? new Date() : null,
+        isTestData: params.isTestData ?? false,
       },
     });
 
@@ -224,6 +326,7 @@ export async function createMonthlyBalancesAndJob(params: {
           status: "pending",
           userId: params.userId,
           jobId: job.id,
+          isTestData: params.isTestData ?? false,
         })),
         skipDuplicates: true,
       });
@@ -246,7 +349,9 @@ export async function createMonthlyBalancesAndJob(params: {
     };
   });
 
-  await rebuildValueDataForMonth(params.userId, targetMonth);
+  await rebuildValueDataForMonth(params.userId, targetMonth, {
+    isTestData: params.isTestData ?? false,
+  });
 
   return {
     created: true,
@@ -367,6 +472,10 @@ export async function fetchMonthlyRefreshOverview(userId: string, targetMonth: D
     completedCount: countMap.success ?? 0,
     targetMonth: normalizedMonth,
     updatedAt: job?.updatedAt,
+    lastRunAt: job?.lastRunAt ?? null,
+    lastDurationMs: job?.lastDurationMs ?? null,
+    lastProcessedAssets: job?.lastProcessedAssets ?? null,
+    isTestData: job?.isTestData ?? false,
   } satisfies MonthlyRefreshOverview;
 }
 
@@ -387,6 +496,7 @@ async function applyQuoteFailure(params: {
   provider: string;
   sourceKey: string;
   error: string;
+  isTestData: boolean;
 }) {
   await prisma.assetPriceSnapshot.upsert({
     where: {
@@ -402,6 +512,7 @@ async function applyQuoteFailure(params: {
       error: params.error,
       fetchedAt: new Date(),
       jobId: params.jobId,
+      isTestData: params.isTestData,
     },
     create: {
       userId: params.userId,
@@ -412,6 +523,7 @@ async function applyQuoteFailure(params: {
       error: params.error,
       fetchedAt: new Date(),
       jobId: params.jobId,
+      isTestData: params.isTestData,
     },
   });
 
@@ -440,6 +552,7 @@ async function applyQuoteSuccess(params: {
   price: number;
   currency: string;
   fetchedAt: Date;
+  isTestData: boolean;
 }) {
   await prisma.assetPriceSnapshot.upsert({
     where: {
@@ -457,6 +570,7 @@ async function applyQuoteSuccess(params: {
       fetchedAt: params.fetchedAt,
       error: null,
       jobId: params.jobId,
+      isTestData: params.isTestData,
     },
     create: {
       userId: params.userId,
@@ -468,6 +582,7 @@ async function applyQuoteSuccess(params: {
       currency: params.currency,
       fetchedAt: params.fetchedAt,
       jobId: params.jobId,
+      isTestData: params.isTestData,
     },
   });
 
@@ -501,11 +616,50 @@ async function applyQuoteSuccess(params: {
   }
 }
 
+async function processQuoteEntry(params: {
+  entry: RefreshBatchEntry;
+  jobId: number;
+  userId: string;
+  targetMonth: Date;
+  isTestData: boolean;
+}) {
+  const balanceIds = params.entry.balances.map((balance) => balance.id);
+
+  try {
+    const quote = await fetchQuoteForSource(params.entry.source);
+    await applyQuoteSuccess({
+      balanceIds,
+      jobId: params.jobId,
+      userId: params.userId,
+      targetMonth: params.targetMonth,
+      provider: quote.provider,
+      sourceKey: quote.sourceKey,
+      price: quote.price,
+      currency: quote.currency,
+      fetchedAt: quote.fetchedAt,
+      isTestData: params.isTestData,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown quote refresh error";
+    await applyQuoteFailure({
+      balanceIds,
+      jobId: params.jobId,
+      userId: params.userId,
+      targetMonth: params.targetMonth,
+      provider: params.entry.source.provider,
+      sourceKey: params.entry.source.sourceKey,
+      error: message,
+      isTestData: params.isTestData,
+    });
+  }
+}
+
 export async function processMonthlyRefreshBatch(
   referenceDate = new Date(),
   limit = MONTHLY_REFRESH_BATCH_SIZE,
   filter?: MonthlyRefreshJobFilter,
-) {
+): Promise<ProcessMonthlyRefreshBatchResult> {
+  const batchStartedAt = Date.now();
   const normalizedTargetMonth = filter?.targetMonth
     ? firstDateOfMonth(filter.targetMonth)
     : undefined;
@@ -527,6 +681,8 @@ export async function processMonthlyRefreshBatch(
     return {
       processedAssets: 0,
       status: "idle",
+      providerCounts: {},
+      durationMs: Date.now() - batchStartedAt,
     };
   }
 
@@ -592,41 +748,59 @@ export async function processMonthlyRefreshBatch(
   }
 
   const batchEntries = Array.from(groupedBalances.values()).slice(0, limit);
+  const providerCounts = batchEntries.reduce<Partial<Record<QuoteProvider, number>>>(
+    (acc, entry) => {
+      acc[entry.source.provider] = (acc[entry.source.provider] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
 
-  for (const chunk of chunkEntries(batchEntries, MONTHLY_REFRESH_FETCH_CONCURRENCY)) {
-    await Promise.all(
-      chunk.map(async (entry) => {
-        const balanceIds = entry.balances.map((balance) => balance.id);
-        try {
-          const quote = await fetchQuoteForSource(entry.source);
-          await applyQuoteSuccess({
-            balanceIds,
-            jobId: job.id,
-            userId: job.userId,
-            targetMonth: job.targetMonth,
-            provider: quote.provider,
-            sourceKey: quote.sourceKey,
-            price: quote.price,
-            currency: quote.currency,
-            fetchedAt: quote.fetchedAt,
-          });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown quote refresh error";
-          await applyQuoteFailure({
-            balanceIds,
-            jobId: job.id,
-            userId: job.userId,
-            targetMonth: job.targetMonth,
-            provider: entry.source.provider,
-            sourceKey: entry.source.sourceKey,
-            error: message,
-          });
-        }
-      }),
-    );
-  }
+  const cryptoEntries = batchEntries.filter(
+    (entry) => entry.source.provider === "coinmarketcap",
+  );
+  const stockEntries = batchEntries.filter(
+    (entry) => entry.source.provider === "financialmodelingprep",
+  );
 
-  await rebuildValueDataForMonth(job.userId, job.targetMonth);
+  const configuredCmcRequestsPerMinute = Number.parseInt(
+    process.env.CMC_REQUESTS_PER_MINUTE ?? `${CMC_REQUESTS_PER_MINUTE}`,
+    10,
+  );
+  const cmcRequestsPerMinute =
+    Number.isFinite(configuredCmcRequestsPerMinute) && configuredCmcRequestsPerMinute > 0
+      ? configuredCmcRequestsPerMinute
+      : CMC_REQUESTS_PER_MINUTE;
+
+  await Promise.all([
+    runRateLimitedTasks(cryptoEntries, {
+      concurrency: MONTHLY_REFRESH_FETCH_CONCURRENCY,
+      maxStartsPerMinute: cmcRequestsPerMinute,
+      task: async (entry) =>
+        processQuoteEntry({
+          entry,
+          jobId: job.id,
+          userId: job.userId,
+          targetMonth: job.targetMonth,
+          isTestData: job.isTestData,
+        }),
+    }),
+    runRateLimitedTasks(stockEntries, {
+      concurrency: MONTHLY_REFRESH_FETCH_CONCURRENCY,
+      task: async (entry) =>
+        processQuoteEntry({
+          entry,
+          jobId: job.id,
+          userId: job.userId,
+          targetMonth: job.targetMonth,
+          isTestData: job.isTestData,
+        }),
+    }),
+  ]);
+
+  await rebuildValueDataForMonth(job.userId, job.targetMonth, {
+    isTestData: job.isTestData,
+  });
 
   const overview = await fetchMonthlyRefreshOverview(job.userId, job.targetMonth);
   let nextStatus: "pending" | "completed" | "partial_complete" = "pending";
@@ -651,6 +825,9 @@ export async function processMonthlyRefreshBatch(
       lastCursor: batchEntries.at(-1)?.source.sourceKey ?? job.lastCursor,
       completedAt,
       errorSummary,
+      lastRunAt: new Date(),
+      lastDurationMs: Date.now() - batchStartedAt,
+      lastProcessedAssets: batchEntries.length,
     },
   });
 
@@ -658,6 +835,8 @@ export async function processMonthlyRefreshBatch(
     processedAssets: batchEntries.length,
     status: nextStatus,
     overview,
+    providerCounts,
+    durationMs: Date.now() - batchStartedAt,
   };
 }
 

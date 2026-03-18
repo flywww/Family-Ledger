@@ -160,6 +160,7 @@ export const BalanceSchema = z.object({
     priceFetchedAt: z.date().nullable().optional(),
     priceSource: z.string().nullable().optional(),
     priceError: z.string().nullable().optional(),
+    isTestData: z.boolean().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })
@@ -197,6 +198,7 @@ export const ValueDataSchema = z.object({
     value: z.number(),
     userId: z.string(),
     user: UserSchema.optional(),
+    isTestData: z.boolean().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })
@@ -248,6 +250,10 @@ export const MonthlyRefreshJobSchema = z.object({
     startedAt: z.date().nullable().optional(),
     completedAt: z.date().nullable().optional(),
     errorSummary: z.string().nullable().optional(),
+    lastRunAt: z.date().nullable().optional(),
+    lastDurationMs: z.number().nullable().optional(),
+    lastProcessedAssets: z.number().nullable().optional(),
+    isTestData: z.boolean().optional(),
     userId: z.string(),
     updatedAt: z.date(),
     createdAt: z.date(),
@@ -274,6 +280,10 @@ export const MonthlyRefreshOverviewSchema = z.object({
     completedCount: z.number(),
     targetMonth: z.date(),
     updatedAt: z.date().optional(),
+    lastRunAt: z.date().nullable().optional(),
+    lastDurationMs: z.number().nullable().optional(),
+    lastProcessedAssets: z.number().nullable().optional(),
+    isTestData: z.boolean().optional(),
 })
 
 export type MonthlyRefreshOverview = z.infer<typeof MonthlyRefreshOverviewSchema>
@@ -290,6 +300,7 @@ export const AssetPriceSnapshotSchema = z.object({
     error: z.string().nullable().optional(),
     userId: z.string(),
     jobId: z.number().nullable().optional(),
+    isTestData: z.boolean().optional(),
     updatedAt: z.date(),
     createdAt: z.date(),
 })

@@ -5,6 +5,8 @@ import {
   processMonthlyRefreshBatch,
 } from "@/lib/monthly-refresh";
 
+export const maxDuration = 300;
+
 function isAuthorized(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
@@ -16,6 +18,7 @@ function isAuthorized(request: NextRequest) {
 }
 
 async function handleCron(request: NextRequest) {
+  const requestStartedAt = Date.now();
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -33,11 +36,38 @@ async function handleCron(request: NextRequest) {
       : MONTHLY_REFRESH_DAILY_LIMIT,
   );
 
+  const durationMs = Date.now() - requestStartedAt;
+  console.log(
+    JSON.stringify({
+      event: "monthly-refresh-cron",
+      createdUsers: created.createdUsers,
+      targetMonth: created.targetMonth.toISOString(),
+      processedAssets: processed.processedAssets,
+      providerCounts: processed.providerCounts,
+      status: processed.status,
+      overview: processed.overview
+        ? {
+            pendingCount: processed.overview.pendingCount,
+            failedCount: processed.overview.failedCount,
+            completedCount: processed.overview.completedCount,
+            estimatedCount: processed.overview.estimatedCount,
+            targetMonth: processed.overview.targetMonth.toISOString(),
+            updatedAt: processed.overview.updatedAt?.toISOString(),
+          }
+        : null,
+      durationMs,
+    }),
+  );
+
   return NextResponse.json({
     ok: true,
     createdUsers: created.createdUsers,
     targetMonth: created.targetMonth,
-    processed,
+    processedAssets: processed.processedAssets,
+    providerCounts: processed.providerCounts,
+    status: processed.status,
+    overview: processed.overview,
+    durationMs,
   });
 }
 

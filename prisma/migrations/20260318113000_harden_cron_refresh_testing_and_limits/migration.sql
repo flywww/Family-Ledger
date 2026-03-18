@@ -1,0 +1,14 @@
+ALTER TABLE "Balance"
+ADD COLUMN "isTestData" BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE "ValueData"
+ADD COLUMN "isTestData" BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE "MonthlyRefreshJob"
+ADD COLUMN "lastRunAt" TIMESTAMP(3),
+ADD COLUMN "lastDurationMs" INTEGER,
+ADD COLUMN "lastProcessedAssets" INTEGER,
+ADD COLUMN "isTestData" BOOLEAN NOT NULL DEFAULT false;
+
+ALTER TABLE "AssetPriceSnapshot"
+ADD COLUMN "isTestData" BOOLEAN NOT NULL DEFAULT false;

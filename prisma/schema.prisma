@@ -59,6 +59,7 @@ model Balance {
   priceFetchedAt DateTime?
   priceSource  String?
   priceError   String?
+  isTestData   Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
@@ -125,6 +126,7 @@ model ValueData {
   type           Type       @relation(fields: [typeId], references: [id])
   userId         String        
   user           User       @relation(fields: [userId], references: [id])
+  isTestData     Boolean    @default(false)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -150,6 +152,10 @@ model MonthlyRefreshJob {
   startedAt     DateTime?
   completedAt   DateTime?
   errorSummary  String?
+  lastRunAt     DateTime?
+  lastDurationMs Int?
+  lastProcessedAssets Int?
+  isTestData    Boolean          @default(false)
   userId        String           @db.VarChar(30)
   user          User             @relation(fields: [userId], references: [id])
   snapshots     AssetPriceSnapshot[]
@@ -173,6 +179,7 @@ model AssetPriceSnapshot {
   user          User        @relation(fields: [userId], references: [id])
   jobId         Int?
   job           MonthlyRefreshJob? @relation(fields: [jobId], references: [id])
+  isTestData    Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
