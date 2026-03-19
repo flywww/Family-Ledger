@@ -33,6 +33,7 @@ export default function BalanceTableToolbar({
     refreshState,
     currentMonthCreationState,
     onMonthChangePending,
+    onViewChange,
 }:{
     table: Table<FlattedBalanceType>,
     queryDate: Date,
@@ -45,6 +46,7 @@ export default function BalanceTableToolbar({
         previousMonthKey: MonthKey,
     },
     onMonthChangePending?: (pending: boolean) => void,
+    onViewChange?: (view: balanceAnalysisViewType) => void,
 }){
     const settingContext = useContext(SettingContext);
     const router = useRouter();
@@ -62,8 +64,8 @@ export default function BalanceTableToolbar({
 
         const params = new URLSearchParams(searchParams);
         params.set("view", view);
-        onMonthChangePending?.(true);
-        router.replace(`${pathname}?${params.toString()}`);
+        window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+        onViewChange?.(view);
     };
 
     return(

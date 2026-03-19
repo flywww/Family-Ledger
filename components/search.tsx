@@ -35,7 +35,9 @@ export default function Search({
             return;
         }
 
-        const params = new URLSearchParams(searchParams);
+        const currentSearch =
+            typeof window === "undefined" ? searchParams.toString() : window.location.search;
+        const params = new URLSearchParams(currentSearch);
         params.set('month', nextMonthKey);
         params.delete('date');
         onPendingChange?.(true);

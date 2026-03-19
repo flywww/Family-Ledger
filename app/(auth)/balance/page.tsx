@@ -14,7 +14,7 @@ import { getCalculatedMonth, monthKeyToDate, resolveMonthKey } from "@/lib/utils
 import { Metadata } from "next";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
-import { applyBalanceAnalysisView, resolveBalanceAnalysisView } from "@/lib/balance-analysis";
+import { resolveBalanceAnalysisView } from "@/lib/balance-analysis";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -57,10 +57,9 @@ export default async function Page(
       holdingTypeName: balance?.holding?.type?.name,
       percentage: 0,
   })) as Promise<FlattedBalanceType>[]);
-  const analyzedBalanceData = applyBalanceAnalysisView(flattedBalanceData || [], queryView);
   //TODO: long loading while switch date
   return (
-    <MonthBalanceProvider initialData={analyzedBalanceData}>
+    <MonthBalanceProvider initialData={flattedBalanceData || []}>
       <div className="flex flex-col gap-4">
           <MonthlyRefreshStatus
             overview={refreshState}
@@ -70,7 +69,7 @@ export default async function Page(
               ) : undefined
             }
           />
-          {analyzedBalanceData &&
+          {flattedBalanceData &&
               <BalanceTable 
                 queryDate={ queryDate } 
                 queryMonthKey={queryMonthKey}

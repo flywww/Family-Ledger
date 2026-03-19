@@ -15,11 +15,12 @@ import {
     VisibilityState,
 } from "@tanstack/react-table";
 import { Table } from "@tanstack/react-table";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { MonthBalanceContext } from "@/context/monthBalanceContext";
 import { SettingContext } from "@/context/settingContext";
 import BalanceTableSkeleton from "./skeleton/balance-table-skeleton";
 import { MonthKey } from "@/lib/utils";
+import { applyBalanceAnalysisView } from "@/lib/balance-analysis";
 
 export default function BalanceTable({
     queryDate,
@@ -43,6 +44,7 @@ export default function BalanceTable({
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [isMonthChangePending, setIsMonthChangePending] = useState(false);
+    const [selectedView, setSelectedView] = useState<balanceAnalysisViewType>(queryView);
     const monthBalanceContext = useContext(MonthBalanceContext);
     if(!monthBalanceContext){
         throw Error ("Setting must be used within a setting provider")
@@ -58,8 +60,17 @@ export default function BalanceTable({
         setIsMonthChangePending(false);
     }, [queryDate]);
 
+    useEffect(() => {
+        setSelectedView(queryView);
+    }, [queryView]);
+
+    const analyzedMonthBalanceData = useMemo(
+        () => applyBalanceAnalysisView(monthBalanceData, selectedView),
+        [monthBalanceData, selectedView],
+    );
+
     const table: Table<FlattedBalanceType> = useReactTable({
-        data: monthBalanceData,
+        data: analyzedMonthBalanceData,
         columns,
         getCoreRowModel: getCoreRowModel(),
         onSortingChange: setSorting,
@@ -79,11 +90,12 @@ export default function BalanceTable({
             <BalanceTableToolbar 
                 queryDate={queryDate}
                 queryMonthKey={queryMonthKey}
-                queryView={queryView}
+                queryView={selectedView}
                 table={table}
                 refreshState={refreshState}
                 currentMonthCreationState={currentMonthCreationState}
                 onMonthChangePending={setIsMonthChangePending}
+                onViewChange={setSelectedView}
             />
             {isMonthChangePending ? (
                 <BalanceTableSkeleton showToolbar={false} />
@@ -92,13 +104,13 @@ export default function BalanceTable({
             <div className="w-full hidden sm:block">
                 <DataTable
                     columns={columns as ColumnDef<FlattedBalanceType | null, any>[]} 
-                    data={monthBalanceData}
+                    data={analyzedMonthBalanceData}
                     table={table}
                 />
             </div>
             <div className="w-full sm:hidden">
                 {
-                    monthBalanceData.map((balance) => (
+                    analyzedMonthBalanceData.map((balance) => (
                         <div key={balance.id} className="rounded-md border my-2">
                             <div className="flex flex-row justify-between gap-2 p-2">
                                 <div className="flex flex-col justify-center items-start w-52">
