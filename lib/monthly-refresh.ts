@@ -632,7 +632,7 @@ async function backfillMonthlyRefreshJobsForUser(userId: string, currentMonth: D
 
     createdMonths.push(targetMonth);
     sourceMonth = targetMonth;
-    sourceBalances = created.createdBalances;
+    sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
   }
 
   return createdMonths;
