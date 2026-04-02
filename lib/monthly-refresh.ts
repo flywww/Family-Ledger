@@ -3,6 +3,7 @@ import {
   Balance,
   BalanceCreateType,
   BalanceSchema,
+  CronHealthState,
   cronRunStatusType,
   cronRunTriggerType,
   MonthlyRefreshOverview,
@@ -16,7 +17,15 @@ import {
   fetchQuoteForSource,
   getHoldingQuoteSource,
 } from "./pricing";
-import { firstDateOfMonth, getCalculatedMonth, getDatePartsInTimeZone } from "./utils";
+import {
+  APP_TIME_ZONE,
+  MONTHLY_REFRESH_LOCAL_HOUR,
+  firstDateOfMonth,
+  getCalculatedMonth,
+  getDatePartsInTimeZone,
+  getNextCronRunAt,
+  getPreviousCronRunAt,
+} from "./utils";
 
 export const MONTHLY_REFRESH_BATCH_SIZE = 5;
 export const MONTHLY_REFRESH_DAILY_LIMIT = 50;
@@ -141,6 +150,11 @@ function isRetryWindow(referenceDate: Date, targetMonth: Date) {
     reference.month === target.month &&
     reference.day === target.day
   );
+}
+
+export function isLegacyMonthlyRefreshWindow(referenceDate = new Date()) {
+  const reference = getDatePartsInTimeZone(referenceDate);
+  return reference.day === 1 && reference.hour === MONTHLY_REFRESH_LOCAL_HOUR;
 }
 
 async function convertToValueData(balances: BalanceWithRelations[]) {
@@ -532,17 +546,100 @@ export async function prepareNextMonthBalancesFromSourceMonth(params: {
   } as const;
 }
 
-export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
-  const dateParts = getDatePartsInTimeZone(referenceDate);
-  if (dateParts.day !== 1 || dateParts.hour !== 2) {
-    return {
-      createdUsers: [] as string[],
-      targetMonth: firstDateOfMonth(referenceDate),
-    };
+async function fetchMonthlyBalancesForRefresh(userId: string, month: Date) {
+  const balances = await prisma.balance.findMany({
+    where: {
+      userId,
+      date: firstDateOfMonth(month),
+      isTestData: false,
+    },
+    include: {
+      holding: {
+        include: {
+          category: true,
+          type: true,
+        },
+      },
+      user: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+
+  const parsed = BalanceSchema.array().safeParse(balances);
+  if (!parsed.success) {
+    throw new Error("Failed to parse balances while preparing monthly refresh backfill.");
   }
 
+  return parsed.data;
+}
+
+async function backfillMonthlyRefreshJobsForUser(userId: string, currentMonth: Date) {
+  const latestExistingBalance = await prisma.balance.findFirst({
+    where: {
+      userId,
+      isTestData: false,
+      date: {
+        lte: currentMonth,
+      },
+    },
+    select: {
+      date: true,
+    },
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  if (!latestExistingBalance) {
+    return [] as Date[];
+  }
+
+  let sourceMonth = firstDateOfMonth(latestExistingBalance.date);
+  let sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
+  const createdMonths: Date[] = [];
+
+  while (sourceMonth.getTime() < currentMonth.getTime()) {
+    const targetMonth = firstDateOfMonth(getCalculatedMonth(sourceMonth, 1));
+    const existingTargetBalance = await prisma.balance.count({
+      where: {
+        userId,
+        date: targetMonth,
+        isTestData: false,
+      },
+    });
+
+    if (existingTargetBalance > 0) {
+      sourceMonth = targetMonth;
+      sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
+      continue;
+    }
+
+    if (sourceBalances.length === 0) {
+      break;
+    }
+
+    const created = await createMonthlyBalancesAndJob({
+      targetMonth,
+      userId,
+      sourceBalances,
+    });
+
+    if (!created.created || !created.createdBalances?.length) {
+      break;
+    }
+
+    createdMonths.push(targetMonth);
+    sourceMonth = targetMonth;
+    sourceBalances = created.createdBalances;
+  }
+
+  return createdMonths;
+}
+
+export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
   const targetMonth = firstDateOfMonth(referenceDate);
-  const previousMonth = firstDateOfMonth(getCalculatedMonth(referenceDate, -1));
   const settings = await prisma.setting.findMany({
     include: {
       user: true,
@@ -550,60 +647,21 @@ export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
   });
 
   const createdUsers: string[] = [];
+  const createdMonthsByUser: Record<string, string[]> = {};
   for (const setting of settings) {
-    const existingBalanceCount = await prisma.balance.count({
-      where: {
-        userId: setting.userId,
-        date: targetMonth,
-      },
-    });
-
-    if (existingBalanceCount > 0) {
-      continue;
-    }
-
-    const previousBalances = await prisma.balance.findMany({
-      where: {
-        userId: setting.userId,
-        date: previousMonth,
-      },
-      include: {
-        holding: {
-          include: {
-            category: true,
-            type: true,
-          },
-        },
-        user: true,
-      },
-      orderBy: {
-        id: "asc",
-      },
-    });
-
-    if (previousBalances.length === 0) {
-      continue;
-    }
-
-    const parsedBalances = BalanceSchema.array().safeParse(previousBalances);
-    if (!parsedBalances.success) {
-      continue;
-    }
-
-    const result = await createMonthlyBalancesAndJob({
-      targetMonth,
-      userId: setting.userId,
-      sourceBalances: parsedBalances.data,
-    });
-
-    if (result.created) {
+    const createdMonths = await backfillMonthlyRefreshJobsForUser(setting.userId, targetMonth);
+    if (createdMonths.length > 0) {
       createdUsers.push(setting.userId);
+      createdMonthsByUser[setting.userId] = createdMonths.map((month) => month.toISOString());
     }
   }
 
   return {
     createdUsers,
     targetMonth,
+    createdMonthsByUser,
+    timeZone: APP_TIME_ZONE,
+    legacyWindow: isLegacyMonthlyRefreshWindow(referenceDate),
   };
 }
 
@@ -648,6 +706,102 @@ export async function fetchMonthlyRefreshOverview(userId: string, targetMonth: D
     lastProcessedAssets: job?.lastProcessedAssets ?? null,
     isTestData: job?.isTestData ?? false,
   } satisfies MonthlyRefreshOverview;
+}
+
+export async function fetchCronHealthState(
+  userId: string,
+  referenceDate = new Date(),
+): Promise<CronHealthState> {
+  const currentMonth = firstDateOfMonth(referenceDate);
+  const previousMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
+  const expectedLastScheduledRunAt = getPreviousCronRunAt(referenceDate);
+
+  const [
+    latestScheduledRun,
+    latestSuccessfulScheduledRun,
+    currentMonthBalanceCount,
+    previousMonthBalanceCount,
+  ] = await Promise.all([
+    prisma.cronRunLog.findFirst({
+      where: {
+        userId,
+        triggerType: "scheduled",
+      },
+      orderBy: {
+        startedAt: "desc",
+      },
+    }),
+    prisma.cronRunLog.findFirst({
+      where: {
+        userId,
+        triggerType: "scheduled",
+        status: {
+          in: ["pending", "running", "partial_complete", "completed"],
+        },
+      },
+      orderBy: {
+        startedAt: "desc",
+      },
+    }),
+    prisma.balance.count({
+      where: {
+        userId,
+        date: currentMonth,
+        isTestData: false,
+      },
+    }),
+    prisma.balance.count({
+      where: {
+        userId,
+        date: previousMonth,
+        isTestData: false,
+      },
+    }),
+  ]);
+
+  const hasObservedScheduledRun = Boolean(latestScheduledRun);
+  const isCurrentMonthMissing =
+    currentMonthBalanceCount === 0 && previousMonthBalanceCount > 0;
+  const isOverdue =
+    !latestScheduledRun ||
+    latestScheduledRun.startedAt.getTime() < expectedLastScheduledRunAt.getTime();
+
+  let severity: CronHealthState["severity"] = null;
+  let message: string | null = null;
+
+  if (!hasObservedScheduledRun && isCurrentMonthMissing) {
+    severity = "critical";
+    message = "Cron has not run in production yet and the current month has not been created.";
+  } else if (isOverdue && isCurrentMonthMissing) {
+    severity = "critical";
+    message = "Cron appears overdue and the current month balances are still missing.";
+  } else if (latestScheduledRun?.status === "failed") {
+    severity = "warning";
+    message = "The last scheduled cron run failed. Check runtime logs and the cron secret configuration.";
+  } else if (isCurrentMonthMissing) {
+    severity = "warning";
+    message = "The current month balances are missing. Verify cron health or create the month manually.";
+  } else if (!hasObservedScheduledRun) {
+    severity = "info";
+    message = "Cron has not produced a scheduled production log yet.";
+  } else if (isOverdue) {
+    severity = "warning";
+    message = "Cron appears overdue. Verify that Vercel Cron is still invoking the production route.";
+  }
+
+  return {
+    currentMonth,
+    expectedLastScheduledRunAt,
+    nextScheduledRunAt: getNextCronRunAt(referenceDate),
+    lastScheduledRunAt: latestScheduledRun?.startedAt ?? null,
+    lastSuccessfulScheduledRunAt: latestSuccessfulScheduledRun?.startedAt ?? null,
+    lastScheduledStatus: latestScheduledRun?.status ?? null,
+    hasObservedScheduledRun,
+    isOverdue,
+    isCurrentMonthMissing,
+    severity,
+    message,
+  };
 }
 
 function getBalanceSnapshotKey(balance: BalanceWithRelations) {

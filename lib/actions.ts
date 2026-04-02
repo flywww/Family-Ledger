@@ -31,6 +31,7 @@ import {
     UserSchema,
     currencySymbols,
     CurrencyExchangeRateCreateType,
+    CronHealthState,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -49,6 +50,7 @@ import { fetchCurrencyExchangeRates, getConvertedCurrency } from "./fx";
 import {
     createMonthlyBalancesAndJob,
     createCronRunLog,
+    fetchCronHealthState,
     fetchCronRunLogs,
     getRefreshLogMessage,
     fetchMonthlyRefreshOverview,
@@ -324,6 +326,13 @@ export async function fetchMonthlyRefreshState(date: Date) {
     return fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
 }
 
+export async function fetchCronHealth(referenceDate?: Date): Promise<CronHealthState | undefined> {
+    const session = await auth();
+    if (!session) return;
+
+    return fetchCronHealthState(session.user.id, referenceDate ?? new Date());
+}
+
 export async function fetchBalanceMonthKeys(userId: string) {
     const months = await prisma.balance.findMany({
         where: {
@@ -509,6 +518,7 @@ export async function fetchCronTestState(userId: string) {
         ? await fetchMonthlyRefreshOverview(userId, displayTargetMonth)
         : undefined;
     const cronRunLogs = await fetchCronRunLogs(userId);
+    const cronHealth = await fetchCronHealthState(userId);
 
     return {
         activeTargetMonth,
@@ -522,6 +532,7 @@ export async function fetchCronTestState(userId: string) {
         defaultSourceMonthKey: availableSourceMonthKeys[0] ?? null,
         nextCronRunAt: getNextCronRunAt(),
         cronRunLogs,
+        cronHealth,
     };
 }
 

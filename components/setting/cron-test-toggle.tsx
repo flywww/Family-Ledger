@@ -6,7 +6,7 @@ import { startMonthlyRefreshCronTest, stopMonthlyRefreshCronTest } from "@/lib/a
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CronRunLog, MonthlyRefreshOverview } from "@/lib/definitions";
+import { CronHealthState, CronRunLog, MonthlyRefreshOverview } from "@/lib/definitions";
 import { MonthKey, monthKeyToDate } from "@/lib/utils";
 import {
     Select,
@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import CronHealthAlert from "@/components/cron-health-alert";
 
 export default function CronTestToggle({
     activeTargetMonth,
@@ -28,6 +29,7 @@ export default function CronTestToggle({
     defaultSourceMonthKey,
     nextCronRunAt,
     cronRunLogs,
+    cronHealth,
 }:{
     activeTargetMonth?: Date | null,
     displayTargetMonth?: Date | null,
@@ -40,6 +42,7 @@ export default function CronTestToggle({
     defaultSourceMonthKey?: MonthKey | null,
     nextCronRunAt?: Date,
     cronRunLogs: CronRunLog[],
+    cronHealth?: CronHealthState,
 }){
     const [isPending, startTransition] = useTransition();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -124,6 +127,7 @@ export default function CronTestToggle({
                     Start test only prepares next-month test data. Use the deployed cron route to
                     run the real refresh flow. Clean test data removes all tagged test artifacts.
                 </p>
+                <CronHealthAlert health={cronHealth} forceVisible />
                 {!hasCurrentTestData && (
                     <div className="space-y-2 pt-1">
                         <p className="text-sm text-slate-300">Source month</p>
@@ -225,7 +229,11 @@ export default function CronTestToggle({
             <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-200">
                 <p className="font-medium text-slate-100">Cron job log</p>
                 {cronRunLogs.length === 0 ? (
-                    <p className="text-slate-400">No cron logs yet.</p>
+                    <p className="text-slate-400">
+                        {cronHealth?.hasObservedScheduledRun
+                            ? "No cron logs for this user yet."
+                            : "Cron has not run in production yet."}
+                    </p>
                 ) : (
                     <div className="space-y-2">
                         {cronRunLogs.map((log) => (

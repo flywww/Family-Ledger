@@ -1,5 +1,6 @@
 import BalanceTable from "@/components/balance/balance-table";
 import {
+  fetchCronHealth,
   fetchCurrentMonthBalanceCreationState,
   fetchLastDateOfBalance,
   fetchMonthlyBalance,
@@ -15,6 +16,7 @@ import { Metadata } from "next";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
 import { resolveBalanceAnalysisView } from "@/lib/balance-analysis";
+import CronHealthAlert from "@/components/cron-health-alert";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -44,6 +46,7 @@ export default async function Page(
   const queryView = resolveBalanceAnalysisView(searchParams?.view) as balanceAnalysisViewType;
   const balanceData = await fetchMonthlyBalance(queryDate);
   const refreshState = await fetchMonthlyRefreshState(queryDate);
+  const cronHealth = await fetchCronHealth();
   const currentMonthCreationState = session
     ? await fetchCurrentMonthBalanceCreationState(session.user.id, queryMonthKey)
     : undefined;
@@ -61,6 +64,7 @@ export default async function Page(
   return (
     <MonthBalanceProvider initialData={flattedBalanceData || []}>
       <div className="flex flex-col gap-4">
+          <CronHealthAlert health={cronHealth} />
           <MonthlyRefreshStatus
             overview={refreshState}
             action={

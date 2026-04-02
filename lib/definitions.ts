@@ -320,6 +320,22 @@ export type CronRunLog = z.infer<typeof CronRunLogSchema>
 export type CronRunLogCreateType = z.infer<typeof CronRunLogCreateSchema>
 export type CronRunLogUpdateType = z.infer<typeof CronRunLogUpdateSchema>
 
+export const CronHealthStateSchema = z.object({
+    currentMonth: z.date(),
+    expectedLastScheduledRunAt: z.date(),
+    nextScheduledRunAt: z.date(),
+    lastScheduledRunAt: z.date().nullable().optional(),
+    lastSuccessfulScheduledRunAt: z.date().nullable().optional(),
+    lastScheduledStatus: z.enum(['idle', 'pending', 'running', 'partial_complete', 'completed', 'failed']).nullable().optional(),
+    hasObservedScheduledRun: z.boolean(),
+    isOverdue: z.boolean(),
+    isCurrentMonthMissing: z.boolean(),
+    severity: z.enum(['info', 'warning', 'critical']).nullable().optional(),
+    message: z.string().nullable().optional(),
+})
+
+export type CronHealthState = z.infer<typeof CronHealthStateSchema>
+
 export const AssetPriceSnapshotSchema = z.object({
     id: z.number(),
     targetMonth: z.date(),

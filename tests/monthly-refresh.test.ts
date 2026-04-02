@@ -19,6 +19,7 @@ vi.mock("../lib/pricing", async () => {
 import {
   autoCreateMonthlyRefreshJobs,
   createMonthlyBalancesAndJob,
+  fetchCronHealthState,
   fetchMonthlyRefreshOverview,
   prepareNextMonthBalancesFromSourceMonth,
   processMonthlyRefreshBatch,
@@ -348,6 +349,68 @@ describe("monthly refresh workflow", () => {
     expect(job?.status).toBe("pending");
   }, 40_000);
 
+  it("backfills missing months when the scheduled run was missed", async () => {
+    const { user } = await seedMonthlySourceData();
+
+    const result = await autoCreateMonthlyRefreshJobs(new Date("2026-04-03T10:00:00+08:00"));
+
+    expect(result.createdUsers).toEqual([user.id]);
+    expect(result.createdMonthsByUser[user.id]).toEqual([
+      new Date("2026-04-01T00:00:00+08:00").toISOString(),
+    ]);
+
+    const aprilBalances = await prisma.balance.findMany({
+      where: {
+        userId: user.id,
+        date: new Date("2026-04-01T00:00:00+08:00"),
+      },
+    });
+    expect(aprilBalances).toHaveLength(3);
+  });
+
+  it("backfills consecutive missing months up to the current month", async () => {
+    const { user } = await seedMonthlySourceData();
+
+    const result = await autoCreateMonthlyRefreshJobs(new Date("2026-05-10T09:00:00+08:00"));
+
+    expect(result.createdUsers).toEqual([user.id]);
+    expect(result.createdMonthsByUser[user.id]).toEqual([
+      new Date("2026-04-01T00:00:00+08:00").toISOString(),
+      new Date("2026-05-01T00:00:00+08:00").toISOString(),
+    ]);
+
+    const mayBalances = await prisma.balance.findMany({
+      where: {
+        userId: user.id,
+        date: new Date("2026-05-01T00:00:00+08:00"),
+      },
+    });
+    expect(mayBalances).toHaveLength(3);
+  });
+
+  it("ignores test data while deciding whether production months are missing", async () => {
+    const { user, sourceBalances } = await seedMonthlySourceData();
+    await createMonthlyBalancesAndJob({
+      targetMonth: new Date("2026-04-01T00:00:00+08:00"),
+      userId: user.id,
+      sourceBalances: sourceBalances as any,
+      isTestData: true,
+      updateAccountingDate: false,
+    });
+
+    const result = await autoCreateMonthlyRefreshJobs(new Date("2026-04-10T10:00:00+08:00"));
+
+    expect(result.createdUsers).toEqual([]);
+    const aprilProductionBalances = await prisma.balance.findMany({
+      where: {
+        userId: user.id,
+        date: new Date("2026-04-01T00:00:00+08:00"),
+        isTestData: false,
+      },
+    });
+    expect(aprilProductionBalances).toHaveLength(0);
+  });
+
   it("deduplicates provider fetches, retries failed quotes, and completes the job", async () => {
     const { user, nextMonth, sourceBalances } = await seedMonthlySourceData();
 
@@ -601,5 +664,16 @@ describe("monthly refresh workflow", () => {
       },
     });
     expect(aprilBalances).toHaveLength(3);
+  });
+
+  it("reports cron health when the current month is missing and no scheduled run was observed", async () => {
+    const { user } = await seedMonthlySourceData();
+
+    const health = await fetchCronHealthState(user.id, new Date("2026-04-10T10:00:00+08:00"));
+
+    expect(health.hasObservedScheduledRun).toBe(false);
+    expect(health.isCurrentMonthMissing).toBe(true);
+    expect(health.isOverdue).toBe(true);
+    expect(health.severity).toBe("critical");
   });
 });

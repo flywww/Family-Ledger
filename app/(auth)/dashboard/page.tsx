@@ -5,6 +5,7 @@ import SummarySection from "@/components/dashboard/summary-section";
 import ChartSection from "@/components/dashboard/chart-section";
 import {
   fetchCategories,
+  fetchCronHealth,
   fetchLastDateOfBalance,
   fetchMonthlyRefreshState,
   fetchSetting,
@@ -16,6 +17,7 @@ import { currencyType } from "@/lib/definitions";
 import { Suspense } from "react";
 import { Metadata } from "next";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
+import CronHealthAlert from "@/components/cron-health-alert";
 
 export const metadata: Metadata = {
 	title: 'Dashboard',
@@ -43,6 +45,7 @@ export default async function Page(
   const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
   const refreshState = await fetchMonthlyRefreshState(queryDate);
+  const cronHealth = await fetchCronHealth();
   let categoryNames;
   if(searchParams?.categories){
     categoryNames = searchParams.categories.split(',');
@@ -65,6 +68,7 @@ export default async function Page(
   //TODO: long loading while switch date
   return (
     <div className="flex flex-col gap-3 justify-stretch">
+      <CronHealthAlert health={cronHealth} />
       <MonthlyRefreshStatus overview={refreshState} />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Suspense>

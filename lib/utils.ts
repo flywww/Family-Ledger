@@ -86,6 +86,7 @@ export const getUTCDateString = (date: Date) => {
 }
 
 export const APP_TIME_ZONE = process.env.APP_TIME_ZONE || 'Asia/Taipei';
+export const MONTHLY_REFRESH_LOCAL_HOUR = 2;
 export type MonthKey = `${number}-${string}`;
 
 export const getDatePartsInTimeZone = (date: Date, timeZone = APP_TIME_ZONE) => {
@@ -151,21 +152,43 @@ export const resolveMonthKey = (params: {
 };
 
 export const getNextCronRunAt = (referenceDate = new Date()) => {
-  const nextRun = new Date(Date.UTC(
-    referenceDate.getUTCFullYear(),
-    referenceDate.getUTCMonth(),
-    referenceDate.getUTCDate(),
-    18,
-    0,
-    0,
-    0,
-  ));
-
-  if (referenceDate.getTime() >= nextRun.getTime()) {
-    nextRun.setUTCDate(nextRun.getUTCDate() + 1);
+  const todayRun = getScheduledMonthlyRefreshRunAt(referenceDate);
+  if (referenceDate.getTime() < todayRun.getTime()) {
+    return todayRun;
   }
 
-  return nextRun;
+  return getScheduledMonthlyRefreshRunAt(
+    new Date(referenceDate.getTime() + 24 * 60 * 60 * 1000),
+  );
+};
+
+export const getScheduledMonthlyRefreshRunAt = (
+  referenceDate = new Date(),
+  options?: {
+    dayOffset?: number;
+    hour?: number;
+    timeZone?: string;
+  },
+) => {
+  const timeZone = options?.timeZone ?? APP_TIME_ZONE;
+  const parts = getDatePartsInTimeZone(referenceDate, timeZone);
+  const startOfDay = createDateAtStartOfDayInTimeZone(
+    parts.year,
+    parts.month - 1,
+    parts.day + (options?.dayOffset ?? 0),
+    timeZone,
+  );
+
+  return new Date(startOfDay.getTime() + (options?.hour ?? MONTHLY_REFRESH_LOCAL_HOUR) * 60 * 60 * 1000);
+};
+
+export const getPreviousCronRunAt = (referenceDate = new Date()) => {
+  const todayRun = getScheduledMonthlyRefreshRunAt(referenceDate);
+  if (referenceDate.getTime() >= todayRun.getTime()) {
+    return todayRun;
+  }
+
+  return getScheduledMonthlyRefreshRunAt(referenceDate, { dayOffset: -1 });
 };
 
 export const isSameMonth = (left: Date, right: Date) =>
