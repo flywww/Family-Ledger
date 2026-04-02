@@ -1,7 +1,7 @@
 import BalanceTable from "@/components/balance/balance-table";
 import {
-  fetchCronHealth,
-  fetchCurrentMonthBalanceCreationState,
+  ensureLastMonthBalance,
+  fetchLaggedMonthBalanceCreationState,
   fetchLastDateOfBalance,
   fetchMonthlyBalance,
   fetchMonthlyRefreshState,
@@ -13,10 +13,10 @@ import { MonthBalanceProvider } from "@/context/MonthBalanceProvider";
 import { auth } from "@/auth";
 import { getCalculatedMonth, monthKeyToDate, resolveMonthKey } from "@/lib/utils";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
 import { resolveBalanceAnalysisView } from "@/lib/balance-analysis";
-import CronHealthAlert from "@/components/cron-health-alert";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -33,6 +33,20 @@ export default async function Page(
   }
 ) {
   const searchParams = await props.searchParams;
+  const session = await auth();
+  const hasExplicitMonth = Boolean(searchParams?.month || searchParams?.date);
+
+  if (session && !hasExplicitMonth) {
+    const ensured = await ensureLastMonthBalance(session.user.id);
+    if (ensured.created) {
+      const params = new URLSearchParams();
+      params.set("month", ensured.targetMonthKey);
+      if (searchParams?.currency) params.set("currency", searchParams.currency);
+      if (searchParams?.view) params.set("view", searchParams.view);
+      redirect(`/balance?${params.toString()}`);
+    }
+  }
+
   const fallbackDate = (await fetchLastDateOfBalance()) || getCalculatedMonth(new Date(), -1);
   const queryMonthKey = resolveMonthKey({
     month: searchParams?.month,
@@ -40,15 +54,13 @@ export default async function Page(
     fallback: fallbackDate,
   });
   const queryDate = monthKeyToDate(queryMonthKey);
-  const session = await auth();
   const setting = session && (await fetchSetting(session.user.id));
   const displayCurrency = (searchParams?.currency ? searchParams.currency : setting?.displayCurrency || 'USD') as currencyType;
   const queryView = resolveBalanceAnalysisView(searchParams?.view) as balanceAnalysisViewType;
   const balanceData = await fetchMonthlyBalance(queryDate);
   const refreshState = await fetchMonthlyRefreshState(queryDate);
-  const cronHealth = await fetchCronHealth();
   const currentMonthCreationState = session
-    ? await fetchCurrentMonthBalanceCreationState(session.user.id, queryMonthKey)
+    ? await fetchLaggedMonthBalanceCreationState(session.user.id, queryMonthKey)
     : undefined;
   const flattedBalanceData = await Promise.all(balanceData?.map(async (balance) => ({
       ...balance,
@@ -64,7 +76,6 @@ export default async function Page(
   return (
     <MonthBalanceProvider initialData={flattedBalanceData || []}>
       <div className="flex flex-col gap-4">
-          <CronHealthAlert health={cronHealth} />
           <MonthlyRefreshStatus
             overview={refreshState}
             action={

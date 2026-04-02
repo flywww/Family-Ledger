@@ -31,7 +31,6 @@ import {
     UserSchema,
     currencySymbols,
     CurrencyExchangeRateCreateType,
-    CronHealthState,
 } from "./definitions";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -50,11 +49,12 @@ import { fetchCurrencyExchangeRates, getConvertedCurrency } from "./fx";
 import {
     createMonthlyBalancesAndJob,
     createCronRunLog,
-    fetchCronHealthState,
     fetchCronRunLogs,
+    getLaggedBalanceCreationWindow,
     getRefreshLogMessage,
     fetchMonthlyRefreshOverview,
     MONTHLY_REFRESH_DAILY_LIMIT,
+    prepareLaggedMonthlyBalancesForUser,
     prepareNextMonthBalancesFromSourceMonth,
     rebuildValueDataForMonth,
     processMonthlyRefreshBatch,
@@ -326,13 +326,6 @@ export async function fetchMonthlyRefreshState(date: Date) {
     return fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
 }
 
-export async function fetchCronHealth(referenceDate?: Date): Promise<CronHealthState | undefined> {
-    const session = await auth();
-    if (!session) return;
-
-    return fetchCronHealthState(session.user.id, referenceDate ?? new Date());
-}
-
 export async function fetchBalanceMonthKeys(userId: string) {
     const months = await prisma.balance.findMany({
         where: {
@@ -351,38 +344,37 @@ export async function fetchBalanceMonthKeys(userId: string) {
     return months.map((item) => getMonthKey(item.date));
 }
 
-export async function fetchCurrentMonthBalanceCreationState(userId: string, viewedMonthKey: MonthKey) {
-    const currentMonth = firstDateOfMonth(new Date());
-    const currentMonthKey = getMonthKey(currentMonth);
-    const previousMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
-    const previousMonthKey = getMonthKey(previousMonth);
+export async function fetchLaggedMonthBalanceCreationState(userId: string, viewedMonthKey: MonthKey) {
+    const { targetMonth, sourceMonth } = getLaggedBalanceCreationWindow(new Date());
+    const targetMonthKey = getMonthKey(targetMonth);
+    const sourceMonthKey = getMonthKey(sourceMonth);
 
-    const [currentMonthBalanceCount, previousMonthBalanceCount] = await Promise.all([
+    const [targetMonthBalanceCount, sourceMonthBalanceCount] = await Promise.all([
         prisma.balance.count({
             where: {
                 userId,
-                date: currentMonth,
+                date: targetMonth,
                 isTestData: false,
             },
         }),
         prisma.balance.count({
             where: {
                 userId,
-                date: previousMonth,
+                date: sourceMonth,
                 isTestData: false,
             },
         }),
     ]);
 
-    const canCreateCurrentMonthBalance =
-        viewedMonthKey === currentMonthKey &&
-        currentMonthBalanceCount === 0 &&
-        previousMonthBalanceCount > 0;
+    const canCreateLaggedMonthBalance =
+        viewedMonthKey === targetMonthKey &&
+        targetMonthBalanceCount === 0 &&
+        sourceMonthBalanceCount > 0;
 
     return {
-        canCreateCurrentMonthBalance,
-        currentMonthKey,
-        previousMonthKey,
+        canCreateLaggedMonthBalance,
+        targetMonthKey,
+        sourceMonthKey,
     };
 }
 
@@ -518,8 +510,6 @@ export async function fetchCronTestState(userId: string) {
         ? await fetchMonthlyRefreshOverview(userId, displayTargetMonth)
         : undefined;
     const cronRunLogs = await fetchCronRunLogs(userId);
-    const cronHealth = await fetchCronHealthState(userId);
-
     return {
         activeTargetMonth,
         displayTargetMonth,
@@ -532,7 +522,6 @@ export async function fetchCronTestState(userId: string) {
         defaultSourceMonthKey: availableSourceMonthKeys[0] ?? null,
         nextCronRunAt: getNextCronRunAt(),
         cronRunLogs,
-        cronHealth,
     };
 }
 
@@ -717,50 +706,44 @@ export async function createMonthBalances( date: Date , balances: Balance[] ){
     redirect(`/balance/?date=${date.toUTCString()}`);
 }
 
-export async function createCurrentMonthBalance() {
+export async function ensureLastMonthBalance(userId: string, referenceDate = new Date()) {
+    const prepared = await prepareLaggedMonthlyBalancesForUser({
+        userId,
+        referenceDate,
+    });
+
+    return {
+        ...prepared,
+        targetMonthKey: getMonthKey(prepared.targetMonth),
+        sourceMonthKey: getMonthKey(prepared.sourceMonth),
+    };
+}
+
+export async function createLastMonthBalance() {
     const session = await auth();
     if (!session) {
         return { error: "Unauthorized" };
     }
 
-    const currentMonth = firstDateOfMonth(new Date());
-    const currentMonthKey = getMonthKey(currentMonth);
-    const previousMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
-    const previousMonthKey = getMonthKey(previousMonth);
-
-    const [currentMonthBalanceCount, previousMonthBalanceCount] = await Promise.all([
-        prisma.balance.count({
-            where: {
-                userId: session.user.id,
-                date: currentMonth,
-                isTestData: false,
-            },
-        }),
-        prisma.balance.count({
-            where: {
-                userId: session.user.id,
-                date: previousMonth,
-                isTestData: false,
-            },
-        }),
-    ]);
-
-    if (currentMonthBalanceCount > 0) {
-        return { error: "Current month balance already exists." };
-    }
-
-    if (previousMonthBalanceCount === 0) {
-        return { error: "Previous month has no balances to copy." };
-    }
-
-    const prepared = await prepareNextMonthBalancesFromSourceMonth({
+    const { targetMonthKey, sourceMonthKey } = (() => {
+        const { targetMonth, sourceMonth } = getLaggedBalanceCreationWindow(new Date());
+        return {
+            targetMonthKey: getMonthKey(targetMonth),
+            sourceMonthKey: getMonthKey(sourceMonth),
+        };
+    })();
+    const prepared = await prepareLaggedMonthlyBalancesForUser({
         userId: session.user.id,
-        sourceMonth: previousMonth,
+        referenceDate: new Date(),
     });
 
-    if ("error" in prepared && prepared.error) {
+    if (!prepared.created && prepared.reason === "target_exists") {
+        return { error: "Last month balance already exists." };
+    }
+
+    if (!prepared.created && prepared.reason === "missing_source") {
         return {
-            error: prepared.error,
+            error: "The source month has no balances to copy.",
             targetMonth: prepared.targetMonth,
         };
     }
@@ -798,9 +781,9 @@ export async function createCurrentMonthBalance() {
         jobId: processed.jobId,
     });
 
-    revalidatePath(`/balance/?month=${previousMonthKey}`);
-    revalidatePath(`/balance/?month=${currentMonthKey}`);
-    revalidatePath(`/dashboard/?month=${currentMonthKey}`);
+    revalidatePath(`/balance/?month=${sourceMonthKey}`);
+    revalidatePath(`/balance/?month=${targetMonthKey}`);
+    revalidatePath(`/dashboard/?month=${targetMonthKey}`);
     revalidatePath("/setting");
 
     return {

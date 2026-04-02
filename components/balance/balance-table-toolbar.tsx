@@ -16,7 +16,7 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 import Search from "@/components/search";
-import { createCurrentMonthBalance } from "@/lib/actions";
+import { createLastMonthBalance } from "@/lib/actions";
 import { balanceAnalysisViewType, FlattedBalanceType, MonthlyRefreshOverview } from "@/lib/definitions";
 import Link from "next/link"
 import { useContext, Suspense, useTransition } from "react";
@@ -41,9 +41,9 @@ export default function BalanceTableToolbar({
     queryView: balanceAnalysisViewType,
     refreshState?: MonthlyRefreshOverview,
     currentMonthCreationState?: {
-        canCreateCurrentMonthBalance: boolean,
-        currentMonthKey: MonthKey,
-        previousMonthKey: MonthKey,
+        canCreateLaggedMonthBalance: boolean,
+        targetMonthKey: MonthKey,
+        sourceMonthKey: MonthKey,
     },
     onMonthChangePending?: (pending: boolean) => void,
     onViewChange?: (view: balanceAnalysisViewType) => void,
@@ -101,14 +101,14 @@ export default function BalanceTableToolbar({
                     </div>
                 </div>
                 <div className="ml-auto hidden items-center gap-2 sm:flex">
-                    {currentMonthCreationState?.canCreateCurrentMonthBalance && (
+                    {currentMonthCreationState?.canCreateLaggedMonthBalance && (
                         <Button
                             type="button"
                             variant="secondary"
                             disabled={isCreatingMonth}
                             onClick={() => {
                                 startCreateMonthTransition(async () => {
-                                    const result = await createCurrentMonthBalance();
+                                    const result = await createLastMonthBalance();
                                     if (result?.error) {
                                         window.alert(result.error);
                                         return;
@@ -121,7 +121,7 @@ export default function BalanceTableToolbar({
                                     }
 
                                     const params = new URLSearchParams(searchParams);
-                                    params.set("month", result?.targetMonthKey ?? currentMonthCreationState.currentMonthKey);
+                                    params.set("month", result?.targetMonthKey ?? currentMonthCreationState.targetMonthKey);
                                     params.set("view", queryView);
                                     params.delete("date");
                                     router.push(`/balance/?${params.toString()}`);
@@ -129,7 +129,7 @@ export default function BalanceTableToolbar({
                                 });
                             }}
                         >
-                            {isCreatingMonth ? "Creating monthly balance..." : "Create monthly balance"}
+                            {isCreatingMonth ? "Creating last month balance..." : "Create last month balance"}
                         </Button>
                     )}
                     <DropdownMenu>

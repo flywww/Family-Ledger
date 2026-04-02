@@ -34,9 +34,9 @@ export default function BalanceTable({
     queryView: balanceAnalysisViewType,
     refreshState?: MonthlyRefreshOverview,
     currentMonthCreationState?: {
-        canCreateCurrentMonthBalance: boolean,
-        currentMonthKey: MonthKey,
-        previousMonthKey: MonthKey,
+        canCreateLaggedMonthBalance: boolean,
+        targetMonthKey: MonthKey,
+        sourceMonthKey: MonthKey,
     },
 }){
 

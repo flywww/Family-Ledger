@@ -157,6 +157,18 @@ export function isLegacyMonthlyRefreshWindow(referenceDate = new Date()) {
   return reference.day === 1 && reference.hour === MONTHLY_REFRESH_LOCAL_HOUR;
 }
 
+export function getLaggedBalanceCreationWindow(referenceDate = new Date()) {
+  const currentMonth = firstDateOfMonth(referenceDate);
+  const targetMonth = firstDateOfMonth(getCalculatedMonth(currentMonth, -1));
+  const sourceMonth = firstDateOfMonth(getCalculatedMonth(targetMonth, -1));
+
+  return {
+    currentMonth,
+    targetMonth,
+    sourceMonth,
+  };
+}
+
 async function convertToValueData(balances: BalanceWithRelations[]) {
   const valueData: Record<string, any> = {};
 
@@ -575,71 +587,79 @@ async function fetchMonthlyBalancesForRefresh(userId: string, month: Date) {
   return parsed.data;
 }
 
-async function backfillMonthlyRefreshJobsForUser(userId: string, currentMonth: Date) {
-  const latestExistingBalance = await prisma.balance.findFirst({
+export async function prepareLaggedMonthlyBalancesForUser(params: {
+  userId: string;
+  referenceDate?: Date;
+  updateAccountingDate?: boolean;
+  isTestData?: boolean;
+}) {
+  const referenceDate = params.referenceDate ?? new Date();
+  const { targetMonth, sourceMonth } = getLaggedBalanceCreationWindow(referenceDate);
+  const existingTargetBalance = await prisma.balance.count({
     where: {
-      userId,
-      isTestData: false,
-      date: {
-        lte: currentMonth,
-      },
-    },
-    select: {
-      date: true,
-    },
-    orderBy: {
-      date: "desc",
+      userId: params.userId,
+      date: targetMonth,
+      isTestData: params.isTestData ?? false,
     },
   });
 
-  if (!latestExistingBalance) {
-    return [] as Date[];
-  }
-
-  let sourceMonth = firstDateOfMonth(latestExistingBalance.date);
-  let sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
-  const createdMonths: Date[] = [];
-
-  while (sourceMonth.getTime() < currentMonth.getTime()) {
-    const targetMonth = firstDateOfMonth(getCalculatedMonth(sourceMonth, 1));
-    const existingTargetBalance = await prisma.balance.count({
-      where: {
-        userId,
-        date: targetMonth,
-        isTestData: false,
-      },
-    });
-
-    if (existingTargetBalance > 0) {
-      sourceMonth = targetMonth;
-      sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
-      continue;
-    }
-
-    if (sourceBalances.length === 0) {
-      break;
-    }
-
-    const created = await createMonthlyBalancesAndJob({
+  if (existingTargetBalance > 0) {
+    return {
+      created: false,
       targetMonth,
-      userId,
-      sourceBalances,
-    });
-
-    if (!created.created || !created.createdBalances?.length) {
-      break;
-    }
-
-    createdMonths.push(targetMonth);
-    sourceMonth = targetMonth;
-    sourceBalances = await fetchMonthlyBalancesForRefresh(userId, sourceMonth);
+      sourceMonth,
+      reason: "target_exists" as const,
+    };
   }
 
-  return createdMonths;
+  const sourceBalances = await prisma.balance.findMany({
+    where: {
+      userId: params.userId,
+      date: sourceMonth,
+      isTestData: params.isTestData ?? false,
+    },
+    include: {
+      holding: {
+        include: {
+          category: true,
+          type: true,
+        },
+      },
+      user: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+
+  const parsedSourceBalances = BalanceSchema.array().safeParse(sourceBalances);
+  if (!parsedSourceBalances.success || parsedSourceBalances.data.length === 0) {
+    return {
+      created: false,
+      targetMonth,
+      sourceMonth,
+      reason: "missing_source" as const,
+    };
+  }
+
+  const created = await createMonthlyBalancesAndJob({
+    targetMonth,
+    userId: params.userId,
+    sourceBalances: parsedSourceBalances.data,
+    updateAccountingDate: params.updateAccountingDate,
+    isTestData: params.isTestData,
+  });
+
+  return {
+    created: created.created,
+    targetMonth,
+    sourceMonth,
+    reason: created.created ? "created" as const : "target_exists" as const,
+  };
 }
 
 export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
-  const targetMonth = firstDateOfMonth(referenceDate);
+  const { targetMonth } = getLaggedBalanceCreationWindow(referenceDate);
   const settings = await prisma.setting.findMany({
     include: {
       user: true,
@@ -649,10 +669,13 @@ export async function autoCreateMonthlyRefreshJobs(referenceDate = new Date()) {
   const createdUsers: string[] = [];
   const createdMonthsByUser: Record<string, string[]> = {};
   for (const setting of settings) {
-    const createdMonths = await backfillMonthlyRefreshJobsForUser(setting.userId, targetMonth);
-    if (createdMonths.length > 0) {
+    const created = await prepareLaggedMonthlyBalancesForUser({
+      userId: setting.userId,
+      referenceDate,
+    });
+    if (created.created) {
       createdUsers.push(setting.userId);
-      createdMonthsByUser[setting.userId] = createdMonths.map((month) => month.toISOString());
+      createdMonthsByUser[setting.userId] = [created.targetMonth.toISOString()];
     }
   }
 
