@@ -18,14 +18,28 @@ const statusClasses: Record<MonthlyRefreshOverview["status"], string> = {
   failed: "border-rose-200 bg-rose-50 text-rose-700",
 };
 
+function formatScheduledRun(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Taipei",
+  }).format(date);
+}
+
 export default function MonthlyRefreshStatus({
   overview,
   action,
+  nextUpdateAt,
 }: {
   overview?: MonthlyRefreshOverview;
   action?: React.ReactNode;
+  nextUpdateAt?: Date;
 }) {
-  if (!overview || overview.status === "idle") {
+  if (!overview || overview.status === "idle" || overview.estimatedCount === 0) {
     return null;
   }
 
@@ -54,10 +68,15 @@ export default function MonthlyRefreshStatus({
           Totals are estimated until the monthly quote refresh finishes.
         </p>
       )}
+      {nextUpdateAt && (
+        <p className="text-sm text-slate-500">
+          Next automatic update: {formatScheduledRun(nextUpdateAt)} (Asia/Taipei)
+        </p>
+      )}
       {overview.status === "partial_complete" && (
         <p className="text-sm text-slate-500">
-          Some assets could not be refreshed automatically. Retry only the failed assets when
-          you are ready.
+          Some assets could not be refreshed automatically. The next scheduled run will retry them,
+          or you can retry only the failed assets now.
         </p>
       )}
     </div>

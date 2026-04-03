@@ -17,6 +17,7 @@ import { redirect } from "next/navigation";
 import MonthlyRefreshStatus from "@/components/monthly-refresh-status";
 import RetryFailedButton from "@/components/balance/retry-failed-button";
 import { resolveBalanceAnalysisView } from "@/lib/balance-analysis";
+import { getNextCronRunAt } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: 'Balance',
@@ -59,6 +60,8 @@ export default async function Page(
   const queryView = resolveBalanceAnalysisView(searchParams?.view) as balanceAnalysisViewType;
   const balanceData = await fetchMonthlyBalance(queryDate);
   const refreshState = await fetchMonthlyRefreshState(queryDate);
+  const nextRefreshAt =
+    refreshState && refreshState.estimatedCount > 0 ? getNextCronRunAt(new Date()) : undefined;
   const currentMonthCreationState = session
     ? await fetchLaggedMonthBalanceCreationState(session.user.id, queryMonthKey)
     : undefined;
@@ -78,6 +81,7 @@ export default async function Page(
       <div className="flex flex-col gap-4">
           <MonthlyRefreshStatus
             overview={refreshState}
+            nextUpdateAt={nextRefreshAt}
             action={
               refreshState && refreshState.failedCount > 0 ? (
                 <RetryFailedButton date={queryDate} />
