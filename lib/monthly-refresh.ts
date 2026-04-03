@@ -142,16 +142,6 @@ export async function runRateLimitedTasks<T>(
   );
 }
 
-function isRetryWindow(referenceDate: Date, targetMonth: Date) {
-  const reference = getDatePartsInTimeZone(referenceDate);
-  const target = getDatePartsInTimeZone(targetMonth);
-  return (
-    reference.year === target.year &&
-    reference.month === target.month &&
-    reference.day === target.day
-  );
-}
-
 export function isLegacyMonthlyRefreshWindow(referenceDate = new Date()) {
   const reference = getDatePartsInTimeZone(referenceDate);
   return reference.day === 1 && reference.hour === MONTHLY_REFRESH_LOCAL_HOUR;
@@ -1116,13 +1106,12 @@ export async function processMonthlyRefreshBatch(
     },
   });
 
-  const retryFailed = isRetryWindow(referenceDate, job.targetMonth);
   const candidateBalances = await prisma.balance.findMany({
     where: {
       userId: job.userId,
       date: job.targetMonth,
       priceStatus: {
-        in: retryFailed ? ["pending", "failed"] : ["pending"],
+        in: ["pending", "failed"],
       },
     },
     include: {
@@ -1229,7 +1218,7 @@ export async function processMonthlyRefreshBatch(
   if (overview.pendingCount === 0 && overview.failedCount === 0) {
     nextStatus = "completed";
     completedAt = new Date();
-  } else if (overview.pendingCount === 0 && overview.failedCount > 0 && !retryFailed) {
+  } else if (overview.pendingCount === 0 && overview.failedCount > 0) {
     nextStatus = "partial_complete";
     completedAt = new Date();
     errorSummary = `${overview.failedCount} asset price refreshes failed`;

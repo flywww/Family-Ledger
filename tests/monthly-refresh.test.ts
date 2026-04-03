@@ -435,7 +435,7 @@ describe("monthly refresh workflow", () => {
     expect(marchProductionBalances).toHaveLength(0);
   });
 
-  it("deduplicates provider fetches, retries failed quotes, and completes the job", async () => {
+  it("deduplicates provider fetches, retries failed quotes on later runs, and completes the job", async () => {
     const { user, nextMonth, sourceBalances } = await seedMonthlySourceData();
 
     await createMonthlyBalancesAndJob({
@@ -496,17 +496,15 @@ describe("monthly refresh workflow", () => {
     expect(failedStock?.priceStatus).toBe("failed");
     expect(failedStock?.priceError).toContain("FMP unavailable");
 
-    await retryFailedMonthlyRefreshForMonth(user.id, nextMonth);
-
     fetchQuoteForSourceMock.mockImplementation(async (source) => ({
       ...source,
       price: 245,
       currency: "USD",
-      fetchedAt: new Date("2026-04-01T02:30:00+08:00"),
+      fetchedAt: new Date("2026-04-02T02:30:00+08:00"),
     }));
 
     const secondBatch = await processMonthlyRefreshBatch(
-      new Date("2026-04-01T02:30:00+08:00"),
+      new Date("2026-04-02T02:30:00+08:00"),
       5,
     );
 
@@ -529,6 +527,67 @@ describe("monthly refresh workflow", () => {
     expect(finalStock?.price).toBe(245);
     expect(finalStock?.priceStatus).toBe("success");
   }, 40_000);
+
+  it("manual retry still resets failed assets back to pending", async () => {
+    const { user, nextMonth, sourceBalances } = await seedMonthlySourceData();
+
+    await createMonthlyBalancesAndJob({
+      targetMonth: nextMonth,
+      userId: user.id,
+      sourceBalances: sourceBalances as any,
+    });
+
+    await prisma.balance.updateMany({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TSLA",
+        },
+      },
+      data: {
+        priceStatus: "failed",
+        priceError: "temporary provider failure",
+      },
+    });
+
+    await prisma.assetPriceSnapshot.updateMany({
+      where: {
+        userId: user.id,
+        targetMonth: nextMonth,
+        provider: "financialmodelingprep",
+        sourceKey: "TSLA",
+      },
+      data: {
+        status: "failed",
+        error: "temporary provider failure",
+      },
+    });
+
+    await retryFailedMonthlyRefreshForMonth(user.id, nextMonth);
+
+    const retriedBalance = await prisma.balance.findFirst({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TSLA",
+        },
+      },
+    });
+    const retriedSnapshot = await prisma.assetPriceSnapshot.findFirst({
+      where: {
+        userId: user.id,
+        targetMonth: nextMonth,
+        sourceKey: "TSLA",
+      },
+    });
+
+    expect(retriedBalance?.priceStatus).toBe("pending");
+    expect(retriedBalance?.priceError).toBeNull();
+    expect(retriedSnapshot?.status).toBe("pending");
+    expect(retriedSnapshot?.error).toBeNull();
+  });
 
   it("marks test-created records and processes 50 crypto assets in one invocation", async () => {
     const { user, nextMonth, sourceBalances } = await seedManyCryptoSourceData(50);
