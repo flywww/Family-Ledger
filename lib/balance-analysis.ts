@@ -25,18 +25,24 @@ export function applyBalanceAnalysisView(
   balances: FlattedBalanceType[],
   view: balanceAnalysisViewType,
 ): FlattedBalanceType[] {
-  const assetBalances = balances.filter((balance) => balance.holdingTypeName === "Assets");
   const filteredBalances =
     view === "all"
-      ? assetBalances
-      : assetBalances.filter(
+      ? balances
+      : balances.filter(
           (balance) => balance.holdingCategoryName === BALANCE_ANALYSIS_CATEGORY_MAP[view],
         );
 
-  const totalValue = filteredBalances.reduce((sum, balance) => sum + balance.value, 0);
+  const totalValueByType = filteredBalances.reduce<Record<string, number>>((totals, balance) => {
+    const typeName = balance.holdingTypeName;
+    totals[typeName] = (totals[typeName] ?? 0) + balance.value;
+    return totals;
+  }, {});
 
   return filteredBalances.map((balance) => ({
     ...balance,
-    percentage: totalValue > 0 ? balance.value / totalValue : 0,
+    percentage:
+      totalValueByType[balance.holdingTypeName] > 0
+        ? balance.value / totalValueByType[balance.holdingTypeName]
+        : 0,
   }));
 }

@@ -43,14 +43,29 @@ const MoneyCellFormatter = ({ value }: { value: number }) => {
     return <div className="text-right font-medium">{formattedPrice}</div>
 }
 
-const PercentageCell = ({ value }: { value: number }) => {
+const getPercentageClassName = (holdingTypeName: FlattedBalanceType["holdingTypeName"]) =>
+    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-white";
+
+const PercentageCell = ({
+    value,
+    holdingTypeName,
+}: {
+    value: number
+    holdingTypeName: FlattedBalanceType["holdingTypeName"]
+}) => {
     const formattedPercentage = new Intl.NumberFormat("en-US", {
         style: "percent",
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(value)
 
-    return <div className="w-20 pr-2 text-right font-medium tabular-nums">{formattedPercentage}</div>
+    return (
+        <div
+            className={`w-20 pr-2 text-right font-medium tabular-nums ${getPercentageClassName(holdingTypeName)}`}
+        >
+            {formattedPercentage}
+        </div>
+    )
 }
 
 const PercentageHeader = ({ column }: { column: Column<FlattedBalanceType> }) => {
@@ -199,7 +214,12 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         minSize: 80,
         maxSize: 80,
         header: ({column}) => <PercentageHeader column={column} />,
-        cell:({row}) => <PercentageCell value={row.original.percentage} />
+        cell:({row}) => (
+            <PercentageCell
+                value={row.original.percentage}
+                holdingTypeName={row.original.holdingTypeName}
+            />
+        )
     },
     {
         accessorKey: "holdingName",

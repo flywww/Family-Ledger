@@ -22,6 +22,9 @@ import BalanceTableSkeleton from "./skeleton/balance-table-skeleton";
 import { MonthKey } from "@/lib/utils";
 import { applyBalanceAnalysisView } from "@/lib/balance-analysis";
 
+const getPercentageClassName = (holdingTypeName: FlattedBalanceType["holdingTypeName"]) =>
+    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-white";
+
 export default function BalanceTable({
     queryDate,
     queryMonthKey,
@@ -115,11 +118,13 @@ export default function BalanceTable({
                             <div className="flex flex-row justify-between gap-2 p-2">
                                 <div className="flex flex-col justify-center items-start w-52">
                                     <span className="text-xs font-medium text-muted-foreground">
-                                        {new Intl.NumberFormat("en-US", {
-                                            style: "percent",
-                                            minimumFractionDigits: 0,
-                                            maximumFractionDigits: 0,
-                                        }).format(balance.percentage)}
+                                        <span className={getPercentageClassName(balance.holdingTypeName)}>
+                                            {new Intl.NumberFormat("en-US", {
+                                                style: "percent",
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            }).format(balance.percentage)}
+                                        </span>
                                     </span>
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
                                     <span className="text-xs text-muted-foreground">{balance.holdingName}</span>
