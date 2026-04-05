@@ -97,7 +97,7 @@ export const getPriceStatusMeta = (value: FlattedBalanceType["priceStatus"]) => 
     if (value === 'success') {
         return {
             label: 'Fresh',
-            className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+            className: 'text-emerald-600',
             icon: CheckCircle2,
         };
     }
@@ -105,14 +105,14 @@ export const getPriceStatusMeta = (value: FlattedBalanceType["priceStatus"]) => 
     if (value === 'failed') {
         return {
             label: 'Failed',
-            className: 'border-rose-200 bg-rose-50 text-rose-700',
+            className: 'text-rose-600',
             icon: XCircle,
         };
     }
 
     return {
         label: 'Estimated',
-        className: 'border-amber-200 bg-amber-50 text-amber-700',
+        className: 'text-amber-500',
         icon: AlertTriangle,
     };
 }
@@ -124,9 +124,9 @@ const PriceStatusCell = ({ value }: { value: FlattedBalanceType["priceStatus"] }
         <span
             title={label}
             aria-label={label}
-            className={`inline-flex items-center justify-center rounded-full border p-1 ${className}`}
+            className={`inline-flex items-center justify-center ${className}`}
         >
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-4 w-4" />
         </span>
     )
 }
@@ -232,10 +232,10 @@ const NoteCell = ({ row }: { row: any }) => {
 export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
         accessorKey: "priceStatus",
-        header: "Status",
-        size: 64,
-        minSize: 64,
-        maxSize: 64,
+        header: () => <span className="sr-only">Status</span>,
+        size: 32,
+        minSize: 32,
+        maxSize: 32,
         cell:({row}) => <PriceStatusCell value={row.original.priceStatus} />
     },
     {

@@ -135,9 +135,9 @@ export default function BalanceTable({
                                             <span
                                                 title={label}
                                                 aria-label={label}
-                                                className={`mt-1 inline-flex items-center justify-center rounded-full border p-1 ${className}`}
+                                                className={`mt-1 inline-flex items-center justify-center ${className}`}
                                             >
-                                                <Icon className="h-3.5 w-3.5" />
+                                                <Icon className="h-4 w-4" />
                                             </span>
                                         );
                                     })()}
