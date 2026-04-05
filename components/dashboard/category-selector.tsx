@@ -20,8 +20,6 @@ export default function CategorySelector ({
     categories: Category[],
     queryCategories: Category[]
 }){
-
-    const [categoryList, setCategoryList] = useState<Category[]>(categories);
     const [selectedCategories, setSelectedCategories] = useState<Category[]>(queryCategories) 
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -35,10 +33,15 @@ export default function CategorySelector ({
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
         const categoryNames = selectedCategories.map(category => category.name).toString();
+        if (params.get('categories') === categoryNames) {
+            updateDisplayCategories(categoryNames);
+            return;
+        }
+
         params.set('categories', categoryNames);
         updateDisplayCategories(categoryNames);
         replace(`${pathname}?${params.toString()}`); 
-    }, [selectedCategories])
+    }, [pathname, replace, searchParams, selectedCategories, updateDisplayCategories])
 
     return (
         <div>
@@ -49,7 +52,7 @@ export default function CategorySelector ({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    {categoryList.map( category => {
+                    {categories.map( category => {
                         return (
                             <DropdownMenuCheckboxItem
                                 key={category.id}

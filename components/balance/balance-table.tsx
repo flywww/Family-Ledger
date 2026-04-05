@@ -132,9 +132,12 @@ export default function BalanceTable({
                                     {(() => {
                                         const { icon: Icon, label, className } = getPriceStatusMeta(balance.priceStatus);
                                         return (
-                                            <span className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+                                            <span
+                                                title={label}
+                                                aria-label={label}
+                                                className={`mt-1 inline-flex items-center justify-center rounded-full border p-1 ${className}`}
+                                            >
                                                 <Icon className="h-3.5 w-3.5" />
-                                                {label}
                                             </span>
                                         );
                                     })()}

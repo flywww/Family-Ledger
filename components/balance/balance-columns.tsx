@@ -121,9 +121,12 @@ const PriceStatusCell = ({ value }: { value: FlattedBalanceType["priceStatus"] }
     const { icon: Icon, label, className } = getPriceStatusMeta(value);
 
     return (
-        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+        <span
+            title={label}
+            aria-label={label}
+            className={`inline-flex items-center justify-center rounded-full border p-1 ${className}`}
+        >
             <Icon className="h-3.5 w-3.5" />
-            {label}
         </span>
     )
 }
@@ -228,6 +231,14 @@ const NoteCell = ({ row }: { row: any }) => {
 
 export const columns: ColumnDef<FlattedBalanceType>[] = [
     {
+        accessorKey: "priceStatus",
+        header: "Status",
+        size: 64,
+        minSize: 64,
+        maxSize: 64,
+        cell:({row}) => <PriceStatusCell value={row.original.priceStatus} />
+    },
+    {
         accessorKey: "percentage",
         size: 80,
         minSize: 80,
@@ -279,11 +290,6 @@ export const columns: ColumnDef<FlattedBalanceType>[] = [
         accessorKey: "note",
         header: "Note",
         cell:({row}) => <NoteCell row={row} />
-    },
-    {
-        accessorKey: "priceStatus",
-        header: "Status",
-        cell:({row}) => <PriceStatusCell value={row.original.priceStatus} />
     },
     {
         id: "actions",
