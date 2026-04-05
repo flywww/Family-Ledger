@@ -3,7 +3,7 @@
 import { FlattedBalanceType, currencyType } from "@/lib/definitions"
 import { delay } from "@/lib/utils"
 import { ColumnDef, Column } from '@tanstack/react-table'
-import { MoreHorizontal, ArrowUpDown} from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -93,18 +93,37 @@ const getSortedHeader = ( column: Column<FlattedBalanceType>, headerName:string 
     )
 }
 
-const PriceStatusCell = ({ value }: { value: FlattedBalanceType["priceStatus"] }) => {
+export const getPriceStatusMeta = (value: FlattedBalanceType["priceStatus"]) => {
     if (value === 'success') {
-        return <span className="text-xs text-slate-500">Fresh</span>
+        return {
+            label: 'Fresh',
+            className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+            icon: CheckCircle2,
+        };
     }
 
-    const className = value === 'failed'
-        ? "border-rose-200 bg-rose-50 text-rose-700"
-        : "border-amber-200 bg-amber-50 text-amber-700";
+    if (value === 'failed') {
+        return {
+            label: 'Failed',
+            className: 'border-rose-200 bg-rose-50 text-rose-700',
+            icon: XCircle,
+        };
+    }
+
+    return {
+        label: 'Estimated',
+        className: 'border-amber-200 bg-amber-50 text-amber-700',
+        icon: AlertTriangle,
+    };
+}
+
+const PriceStatusCell = ({ value }: { value: FlattedBalanceType["priceStatus"] }) => {
+    const { icon: Icon, label, className } = getPriceStatusMeta(value);
 
     return (
-        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
-            {value === 'failed' ? 'Failed' : 'Estimated'}
+        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+            <Icon className="h-3.5 w-3.5" />
+            {label}
         </span>
     )
 }

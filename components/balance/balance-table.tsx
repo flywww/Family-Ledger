@@ -21,6 +21,7 @@ import { SettingContext } from "@/context/settingContext";
 import BalanceTableSkeleton from "./skeleton/balance-table-skeleton";
 import { MonthKey } from "@/lib/utils";
 import { applyBalanceAnalysisView } from "@/lib/balance-analysis";
+import { getPriceStatusMeta } from "./balance-columns";
 
 const getPercentageClassName = (holdingTypeName: FlattedBalanceType["holdingTypeName"]) =>
     holdingTypeName === "Liabilities" ? "text-rose-600" : "text-white";
@@ -128,11 +129,15 @@ export default function BalanceTable({
                                     </span>
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
                                     <span className="text-xs text-muted-foreground">{balance.holdingName}</span>
-                                    {balance.priceStatus !== 'success' && (
-                                        <span className="mt-1 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
-                                            {balance.priceStatus === 'failed' ? 'Price failed' : 'Estimated'}
-                                        </span>
-                                    )}
+                                    {(() => {
+                                        const { icon: Icon, label, className } = getPriceStatusMeta(balance.priceStatus);
+                                        return (
+                                            <span className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+                                                <Icon className="h-3.5 w-3.5" />
+                                                {label}
+                                            </span>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="flex flex-col justify-center items-end">
                                     <span className="text-sm font-semibold">{`${balance.quantity}`}</span>
