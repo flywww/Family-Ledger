@@ -6,9 +6,9 @@ import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { MonthKey, addMonthsToMonthKey, cn, getCalculatedMonth, getLastMonth, getMonthKey } from "@/lib/utils";
+import { MonthKey, addMonthsToMonthKey, cn, getLastMonth, getMonthKey } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
-import { useTransition } from "react";
+import { useEffect, useState } from "react";
 
 
 export default function Search({
@@ -23,14 +23,18 @@ export default function Search({
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const previousMonth = addMonthsToMonthKey(queryMonthKey, -1);
     const nextMonth = addMonthsToMonthKey(queryMonthKey, 1);
     const minMonth = getMonthKey(new Date(minYear,1,1));
     const maxMonth = getMonthKey(getLastMonth(new Date()));
 
-    const handleDateSearch = (date: Date) => {
-        const nextMonthKey = getMonthKey(date);
+    useEffect(() => {
+        setIsPending(false);
+        onPendingChange?.(false);
+    }, [queryMonthKey, onPendingChange]);
+
+    const handleMonthSearch = (nextMonthKey: MonthKey) => {
         if (nextMonthKey === queryMonthKey) {
             return;
         }
@@ -40,10 +44,13 @@ export default function Search({
         const params = new URLSearchParams(currentSearch);
         params.set('month', nextMonthKey);
         params.delete('date');
+        setIsPending(true);
         onPendingChange?.(true);
-        startTransition(() => {
-            router.replace(`${pathname}?${params.toString()}`);
-        });
+        router.replace(`${pathname}?${params.toString()}`);
+    }
+
+    const handleDateSearch = (date: Date) => {
+        handleMonthSearch(getMonthKey(date));
     }
 
     return(
@@ -52,7 +59,7 @@ export default function Search({
                     className="min-w-12"
                     variant="outline" 
                     size="icon"
-                    onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,-1))}
+                    onClick={()=>handleMonthSearch(previousMonth)}
                     disabled={isPending || previousMonth < minMonth}
                 > 
                 <ChevronLeft/>
@@ -80,7 +87,7 @@ export default function Search({
                 className="min-w-12"
                 variant="outline" 
                 size="icon"
-                onClick={()=>handleDateSearch(getCalculatedMonth(queryDate,1))}
+                onClick={()=>handleMonthSearch(nextMonth)}
                 disabled={isPending || nextMonth > maxMonth}
             > 
                 <ChevronRight/>

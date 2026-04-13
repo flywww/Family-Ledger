@@ -1,6 +1,6 @@
 import SummaryCard from "./summary-card";
 import { currencyType, typeListType, ValueData } from "@/lib/definitions";
-import { getCalculatedMonth } from "@/lib/utils";
+import { getCalculatedMonth, getMonthKey } from "@/lib/utils";
 import { enUSNumberFormat } from "../../lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
@@ -19,8 +19,10 @@ export default async function SummarySection({
             .reduce((total, valueData) => total + valueData.value, 0)
         return sum;
     }
-    const monthValueData = valueData?.filter(valueData => ((valueData.date.toISOString().slice(0,7) === queryDate.toISOString().slice(0,7)))) || [];
-    const lastMonthValueData = valueData?.filter(valueData => (valueData.date.toISOString().slice(0,7) === getCalculatedMonth(queryDate, -1).toISOString().slice(0,7))) || [];
+    const queryMonthKey = getMonthKey(queryDate);
+    const previousMonthKey = getMonthKey(getCalculatedMonth(queryDate, -1));
+    const monthValueData = valueData?.filter(valueData => getMonthKey(valueData.date) === queryMonthKey) || [];
+    const lastMonthValueData = valueData?.filter(valueData => getMonthKey(valueData.date) === previousMonthKey) || [];
     const sumOfAssets = sumCalculate( monthValueData, 'Assets');
     const sumOfLiabilities = sumCalculate( monthValueData, 'Liabilities');
     const lastMonthSumOfAssets = sumCalculate( lastMonthValueData, 'Assets');

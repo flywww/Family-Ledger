@@ -1,4 +1,5 @@
 import { ValueData } from "@/lib/definitions"
+import { getMonthKey } from "@/lib/utils"
 import DashboardLineChart from "./dashboard-line-chart"
 import DashboardPieChart from "./dashboard-pie-chart"
 
@@ -35,9 +36,10 @@ export default function ChartSection({
 
     // Pie Chart
     const assetsPieChartLabels = [...categories]
+    const queryMonthKey = getMonthKey(queryDate)
     const assetsPieChartData = valueData?.filter( data => {
         const isNotLiability = data.type.name !== 'Liabilities'
-        const isThisMonth = data.date.getTime() === queryDate.getTime();
+        const isThisMonth = getMonthKey(data.date) === queryMonthKey;
         return isNotLiability && isThisMonth
     }).reduce((dataSet, data) => {
         

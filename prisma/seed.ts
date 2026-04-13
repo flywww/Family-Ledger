@@ -6,6 +6,11 @@ const prisma = new PrismaClient();
 const DEMO_ACCOUNT = 'demo';
 const DEMO_PASSWORD = 'demo';
 const DISPLAY_CATEGORIES = ['Cash', 'Cryptocurrency', 'Listed stock', 'Unlisted stock'];
+const DEMO_MONTHS = 12;
+
+function repeatedNotes(note: string) {
+  return Array.from({ length: DEMO_MONTHS }, () => note);
+}
 
 type DemoHoldingSeed = {
   key: string;
@@ -27,16 +32,9 @@ const demoHoldings: DemoHoldingSeed[] = [
     category: 'Cash',
     type: 'Assets',
     currency: 'USD',
-    quantities: [1, 1, 1, 1, 1, 1],
-    prices: [18200, 18850, 19540, 20100, 20980, 21640],
-    notes: [
-      'Synthetic cash reserve for demo use only.',
-      'Synthetic cash reserve for demo use only.',
-      'Synthetic cash reserve for demo use only.',
-      'Synthetic cash reserve for demo use only.',
-      'Synthetic cash reserve for demo use only.',
-      'Synthetic cash reserve for demo use only.',
-    ],
+    quantities: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    prices: [16820, 17460, 18110, 17740, 18690, 19480, 19160, 20320, 21140, 20790, 21950, 22860],
+    notes: repeatedNotes('Synthetic cash reserve for demo use only.'),
   },
   {
     key: 'crypto',
@@ -45,16 +43,9 @@ const demoHoldings: DemoHoldingSeed[] = [
     category: 'Cryptocurrency',
     type: 'Assets',
     currency: 'USD',
-    quantities: [1.42, 1.45, 1.47, 1.5, 1.54, 1.58],
-    prices: [7600, 8120, 8450, 8890, 9340, 9780],
-    notes: [
-      'Synthetic crypto balance for charts and previews only.',
-      'Synthetic crypto balance for charts and previews only.',
-      'Synthetic crypto balance for charts and previews only.',
-      'Synthetic crypto balance for charts and previews only.',
-      'Synthetic crypto balance for charts and previews only.',
-      'Synthetic crypto balance for charts and previews only.',
-    ],
+    quantities: [1.28, 1.31, 1.35, 1.32, 1.39, 1.43, 1.4, 1.48, 1.52, 1.49, 1.57, 1.61],
+    prices: [6920, 7410, 8250, 7680, 8460, 9130, 8740, 9620, 10180, 9720, 10840, 11460],
+    notes: repeatedNotes('Synthetic crypto balance for charts and previews only.'),
   },
   {
     key: 'stock',
@@ -63,16 +54,9 @@ const demoHoldings: DemoHoldingSeed[] = [
     category: 'Listed stock',
     type: 'Assets',
     currency: 'USD',
-    quantities: [120, 120, 124, 124, 128, 130],
-    prices: [96, 99, 101, 104, 107, 111],
-    notes: [
-      'Synthetic listed equity holdings for demo only.',
-      'Synthetic listed equity holdings for demo only.',
-      'Synthetic listed equity holdings for demo only.',
-      'Synthetic listed equity holdings for demo only.',
-      'Synthetic listed equity holdings for demo only.',
-      'Synthetic listed equity holdings for demo only.',
-    ],
+    quantities: [112, 114, 116, 115, 118, 121, 120, 124, 127, 126, 130, 133],
+    prices: [88, 91, 95, 93, 98, 102, 100, 107, 111, 109, 116, 121],
+    notes: repeatedNotes('Synthetic listed equity holdings for demo only.'),
   },
   {
     key: 'private',
@@ -81,16 +65,9 @@ const demoHoldings: DemoHoldingSeed[] = [
     category: 'Unlisted stock',
     type: 'Assets',
     currency: 'USD',
-    quantities: [310, 310, 310, 320, 320, 325],
-    prices: [41, 43, 44, 45, 47, 48],
-    notes: [
-      'Synthetic private investment value, not linked to a real asset.',
-      'Synthetic private investment value, not linked to a real asset.',
-      'Synthetic private investment value, not linked to a real asset.',
-      'Synthetic private investment value, not linked to a real asset.',
-      'Synthetic private investment value, not linked to a real asset.',
-      'Synthetic private investment value, not linked to a real asset.',
-    ],
+    quantities: [295, 295, 300, 300, 304, 308, 308, 314, 318, 318, 324, 328],
+    prices: [38, 39, 41, 40, 42, 44, 43, 45, 47, 46, 49, 51],
+    notes: repeatedNotes('Synthetic private investment value, not linked to a real asset.'),
   },
   {
     key: 'debt',
@@ -99,23 +76,16 @@ const demoHoldings: DemoHoldingSeed[] = [
     category: 'Cash',
     type: 'Liabilities',
     currency: 'USD',
-    quantities: [1, 1, 1, 1, 1, 1],
-    prices: [9200, 9000, 8740, 8420, 8180, 7900],
-    notes: [
-      'Synthetic liability to keep demo net worth realistic-looking.',
-      'Synthetic liability to keep demo net worth realistic-looking.',
-      'Synthetic liability to keep demo net worth realistic-looking.',
-      'Synthetic liability to keep demo net worth realistic-looking.',
-      'Synthetic liability to keep demo net worth realistic-looking.',
-      'Synthetic liability to keep demo net worth realistic-looking.',
-    ],
+    quantities: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    prices: [10350, 10120, 9870, 9960, 9540, 9280, 9360, 9010, 8720, 8790, 8460, 8210],
+    notes: repeatedNotes('Synthetic liability to keep demo net worth realistic-looking.'),
   },
 ];
 
 function getDemoMonths(): Date[] {
   const today = new Date();
-  return Array.from({ length: 6 }, (_, index) => {
-    const month = new Date(today.getFullYear(), today.getMonth() - 6 + index, 1);
+  return Array.from({ length: DEMO_MONTHS }, (_, index) => {
+    const month = new Date(today.getFullYear(), today.getMonth() - DEMO_MONTHS + index, 1);
     month.setHours(0, 0, 0, 0);
     return month;
   });
@@ -143,17 +113,6 @@ async function ensureBaseData() {
   );
 }
 
-async function resetDemoUserData(userId: string) {
-  await prisma.$transaction([
-    prisma.cronRunLog.deleteMany({ where: { userId } }),
-    prisma.assetPriceSnapshot.deleteMany({ where: { userId } }),
-    prisma.monthlyRefreshJob.deleteMany({ where: { userId } }),
-    prisma.valueData.deleteMany({ where: { userId } }),
-    prisma.balance.deleteMany({ where: { userId } }),
-    prisma.holding.deleteMany({ where: { userId } }),
-  ]);
-}
-
 async function seedDemoUser() {
   const hashedPassword = await bcrypt.hash(DEMO_PASSWORD, 10);
   const demoUser = await prisma.user.upsert({
@@ -168,8 +127,6 @@ async function seedDemoUser() {
       password: hashedPassword,
     },
   });
-
-  await resetDemoUserData(demoUser.id);
 
   const [categories, types] = await Promise.all([
     prisma.category.findMany({
@@ -193,10 +150,21 @@ async function seedDemoUser() {
       throw new Error(`Missing seed dependency for holding ${holding.name}.`);
     }
 
-    const createdHolding = await prisma.holding.create({
-      data: {
+    const createdHolding = await prisma.holding.upsert({
+      where: {
+        name_symbol: {
+          name: holding.name,
+          symbol: holding.symbol,
+        },
+      },
+      create: {
         name: holding.name,
         symbol: holding.symbol,
+        categoryId: category.id,
+        typeId: type.id,
+        userId: demoUser.id,
+      },
+      update: {
         categoryId: category.id,
         typeId: type.id,
         userId: demoUser.id,
@@ -224,8 +192,17 @@ async function seedDemoUser() {
 
       const quantity = holding.quantities[monthIndex];
       const price = holding.prices[monthIndex];
-
-      balancesToCreate.push({
+      const existingBalance = await prisma.balance.findFirst({
+        where: {
+          userId: demoUser.id,
+          holdingId: seededHolding.id,
+          date: months[monthIndex],
+        },
+        select: {
+          id: true,
+        },
+      });
+      const balanceData = {
         date: months[monthIndex],
         holdingId: seededHolding.id,
         quantity,
@@ -237,36 +214,59 @@ async function seedDemoUser() {
         priceStatus: 'success' as const,
         priceSource: 'demo-seed',
         isTestData: false,
-      });
+      };
+
+      if (existingBalance) {
+        await prisma.balance.update({
+          where: {
+            id: existingBalance.id,
+          },
+          data: balanceData,
+        });
+      } else {
+        balancesToCreate.push(balanceData);
+      }
     }
   }
 
-  await prisma.balance.createMany({
-    data: balancesToCreate,
-  });
+  if (balancesToCreate.length > 0) {
+    await prisma.balance.createMany({
+      data: balancesToCreate,
+    });
+  }
 
-  const createdValueData = months.flatMap((month, monthIndex) =>
-    demoHoldings.map((holding) => {
+  for (const [monthIndex, month] of months.entries()) {
+    for (const holding of demoHoldings) {
       const seededHolding = createdHoldings.get(holding.key);
 
       if (!seededHolding) {
         throw new Error(`Failed to create value data for ${holding.name}.`);
       }
 
-      return {
-        date: month,
-        categoryId: seededHolding.categoryId,
-        typeId: seededHolding.typeId,
-        value: Number((holding.quantities[monthIndex] * holding.prices[monthIndex]).toFixed(2)),
-        userId: demoUser.id,
-        isTestData: false,
-      };
-    }),
-  );
-
-  await prisma.valueData.createMany({
-    data: createdValueData,
-  });
+      await prisma.valueData.upsert({
+        where: {
+          date_categoryId_typeId_userId: {
+            date: month,
+            categoryId: seededHolding.categoryId,
+            typeId: seededHolding.typeId,
+            userId: demoUser.id,
+          },
+        },
+        create: {
+          date: month,
+          categoryId: seededHolding.categoryId,
+          typeId: seededHolding.typeId,
+          value: Number((holding.quantities[monthIndex] * holding.prices[monthIndex]).toFixed(2)),
+          userId: demoUser.id,
+          isTestData: false,
+        },
+        update: {
+          value: Number((holding.quantities[monthIndex] * holding.prices[monthIndex]).toFixed(2)),
+          isTestData: false,
+        },
+      });
+    }
+  }
 
   const latestMonth = months.at(-1);
 
@@ -305,15 +305,23 @@ async function seedConfiguredUser() {
 
   const hashedPassword = await bcrypt.hash(seedPassword, 10);
 
-  await prisma.user.upsert({
+  const existingUser = await prisma.user.findUnique({
     where: {
       account: seedAccount,
     },
-    create: {
-      account: seedAccount,
-      password: hashedPassword,
+    select: {
+      id: true,
     },
-    update: {
+  });
+
+  if (existingUser) {
+    console.log(`Skipping SEED_ACCOUNT update for existing account ${seedAccount}.`);
+    return;
+  }
+
+  await prisma.user.create({
+    data: {
+      account: seedAccount,
       password: hashedPassword,
     },
   });
