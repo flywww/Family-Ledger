@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import CredentialsProviders from 'next-auth/providers/credentials';
-import { UserSchema } from "./lib/definitions";
+import { LoginSchema } from "./lib/definitions";
 import { fetchUserWithAccount } from "./lib/actions";
 import bcrypt from 'bcryptjs'
 
@@ -14,7 +14,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                 password: {label: "Password", type: "password"},
             },
             async authorize(credentials){
-                const parsedCredentials = UserSchema.safeParse(credentials);
+                const parsedCredentials = LoginSchema.safeParse(credentials);
                 if(parsedCredentials.success){
                     const { account, password } = parsedCredentials.data;
                     const user = await fetchUserWithAccount(account);

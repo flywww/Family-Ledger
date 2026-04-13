@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/form"
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { User, UserSchema } from "@/lib/definitions"
+import { LoginCredentials, LoginSchema } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { authenticate } from "@/lib/actions";
@@ -21,15 +21,15 @@ import { useState } from "react";
 export default function LoginForm(){
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [loginMessage, setLoginMessage] = useState<string>("");
-    const form = useForm<User>({
-        resolver: zodResolver(UserSchema),
+    const form = useForm<LoginCredentials>({
+        resolver: zodResolver(LoginSchema),
         defaultValues: {
             account: "",
             password: "",
         },
     })
 
-    const onSubmit = async (values: User) => {
+    const onSubmit = async (values: LoginCredentials) => {
         try {
             setIsLoading(true);
             const result = await authenticate(undefined, values);
@@ -84,6 +84,7 @@ export default function LoginForm(){
                         { isLoading ? <LoadingSpinner size={6}/> : "Log in" }
                     </Button>
                     <p className="text-sm text-red-500">{loginMessage}</p>
+                    <p className="text-sm text-muted-foreground">Demo login: `demo` / `demo`</p>
                     <br />
                     <br />
                 </form>

@@ -35,6 +35,10 @@ export const UserSchema = z.object({
     updatedAt: z.date().optional(),
     createdAt: z.date().optional(),
 })
+export const LoginSchema = z.object({
+    account: z.string().min(1, "Account is required."),
+    password: z.string().min(1, "Password is required."),
+})
 export const UserCreateSchema = UserSchema.omit({
     id: true,
     updatedAt: true,
@@ -45,6 +49,7 @@ export const UserUpdateSchema = UserCreateSchema.partial().extend({
 })
 
 export type User = z.infer<typeof UserSchema>
+export type LoginCredentials = z.infer<typeof LoginSchema>
 export type UserCreateType = z.infer<typeof UserCreateSchema>
 export type UserUpdateType = z.infer<typeof UserUpdateSchema>
 

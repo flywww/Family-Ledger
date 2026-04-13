@@ -21,6 +21,7 @@ import {
     Setting,
     SettingUpdateType,
     BalanceCreateSchema,
+    LoginCredentials,
     currencyType,
     FlattedBalanceType,
     ValueDataCreateSchema,
@@ -869,7 +870,7 @@ export async function updatePassword( account: string, password: string ){
 
 export async function authenticate(
     prevState: string | undefined,
-    formData: User,
+    formData: LoginCredentials,
 ){
     try {
         await signIn('credentials', formData);
