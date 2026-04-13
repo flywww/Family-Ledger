@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams, usePathname, useRouter } from "next/navigation"
+import { useSearchParams, usePathname } from "next/navigation"
 import { minYear } from "@/lib/data";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -8,31 +8,21 @@ import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { MonthKey, addMonthsToMonthKey, cn, getLastMonth, getMonthKey } from "@/lib/utils";
 import { MonthPicker } from "./ui/month-picker";
-import { useEffect, useState } from "react";
 
 
 export default function Search({
     queryDate,
     queryMonthKey,
-    onPendingChange,
 }:{
     queryDate: Date,
     queryMonthKey: MonthKey,
-    onPendingChange?: (pending: boolean) => void,
 }){
     const searchParams = useSearchParams();
     const pathname = usePathname();
-    const router = useRouter();
-    const [isPending, setIsPending] = useState(false);
     const previousMonth = addMonthsToMonthKey(queryMonthKey, -1);
     const nextMonth = addMonthsToMonthKey(queryMonthKey, 1);
     const minMonth = getMonthKey(new Date(minYear,1,1));
     const maxMonth = getMonthKey(getLastMonth(new Date()));
-
-    useEffect(() => {
-        setIsPending(false);
-        onPendingChange?.(false);
-    }, [queryMonthKey, onPendingChange]);
 
     const handleMonthSearch = (nextMonthKey: MonthKey) => {
         if (nextMonthKey === queryMonthKey) {
@@ -44,9 +34,7 @@ export default function Search({
         const params = new URLSearchParams(currentSearch);
         params.set('month', nextMonthKey);
         params.delete('date');
-        setIsPending(true);
-        onPendingChange?.(true);
-        router.replace(`${pathname}?${params.toString()}`);
+        window.location.assign(`${pathname}?${params.toString()}`);
     }
 
     const handleDateSearch = (date: Date) => {
@@ -60,7 +48,7 @@ export default function Search({
                     variant="outline" 
                     size="icon"
                     onClick={()=>handleMonthSearch(previousMonth)}
-                    disabled={isPending || previousMonth < minMonth}
+                    disabled={previousMonth < minMonth}
                 > 
                 <ChevronLeft/>
             </Button>
@@ -68,7 +56,6 @@ export default function Search({
                 <PopoverTrigger asChild>
                     <Button
                         variant={"outline"}
-                        disabled={isPending}
                         className={cn("w-full justify-start text-left font-normal", !queryDate && "text-muted-foreground")}
                     >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -88,7 +75,7 @@ export default function Search({
                 variant="outline" 
                 size="icon"
                 onClick={()=>handleMonthSearch(nextMonth)}
-                disabled={isPending || nextMonth > maxMonth}
+                disabled={nextMonth > maxMonth}
             > 
                 <ChevronRight/>
             </Button>
