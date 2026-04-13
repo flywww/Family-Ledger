@@ -13,9 +13,11 @@ import { MonthPicker } from "./ui/month-picker";
 export default function Search({
     queryDate,
     queryMonthKey,
+    onPendingChange,
 }:{
     queryDate: Date,
     queryMonthKey: MonthKey,
+    onPendingChange?: (pending: boolean) => void,
 }){
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -34,6 +36,7 @@ export default function Search({
         const params = new URLSearchParams(currentSearch);
         params.set('month', nextMonthKey);
         params.delete('date');
+        onPendingChange?.(true);
         window.location.assign(`${pathname}?${params.toString()}`);
     }
 
