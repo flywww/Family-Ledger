@@ -24,7 +24,7 @@ import { applyBalanceAnalysisView } from "@/lib/balance-analysis";
 import { getPriceStatusMeta } from "./balance-columns";
 
 const getPercentageClassName = (holdingTypeName: FlattedBalanceType["holdingTypeName"]) =>
-    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-white";
+    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-foreground";
 
 export default function BalanceTable({
     queryDate,
@@ -117,7 +117,7 @@ export default function BalanceTable({
                     analyzedMonthBalanceData.map((balance) => (
                         <div key={balance.id} className="rounded-md border my-2">
                             <div className="flex flex-row justify-between gap-2 p-2">
-                                <div className="flex flex-col justify-center items-start w-52">
+                                <div className="flex min-w-0 flex-1 flex-col justify-center items-start">
                                     <span className="text-xs font-medium text-muted-foreground">
                                         <span className={getPercentageClassName(balance.holdingTypeName)}>
                                             {new Intl.NumberFormat("en-US", {
@@ -128,7 +128,7 @@ export default function BalanceTable({
                                         </span>
                                     </span>
                                     <span className="text-lg font-semibold">{balance.holdingSymbol}</span>
-                                    <span className="text-xs text-muted-foreground">{balance.holdingName}</span>
+                                    <span className="max-w-full truncate text-xs text-muted-foreground">{balance.holdingName}</span>
                                     {(() => {
                                         const { icon: Icon, label, className } = getPriceStatusMeta(balance.priceStatus);
                                         return (

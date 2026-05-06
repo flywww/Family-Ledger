@@ -27,10 +27,10 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
-import { 
-    Popover, 
-    PopoverContent, 
-    PopoverTrigger 
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
 } from "../ui/popover";
 import { Input } from "@/components/ui/input"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
@@ -49,9 +49,9 @@ export default function CreateHoldingForm({
     setHoldingDBIsUpdated,
     selectedCategory,
     selectedType,
-    isListedStockOrCrypto, 
+    isListedStockOrCrypto,
 }: {
-    holdingDBIsUpdated: boolean, 
+    holdingDBIsUpdated: boolean,
     setHoldingDBIsUpdated: (updated: boolean) => void,
     selectedCategory: Category | undefined,
     selectedType: Type | undefined,
@@ -59,8 +59,10 @@ export default function CreateHoldingForm({
 }){
     const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingCreateType[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+    const [submitSucceeded, setSubmitSucceeded] = useState(false);
     const { data: session } = useSession();
-    
+
     const form = useForm<HoldingCreateType>({
         resolver: zodResolver(HoldingCreateSchema),
         defaultValues:{
@@ -81,11 +83,20 @@ export default function CreateHoldingForm({
         }
         setQueriedHoldingList(data);
     },300)
-    
-    const handleFormSubmit = (data: HoldingCreateType) => {
-        createHolding(data);
-        setHoldingDBIsUpdated(true);
-        setDialogOpen(false);
+
+    const handleFormSubmit = async (data: HoldingCreateType) => {
+        setSubmitMessage(null);
+        setSubmitSucceeded(false);
+        try {
+            await createHolding(data);
+            setHoldingDBIsUpdated(true);
+            setSubmitSucceeded(true);
+            setSubmitMessage("Holding saved. It is available in the holding list.");
+            window.setTimeout(() => setDialogOpen(false), 700);
+        } catch (error) {
+            console.error("holding submit failed", error);
+            setSubmitMessage("Holding could not be saved. Check required fields and try again.");
+        }
     }
 
     return(
@@ -102,13 +113,13 @@ export default function CreateHoldingForm({
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form 
-                        className="space-y-1"
+                    <form
+                        className="w-full space-y-1"
                         onSubmit={(event) => {
                             form.setValue("categoryId", selectedCategory?.id || 0);
-                            form.setValue("typeId", selectedType?.id || 0); 
+                            form.setValue("typeId", selectedType?.id || 0);
                             event.stopPropagation(); // Prevent submit balance form
-                            form.handleSubmit((data) => {                
+                            form.handleSubmit((data) => {
                                 handleFormSubmit(data)
                             }, (errors) => {
                                 console.log('holding validation errors: ', errors);
@@ -128,7 +139,7 @@ export default function CreateHoldingForm({
                                                     variant='outline'
                                                     role="combobox"
                                                     className={cn(
-                                                        "w-80 justify-between",
+                                                        "w-full justify-between sm:w-80",
                                                         !field.value && "text-muted-foreground"
                                                     )}
                                                     disabled={!isListedStockOrCrypto}
@@ -140,7 +151,7 @@ export default function CreateHoldingForm({
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-80 p-0">
+                                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 sm:w-80">
                                             <Command>
                                                 <CommandInput
                                                     placeholder="Search holdings"
@@ -179,18 +190,18 @@ export default function CreateHoldingForm({
                             )}
                         />
 
-                        <FormField 
+                        <FormField
                             control={form.control}
                             name="name"
                             render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input 
-                                            type="text" 
-                                            className="w-80" 
+                                        <Input
+                                            type="text"
+                                            className="w-full sm:w-80"
                                             placeholder="Input name of assets/liability"
-                                            readOnly={isListedStockOrCrypto} 
+                                            readOnly={isListedStockOrCrypto}
                                             {...field}
                                         />
                                     </FormControl>
@@ -206,22 +217,38 @@ export default function CreateHoldingForm({
                                 <FormItem>
                                     <FormLabel>Symbol</FormLabel>
                                     <FormControl>
-                                        <Input 
+                                        <Input
                                             type="text"
-                                            className="w-80"
+                                            className="w-full sm:w-80"
                                             placeholder="Input symbol of assets/liability"
-                                            readOnly={isListedStockOrCrypto}     
+                                            readOnly={isListedStockOrCrypto}
                                             {...field}
                                         />
                                     </FormControl>
                                 </FormItem>
                             )}
                         />
+                        {form.formState.isSubmitting && (
+                            <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+                                Saving holding...
+                            </p>
+                        )}
+                        {submitMessage && (
+                            <p
+                                className={cn("text-sm", submitSucceeded ? "text-emerald-600" : "text-destructive")}
+                                role={submitSucceeded ? "status" : "alert"}
+                                aria-live={submitSucceeded ? "polite" : undefined}
+                            >
+                                {submitMessage}
+                            </p>
+                        )}
                         <DialogFooter className="pt-4">
                             <DialogClose asChild>
                                 <Button variant="secondary">Cancel</Button>
                             </DialogClose>
-                            <Button type="submit">Add</Button>
+                            <Button type="submit" disabled={form.formState.isSubmitting}>
+                                {form.formState.isSubmitting ? "Saving..." : "Add"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

@@ -7,9 +7,14 @@
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
     "start": "next start",
+    "typecheck": "tsc --project tsconfig.typecheck.json --noEmit",
     "lint": "eslint . --max-warnings=0",
+    "design:check": "node scripts/design-check.mjs",
+    "architecture:check": "node scripts/architecture-check.mjs",
+    "docs:check": "node scripts/docs-check.mjs",
+    "harness:check": "pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run design:check && pnpm run architecture:check && pnpm run docs:check",
     "test": "node scripts/run-tests.mjs",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run tests/balance-analysis.test.ts tests/monthly-refresh-route.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

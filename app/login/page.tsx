@@ -9,8 +9,8 @@ import LoginForm from "@/components/login/login-form"
 
 export default function LoginPage(){
     return(
-        <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-blue-500 to-slate-500 overflow-hidden sm:overflow-auto">
-            <Card className="w-full max-w-sm">
+        <div className="flex min-h-screen flex-col items-center justify-center overflow-hidden bg-muted p-4 sm:overflow-auto">
+            <Card className="w-full max-w-sm shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-2xl text-center">Family Ledger</CardTitle>
                     <CardDescription>

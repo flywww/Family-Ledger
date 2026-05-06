@@ -50,6 +50,7 @@ export default function Search({
                     className="min-w-12"
                     variant="outline" 
                     size="icon"
+                    aria-label="Previous month"
                     onClick={()=>handleMonthSearch(previousMonth)}
                     disabled={previousMonth < minMonth}
                 > 
@@ -77,6 +78,7 @@ export default function Search({
                 className="min-w-12"
                 variant="outline" 
                 size="icon"
+                aria-label="Next month"
                 onClick={()=>handleMonthSearch(nextMonth)}
                 disabled={nextMonth > maxMonth}
             > 

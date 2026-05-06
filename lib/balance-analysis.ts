@@ -25,10 +25,11 @@ export function applyBalanceAnalysisView(
   balances: FlattedBalanceType[],
   view: balanceAnalysisViewType,
 ): FlattedBalanceType[] {
+  const assetBalances = balances.filter((balance) => balance.holdingTypeName === "Assets");
   const filteredBalances =
     view === "all"
-      ? balances
-      : balances.filter(
+      ? assetBalances
+      : assetBalances.filter(
           (balance) => balance.holdingCategoryName === BALANCE_ANALYSIS_CATEGORY_MAP[view],
         );
 

@@ -6,6 +6,7 @@ const { fetchQuoteForSourceMock, fetchCryptoQuotesBatchFromAPIMock } = vi.hoiste
   fetchCryptoQuotesBatchFromAPIMock: vi.fn(),
 }));
 const TEST_TIMEOUT_MS = 15_000;
+const TEST_SCHEMA_PREFIX = "family_ledger_test_";
 
 vi.mock("../lib/pricing", async () => {
   const actual = await vi.importActual<typeof import("../lib/pricing")>("../lib/pricing");
@@ -29,7 +30,31 @@ import {
   runRateLimitedTasks,
 } from "../lib/monthly-refresh";
 
+function assertIsolatedTestDatabase() {
+  const databaseUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("Refusing to run database-backed tests without DATABASE_URL.");
+  }
+
+  let schemaName: string | null = null;
+
+  try {
+    schemaName = new URL(databaseUrl).searchParams.get("schema");
+  } catch {
+    throw new Error("Refusing to run database-backed tests with an invalid DATABASE_URL.");
+  }
+
+  if (!schemaName?.startsWith(TEST_SCHEMA_PREFIX)) {
+    throw new Error(
+      `Refusing to reset database outside an isolated test schema. Expected schema prefix ${TEST_SCHEMA_PREFIX}.`,
+    );
+  }
+}
+
 async function resetDatabase() {
+  assertIsolatedTestDatabase();
+
   await prisma.cronRunLog.deleteMany();
   await prisma.assetPriceSnapshot.deleteMany();
   await prisma.monthlyRefreshJob.deleteMany();

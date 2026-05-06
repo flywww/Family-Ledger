@@ -32,6 +32,7 @@ export default function LoginForm(){
     const onSubmit = async (values: LoginCredentials) => {
         try {
             setIsLoading(true);
+            setLoginMessage("");
             const result = await authenticate(undefined, values);
             if(result.error){
                 setIsLoading(false);
@@ -83,8 +84,19 @@ export default function LoginForm(){
                     >
                         { isLoading ? <LoadingSpinner size={6}/> : "Log in" }
                     </Button>
-                    <p className="text-sm text-red-500">{loginMessage}</p>
-                    <p className="text-sm text-muted-foreground">Demo login: `demo` / `demo`</p>
+                    {isLoading && (
+                        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+                            Signing in...
+                        </p>
+                    )}
+                    {loginMessage && (
+                        <p className="text-sm text-destructive" role="alert">
+                            {loginMessage}
+                        </p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                        Demo login: <code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground">demo</code> / <code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground">demo</code>
+                    </p>
                     <br />
                     <br />
                 </form>

@@ -44,7 +44,7 @@ const MoneyCellFormatter = ({ value }: { value: number }) => {
 }
 
 const getPercentageClassName = (holdingTypeName: FlattedBalanceType["holdingTypeName"]) =>
-    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-white";
+    holdingTypeName === "Liabilities" ? "text-rose-600" : "text-foreground";
 
 const PercentageCell = ({
     value,
@@ -183,7 +183,11 @@ const QuantityCell = ({ row }: { row: any }) => {
                     }
                 }}
             ></Input>
-            { isLoading && <LoadingSpinner size={4}/> }
+            { isLoading && (
+                <span role="status" aria-live="polite" aria-label="Saving quantity">
+                    <LoadingSpinner size={4}/>
+                </span>
+            ) }
         </div>
     )
 }
@@ -224,7 +228,11 @@ const NoteCell = ({ row }: { row: any }) => {
                     }
                 }}
             ></Input>
-            { isLoading && <LoadingSpinner size={4}/> }
+            { isLoading && (
+                <span role="status" aria-live="polite" aria-label="Saving note">
+                    <LoadingSpinner size={4}/>
+                </span>
+            ) }
         </div>
     )
 }

@@ -14,16 +14,40 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                 password: {label: "Password", type: "password"},
             },
             async authorize(credentials){
-                const parsedCredentials = LoginSchema.safeParse(credentials);
-                if(parsedCredentials.success){
+                try {
+                    const parsedCredentials = LoginSchema.safeParse(credentials);
+                    console.log(`[Auth] Credentials validation result:`, parsedCredentials);
+
+                    if(!parsedCredentials.success){
+                        console.error(`[Auth] Credentials validation failed:`, parsedCredentials.error);
+                        return null;
+                    }
+
                     const { account, password } = parsedCredentials.data;
+                    console.log(`[Auth] Attempting login for account: ${account}`);
+
                     const user = await fetchUserWithAccount(account);
-                    
-                    if(!user) return null;
-                    const passwordsMatch = await bcrypt.compare(password, user.password)
-                    if(passwordsMatch) return {id: user.id, account: user.account};
+                    console.log(`[Auth] User lookup result:`, user ? `User found (id: ${user.id})` : `User not found`);
+
+                    if(!user) {
+                        console.error(`[Auth] User not found for account: ${account}`);
+                        return null;
+                    }
+
+                    const passwordsMatch = await bcrypt.compare(password, user.password);
+                    console.log(`[Auth] Password match result: ${passwordsMatch}`);
+
+                    if(passwordsMatch) {
+                        console.log(`[Auth] Login successful for account: ${account}`);
+                        return {id: user.id, account: user.account};
+                    }
+
+                    console.error(`[Auth] Password mismatch for account: ${account}`);
+                    return null;
+                } catch (error) {
+                    console.error(`[Auth] Unexpected error during authorization:`, error);
+                    return null;
                 }
-                return null;
             },
         }),
     ],

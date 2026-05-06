@@ -1,15 +1,15 @@
 'use client'
 
 
-import { 
-    BalanceSchema, 
-    Balance, 
-    Category, 
-    CategorySchema, 
-    Holding, 
-    Type, 
+import {
+    BalanceSchema,
+    Balance,
+    Category,
+    CategorySchema,
+    Holding,
+    Type,
     BalanceUpdateType,
-    BalanceUpdateSchema} 
+    BalanceUpdateSchema}
 from "@/lib/definitions";
 import {
     Form,
@@ -28,17 +28,17 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
-import { 
-    Popover, 
-    PopoverContent, 
-    PopoverTrigger 
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
 } from "../ui/popover";
-import { 
-    SelectContent, 
+import {
+    SelectContent,
     SelectTrigger,
-    SelectValue, 
-    Select, 
-    SelectItem } 
+    SelectValue,
+    Select,
+    SelectItem }
 from "../ui/select";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -53,10 +53,10 @@ import { format } from "date-fns";
 import { minYear } from "@/lib/data";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useState } from "react";
-import { 
-    fetchCategories, 
-    fetchTypes, 
-    fetchHoldings, 
+import {
+    fetchCategories,
+    fetchTypes,
+    fetchHoldings,
     fetchHoldingsWithHoldingId,
     fetchCryptoPriceFromAPI,
     fetchListedStockPriceFromAPI,
@@ -78,22 +78,23 @@ export default function EditBalanceForm({
                 categoryId: balance.holding?.category?.id,
                 typeId: balance.holding?.type?.id
             },
-            date: balance.date, 
+            date: balance.date,
             quantity: balance.quantity,
             price: balance.price,
             value: balance.value,
             currency: balance.currency,
-            userId: balance.userId, 
+            userId: balance.userId,
             note: balance.note,
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);
     const [typeList, setTypeList] = useState<Type[]>([]);
-    const [holdingList, setHoldingList] = useState<Holding[]>([]); 
+    const [holdingList, setHoldingList] = useState<Holding[]>([]);
     const [holdingDBIsUpdated, setHoldingDBIsUpdated] = useState<boolean>(true)
     const [selectedCategory, setSelectedCategory] = useState<Category>();
     const [selectedType, setSelectedType] = useState<Type>();
     const [selectedDate, setSelectedDate] = useState<Date>(balance.date)
+    const [submitMessage, setSubmitMessage] = useState<string | null>(null);
     const categoryId = form.watch('holding.category.id');
     const price = form.watch('price');
     const quantity = form.watch('quantity');
@@ -103,7 +104,7 @@ export default function EditBalanceForm({
     useEffect(() => {
         const getCategories = async () => {
             const categoryData = await fetchCategories();
-            categoryData && setCategoryList(categoryData);       
+            categoryData && setCategoryList(categoryData);
         }
         const getTypes = async () => {
             const typeData = await fetchTypes();
@@ -149,19 +150,24 @@ export default function EditBalanceForm({
         }
     }
 
-    function onSubmit(values: BalanceUpdateType){
-        updateBalance(values, values.date ?? balance.date);
-        //TODO: Add transition UI
+    async function onSubmit(values: BalanceUpdateType){
+        setSubmitMessage(null);
+        try {
+            await updateBalance(values, values.date ?? balance.date);
+        } catch (error) {
+            console.error("update balance submit failed", error);
+            setSubmitMessage("Balance could not be saved. Check required fields and try again.");
+        }
     }
-    
+
     return(
         <div className="flex flex-col justify-start items-start">
             <Form {...form}>
-                <form   
-                    onSubmit={form.handleSubmit(onSubmit, (errors) => { 
+                <form
+                    onSubmit={form.handleSubmit(onSubmit, (errors) => {
                         console.log('update balance form validation Errors:', errors)})
-                    } 
-                    className="space-y-2"
+                    }
+                    className="w-full space-y-2"
                 >
                     <FormField
                         control={form.control}
@@ -169,7 +175,7 @@ export default function EditBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Category </FormLabel>
-                                <Select 
+                                <Select
                                     {...field}
                                     value={ field.value ? field.value.toString() : ""}
                                     onValueChange={(value) => {
@@ -178,18 +184,18 @@ export default function EditBalanceForm({
                                     }}
                                 >
                                     <FormControl>
-                                        <SelectTrigger className="w-80">
+                                        <SelectTrigger className="w-full sm:w-80">
                                             <SelectValue/>
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent className="w-80">
+                                    <SelectContent className="w-[var(--radix-select-trigger-width)] sm:w-80">
                                         {categoryList.map( (category) => (
                                             <SelectItem
-                                                key={ category.id } 
+                                                key={ category.id }
                                                 value={ category.id.toString() }
-                                            > 
-                                                {category.name} 
-                                            </SelectItem> 
+                                            >
+                                                {category.name}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -204,27 +210,27 @@ export default function EditBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Type </FormLabel>
-                                    <Select 
+                                    <Select
                                         {...field}
                                         value={ field.value ? field.value.toString() : ""}
-                                        onValueChange={(value) => { 
+                                        onValueChange={(value) => {
                                             field.onChange(value);
                                             setSelectedType(typeList.find((type) => value === type.id?.toString()));
-                                        }} 
+                                        }}
                                     >
                                         <FormControl>
-                                            <SelectTrigger className="w-80">
+                                            <SelectTrigger className="w-full sm:w-80">
                                                 <SelectValue/>
                                             </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent className="w-80">
+                                        <SelectContent className="w-[var(--radix-select-trigger-width)] sm:w-80">
                                             { typeList.map( (type) => (
                                                 <SelectItem
-                                                    key={ type.id } 
+                                                    key={ type.id }
                                                     value={ type.id.toString() }
-                                                > 
-                                                    {type.name} 
-                                                </SelectItem> 
+                                                >
+                                                    {type.name}
+                                                </SelectItem>
                                             ))}
                                     </SelectContent>
                                 </Select>
@@ -242,11 +248,11 @@ export default function EditBalanceForm({
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button 
+                                            <Button
                                                 variant="outline"
                                                 role="combobox"
                                                 className={cn(
-                                                    "w-80 justify-between",
+                                                    "w-full justify-between sm:w-80",
                                                     !field.value && "text-muted-foreground"
                                                 )}
                                             >
@@ -257,7 +263,7 @@ export default function EditBalanceForm({
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-80 p-0">
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 sm:w-80">
                                         <Command>
                                             <CommandInput
                                                 placeholder="Search holdings"
@@ -282,7 +288,7 @@ export default function EditBalanceForm({
                                                                     holding.id === field.value ? "opacity-100" : "opacity-0"
                                                                 )}
                                                             />
-                                                        </CommandItem>    
+                                                        </CommandItem>
                                                     ))}
                                                 </CommandGroup>
                                             </CommandList>
@@ -300,9 +306,9 @@ export default function EditBalanceForm({
                             <FormItem>
                                 <FormLabel> Quantity </FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        className="w-80" 
+                                    <Input
+                                        type="number"
+                                        className="w-full sm:w-80"
                                         placeholder="Category"
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
@@ -320,10 +326,10 @@ export default function EditBalanceForm({
                             <FormItem>
                                 <FormLabel> Price </FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        className="w-80" 
-                                        placeholder="Price" 
+                                    <Input
+                                        type="number"
+                                        className="w-full sm:w-80"
+                                        placeholder="Price"
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
@@ -340,11 +346,11 @@ export default function EditBalanceForm({
                             <FormItem>
                                 <FormLabel> Value </FormLabel>
                                 <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        className="w-80" 
-                                        placeholder="Value" 
-                                        readOnly={true} 
+                                    <Input
+                                        type="number"
+                                        className="w-full sm:w-80"
+                                        placeholder="Value"
+                                        readOnly={true}
                                         {...field}
                                         onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
@@ -362,11 +368,11 @@ export default function EditBalanceForm({
                                 <FormLabel> Currency </FormLabel>
                                     <Select {...field}>
                                         <FormControl>
-                                            <SelectTrigger className="w-80">
+                                            <SelectTrigger className="w-full sm:w-80">
                                                 <SelectValue/>
                                             </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent className="w-80">
+                                        <SelectContent className="w-[var(--radix-select-trigger-width)] sm:w-80">
                                             <SelectItem value="TWD">TWD</SelectItem>
                                             <SelectItem value="USD">USD</SelectItem>
                                         </SelectContent>
@@ -385,17 +391,17 @@ export default function EditBalanceForm({
                                 <FormControl>
                                     <Popover>
                                         <PopoverTrigger asChild>
-                                            <Button variant={"outline"} className={cn("w-80 justify-start text-left font-normal", !balance.date && "text-muted-foreground")}>
+                                            <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal sm:w-80", !balance.date && "text-muted-foreground")}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                                 {selectedDate ? format(selectedDate, "MMM yyyy") : <span>Pick a month</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
-                                            <MonthPicker 
+                                            <MonthPicker
                                                 onMonthSelect={(date:Date ) => {
                                                     setSelectedDate(date);
                                                     field.onChange(date);
-                                                }} 
+                                                }}
                                                 selectedMonth={field.value}
                                                 maxDate={new Date()}
                                                 minDate={new Date(minYear,1,1)} />
@@ -414,9 +420,9 @@ export default function EditBalanceForm({
                             <FormItem>
                                 <FormLabel> Note </FormLabel>
                                 <FormControl>
-                                    <Textarea 
-                                        {...field} 
-                                        className="w-80" 
+                                    <Textarea
+                                        {...field}
+                                        className="w-full sm:w-80"
                                         placeholder="add some note"
                                     />
                                 </FormControl>
@@ -425,7 +431,19 @@ export default function EditBalanceForm({
                         )}
                     />
 
-                    <Button type="submit" className="w-full"> Submit </Button>
+                    {form.formState.isSubmitting && (
+                        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+                            Saving balance...
+                        </p>
+                    )}
+                    {submitMessage && (
+                        <p className="text-sm text-destructive" role="alert">
+                            {submitMessage}
+                        </p>
+                    )}
+                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting ? "Saving..." : "Submit"}
+                    </Button>
                 </form>
             </Form>
         </div>

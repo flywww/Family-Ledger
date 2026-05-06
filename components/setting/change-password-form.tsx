@@ -30,6 +30,8 @@ import { z } from "zod"
 
 export default function ChangePasswordForm(){
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState<string | null>(null)
+    const [submitSucceeded, setSubmitSucceeded] = useState(false)
     const { data: session } = useSession();
     const form = useForm({
         resolver:zodResolver(z
@@ -49,12 +51,22 @@ export default function ChangePasswordForm(){
 
     const onSubmit = async ({newPassword}: {newPassword:string}) => {
         if(session){
-            await updatePassword(session.user.account,newPassword)
-            setDialogOpen(false)
+            setSubmitMessage(null)
+            setSubmitSucceeded(false)
+            try {
+                await updatePassword(session.user.account,newPassword)
+                setSubmitSucceeded(true)
+                setSubmitMessage("Password updated.")
+                setDialogOpen(false)
+            } catch (error) {
+                console.error("password update failed", error)
+                setSubmitMessage("Password could not be updated. Try again.")
+            }
         }
     }
 
     return(
+        <div className="space-y-2">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" onClick={() => setDialogOpen(true)}>Change password</Button>
@@ -65,7 +77,7 @@ export default function ChangePasswordForm(){
                     <DialogDescription></DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                    <form className="w-full space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                         <FormField
                             control={form.control}
                             name="newPassword"
@@ -75,7 +87,7 @@ export default function ChangePasswordForm(){
                                         <FormControl>
                                             <Input
                                                 type="password"
-                                                className="w-80"
+                                                className="w-full sm:w-80"
                                                 placeholder="Input new password"
                                                 {...field}
                                             />
@@ -93,7 +105,7 @@ export default function ChangePasswordForm(){
                                         <FormControl>
                                             <Input
                                                 type="password"
-                                                className="w-80"
+                                                className="w-full sm:w-80"
                                                 placeholder="Repeat new password"
                                                 {...field}
                                             />
@@ -102,15 +114,33 @@ export default function ChangePasswordForm(){
                                     </FormItem>
                                 )}
                     />
+                    {form.formState.isSubmitting && (
+                        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+                            Updating password...
+                        </p>
+                    )}
+                    {submitMessage && !submitSucceeded && (
+                        <p className="text-sm text-destructive" role="alert">
+                            {submitMessage}
+                        </p>
+                    )}
                     <DialogFooter className="pt-4">
                         <DialogClose asChild>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit">Submit</Button>
+                        <Button type="submit" disabled={form.formState.isSubmitting}>
+                            {form.formState.isSubmitting ? "Updating..." : "Submit"}
+                        </Button>
                     </DialogFooter>
                     </form>
                 </Form>
             </DialogContent>
         </Dialog>
+        {submitMessage && submitSucceeded && (
+            <p className="text-sm text-emerald-600" role="status" aria-live="polite">
+                {submitMessage}
+            </p>
+        )}
+        </div>
     )
 }

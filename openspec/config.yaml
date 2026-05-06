@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Project: Family Ledger.
+  Stack: Next.js App Router, React Server Components, TypeScript, Tailwind, shadcn/ui, Radix primitives, Recharts, Prisma, NextAuth.
+
+  Config role:
+  This file is a concise routing and enforcement layer.
+  It must not duplicate full design, architecture, data, or testing documents.
+
+  Doc routing:
+  - UI/design changes -> docs/design-system.md
+  - UI inconsistency -> docs/design/design-consistency-conflicts.md
+  - Validation harness changes -> docs/validation-harness.md
+  - Architecture/data-flow changes -> docs/architecture-guide.md
+  - Data model, month, money, currency, refresh-state changes -> docs/data-model-guide.md
+  - Testing strategy or test-harness changes -> docs/testing-strategy.md
+  - Repo commands/navigation -> AGENTS.md
+
+  Core principle:
+  No durable rule without a validation path. If a proposal, design, spec, or task adds a durable rule, choose a validation method: TypeScript, ESLint, custom script, dependency-cruiser, unit test, integration test, Playwright test, visual regression test, manual checklist, or CI workflow.
+
+rules:
+  proposal:
+    - Identify affected areas, including design, architecture, data model, testing, docs/process, and dependencies when relevant.
+    - Identify the relevant source-of-truth docs that must be read before implementation.
+    - For UI/design changes, classify visual impact as none, small, medium, or large.
+    - For UI/design changes, state reusable component impact: reuse existing component, extend existing component, add reusable component, or one-off screen component with reason.
+    - Include validation impact for the change.
+    - State whether new validation is needed or existing validation is enough.
+    - Do not add durable rules without a validation path.
+    - Keep OpenSpec config concise; route to source docs instead of duplicating their full content.
+  specs:
+    - Add acceptance criteria for validation coverage when behavior, architecture, design rules, or data semantics change.
+    - Include a source-rule-to-validation mapping for new durable rules.
+    - Use testable requirements and scenarios that can map to scripts, linters, tests, visual checks, or manual review.
+  design:
+    - Include a validation strategy section for cross-cutting changes, UI changes, data-model changes, or new dependencies.
+    - For UI/design changes, follow docs/design-system.md Visual Review and prototype rules.
+    - Choose script, linter, unit test, integration test, Playwright test, visual check, manual checklist, or CI per affected rule.
+    - Explain manual-only rules and whether they should become automated later.
+    - For UI changes, read docs/design-system.md and record unresolved conflicts in docs/design/design-consistency-conflicts.md.
+    - For architecture or data-flow changes, read docs/architecture-guide.md.
+    - For data-model, month, money, currency, and refresh-state changes, read docs/data-model-guide.md.
+    - For testing strategy or harness changes, read docs/testing-strategy.md and docs/validation-harness.md.
+  tasks:
+    - Read only the source docs relevant to the current change.
+    - Inspect existing checks before adding new validation.
+    - Add or update validation scripts when durable rules are introduced.
+    - For UI/design changes, include the matching visual review and prototype tasks before implementation.
+    - When reusable components are added or changed, update docs/design-system.md and docs/design-system.html in the same task.
+    - Run npm run harness:check when available, or list the closest available commands if it is not available.
+    - Run focused tests relevant to changed behavior.
+    - Report skipped checks, failing checks, and manual-only rules in change notes.
+    - Keep tasks scoped to the current change; do not bundle unrelated design or architecture cleanup unless the proposal explicitly includes it.

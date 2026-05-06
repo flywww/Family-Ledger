@@ -10,10 +10,10 @@ const statusLabels: Record<MonthlyRefreshOverview["status"], string> = {
 };
 
 const statusClasses: Record<MonthlyRefreshOverview["status"], string> = {
-  idle: "border-slate-200 bg-slate-50 text-slate-600",
+  idle: "border-border bg-muted text-muted-foreground",
   pending: "border-amber-200 bg-amber-50 text-amber-700",
   running: "border-sky-200 bg-sky-50 text-sky-700",
-  partial_complete: "border-orange-200 bg-orange-50 text-orange-700",
+  partial_complete: "border-amber-200 bg-amber-50 text-amber-700",
   completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
   failed: "border-rose-200 bg-rose-50 text-rose-700",
 };
@@ -44,9 +44,14 @@ export default function MonthlyRefreshStatus({
   }
 
   const statusLabel = statusLabels[overview.status];
+  const isUrgent = overview.status === "failed";
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white/80 p-3">
+    <div
+      className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 text-card-foreground"
+      role={isUrgent ? "alert" : "status"}
+      aria-live={isUrgent ? "assertive" : "polite"}
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -54,27 +59,27 @@ export default function MonthlyRefreshStatus({
           >
             {statusLabel}
           </span>
-          <span className="text-sm text-slate-600">
+          <span className="text-sm text-muted-foreground">
             {overview.completedCount} refreshed, {overview.estimatedCount} estimated
           </span>
           {overview.failedCount > 0 && (
-            <span className="text-sm text-slate-600">{overview.failedCount} failed</span>
+            <span className="text-sm text-muted-foreground">{overview.failedCount} failed</span>
           )}
         </div>
         {action}
       </div>
       {(overview.status === "pending" || overview.status === "running") && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Totals are estimated until the monthly quote refresh finishes.
         </p>
       )}
       {nextUpdateAt && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Next automatic update: {formatScheduledRun(nextUpdateAt)} (Asia/Taipei)
         </p>
       )}
       {overview.status === "partial_complete" && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Some assets could not be refreshed automatically. The next scheduled run will retry them,
           or you can retry only the failed assets now.
         </p>

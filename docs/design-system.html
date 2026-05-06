@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Family Ledger Design System</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #fafafa;
+        --foreground: #09090b;
+        --card: #ffffff;
+        --muted: #f4f4f5;
+        --muted-foreground: #52525b;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-foreground: #f8fafc;
+        --border: #e4e4e7;
+        --ring: #2563eb;
+        --success: #059669;
+        --success-bg: #ecfdf5;
+        --success-border: #a7f3d0;
+        --warning: #d97706;
+        --warning-bg: #fffbeb;
+        --warning-border: #fde68a;
+        --danger: #e11d48;
+        --danger-bg: #fff1f2;
+        --danger-border: #fecdd3;
+        --info: #0369a1;
+        --info-bg: #f0f9ff;
+        --info-border: #bae6fd;
+        --radius: 8px;
+        --shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+        --sidebar-width: 272px;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --background: #09090b;
+        --foreground: #fafafa;
+        --card: #18181b;
+        --muted: #27272a;
+        --muted-foreground: #a1a1aa;
+        --primary: #3b82f6;
+        --primary-hover: #60a5fa;
+        --primary-foreground: #0f172a;
+        --border: #27272a;
+        --ring: #60a5fa;
+        --success: #34d399;
+        --success-bg: #052e24;
+        --success-border: #065f46;
+        --warning: #fbbf24;
+        --warning-bg: #451a03;
+        --warning-border: #92400e;
+        --danger: #fb7185;
+        --danger-bg: #4c0519;
+        --danger-border: #9f1239;
+        --info: #38bdf8;
+        --info-bg: #082f49;
+        --info-border: #075985;
+        --shadow: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 20px 16px;
+        border-right: 1px solid var(--border);
+        background: color-mix(in srgb, var(--card) 88%, var(--background));
+        overflow-y: auto;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 8px 18px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.2;
+      }
+
+      .brand span {
+        display: block;
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 3px;
+      }
+
+      .nav a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        color: var(--muted-foreground);
+        text-decoration: none;
+        transition:
+          background-color 180ms ease,
+          color 180ms ease;
+      }
+
+      .nav a:hover,
+      .nav a:focus-visible {
+        background: var(--muted);
+        color: var(--foreground);
+        outline: none;
+      }
+
+      .nav svg {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+      }
+
+      .main {
+        min-width: 0;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--border);
+        background: color-mix(in srgb, var(--background) 92%, transparent);
+        backdrop-filter: blur(10px);
+      }
+
+      .topbar p {
+        margin: 0;
+        color: var(--muted-foreground);
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--foreground);
+        font: inherit;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          color 180ms ease;
+      }
+
+      .button:hover {
+        border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+        background: var(--muted);
+      }
+
+      .button:focus-visible,
+      .token:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+      }
+
+      .button.primary {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+
+      .button.primary:hover {
+        border-color: var(--primary-hover);
+        background: var(--primary-hover);
+      }
+
+      .button svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .content {
+        width: min(100%, 1240px);
+        margin: 0 auto;
+        padding: 28px 24px 64px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 20px;
+        align-items: stretch;
+        margin-bottom: 24px;
+      }
+
+      .hero-copy {
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin-bottom: 12px;
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 8px;
+        font-size: 22px;
+        line-height: 1.25;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 15px;
+        line-height: 1.3;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin-bottom: 20px;
+        color: var(--muted-foreground);
+        font-size: 16px;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .metric {
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--background);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 18px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .preview {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .segmented {
+        display: inline-grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--muted);
+      }
+
+      .segmented span {
+        padding: 5px 9px;
+        border-radius: 5px;
+        color: var(--muted-foreground);
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .segmented span:first-child {
+        background: var(--card);
+        color: var(--foreground);
+        box-shadow: var(--shadow);
+      }
+
+      .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .mini-card {
+        min-height: 102px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--background);
+      }
+
+      .mini-card .label {
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      .mini-card .value {
+        margin: 8px 0 4px;
+        font-size: 22px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .trend {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--success);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .chart {
+        position: relative;
+        height: 160px;
+        padding: 14px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background:
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-color: var(--background);
+        background-size: 100% 33.33%, 25% 100%;
+      }
+
+      .chart svg {
+        position: absolute;
+        inset: 14px;
+        width: calc(100% - 28px);
+        height: calc(100% - 28px);
+        overflow: visible;
+      }
+
+      .section {
+        margin-top: 34px;
+        scroll-margin-top: 82px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .section-header p {
+        max-width: 720px;
+        margin: 0;
+        color: var(--muted-foreground);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .card p {
+        margin-bottom: 0;
+        color: var(--muted-foreground);
+      }
+
+      .principle {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .icon {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--muted);
+        color: var(--primary);
+      }
+
+      .icon svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .tokens {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .token {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+      }
+
+      .swatch {
+        height: 72px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .token-body {
+        padding: 10px;
+      }
+
+      .token-body strong,
+      .token-body code {
+        display: block;
+      }
+
+      code {
+        color: var(--muted-foreground);
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .spec-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .spec-list li {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .spec-list li:last-child {
+        border-bottom: 0;
+      }
+
+      .badge-row,
+      .component-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
+        padding: 3px 9px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge.success {
+        border-color: var(--success-border);
+        background: var(--success-bg);
+        color: var(--success);
+      }
+
+      .badge.warning {
+        border-color: var(--warning-border);
+        background: var(--warning-bg);
+        color: var(--warning);
+      }
+
+      .badge.danger {
+        border-color: var(--danger-border);
+        background: var(--danger-bg);
+        color: var(--danger);
+      }
+
+      .badge.info {
+        border-color: var(--info-border);
+        background: var(--info-bg);
+        color: var(--info);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+      }
+
+      table {
+        width: 100%;
+        min-width: 640px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      td.number {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .wireframe {
+        margin: 0;
+        overflow-x: auto;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        color: var(--muted-foreground);
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .checklist {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .check {
+        display: flex;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+      }
+
+      .check svg {
+        width: 17px;
+        height: 17px;
+        flex: 0 0 auto;
+        color: var(--success);
+      }
+
+      .source-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .source-strip a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        padding: 5px 9px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--muted-foreground);
+        text-decoration: none;
+      }
+
+      .source-strip a:hover {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+          height: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .nav {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .hero,
+        .grid,
+        .grid.two,
+        .checklist {
+          grid-template-columns: 1fr;
+        }
+
+        .tokens {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 12px 16px;
+        }
+
+        .actions {
+          width: 100%;
+        }
+
+        .button {
+          flex: 1 1 auto;
+        }
+
+        .content {
+          padding: 18px 16px 44px;
+        }
+
+        .hero-copy {
+          padding: 20px;
+        }
+
+        .meta-grid,
+        .preview-grid,
+        .tokens {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .section-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Design system sections">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19V5" />
+              <path d="M4 19h16" />
+              <path d="M8 16V9" />
+              <path d="M12 16V6" />
+              <path d="M16 16v-4" />
+            </svg>
+          </div>
+          <div>
+            <strong>Family Ledger</strong>
+            <span>Design System</span>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="#principles">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></svg>
+            Principles
+          </a>
+          <a href="#tokens">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18" /><path d="M5 8h14" /><path d="M5 16h14" /></svg>
+            Tokens
+          </a>
+          <a href="#components">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="1" /><rect x="3" y="15" width="8" height="5" rx="1" /><rect x="15" y="15" width="6" height="5" rx="1" /></svg>
+            Components
+          </a>
+          <a href="#visualization">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5" /><path d="M8 17l3-6 4 3 5-8" /></svg>
+            Charts
+          </a>
+          <a href="#patterns">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16" /><path d="M4 12h10" /><path d="M4 17h16" /></svg>
+            Patterns
+          </a>
+          <a href="#checklist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" /></svg>
+            Checklist
+          </a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <p>Static reference site for the product UI standard in <code>docs/design-system.md</code>.</p>
+          <div class="actions">
+            <a class="button" href="./design-system.md">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" /></svg>
+              Source
+            </a>
+            <button class="button primary" type="button" id="themeToggle" aria-label="Toggle dark theme">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+              Theme
+            </button>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="hero" aria-labelledby="page-title">
+            <div class="hero-copy">
+              <p class="eyebrow">Finance operations cockpit</p>
+              <h1 id="page-title">A calm, dense, token-driven interface for family wealth tracking.</h1>
+              <p class="lead">
+                Family Ledger uses restrained surfaces, precise financial typography, visible data confidence, and stable controls so monthly review and correction workflows stay clear.
+              </p>
+              <div class="component-row">
+                <a class="button primary" href="#tokens">View tokens</a>
+                <a class="button" href="#components">Review components</a>
+              </div>
+              <div class="meta-grid" aria-label="Design system highlights">
+                <div class="metric">
+                  <span>Type scale</span>
+                  <strong>12-36px</strong>
+                </div>
+                <div class="metric">
+                  <span>Radius</span>
+                  <strong>8px</strong>
+                </div>
+                <div class="metric">
+                  <span>Motion</span>
+                  <strong>180ms</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview" aria-label="Dashboard preview">
+              <div class="preview-toolbar">
+                <strong>Dashboard</strong>
+                <div class="segmented" aria-label="Month selector preview">
+                  <span>Apr</span>
+                  <span>May</span>
+                  <span>Jun</span>
+                </div>
+              </div>
+              <div class="preview-grid">
+                <div class="mini-card">
+                  <div class="label">Net worth</div>
+                  <div class="value">$842,100</div>
+                  <div class="trend">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6 4 4 6-8" /><path d="M14 7h6v6" /></svg>
+                    3.8% monthly
+                  </div>
+                </div>
+                <div class="mini-card">
+                  <div class="label">Refresh status</div>
+                  <div class="value">18/20</div>
+                  <span class="badge warning">2 estimated</span>
+                </div>
+              </div>
+              <div class="chart">
+                <svg viewBox="0 0 420 140" aria-hidden="true">
+                  <polyline points="0,100 60,88 120,96 180,64 240,70 300,42 360,48 420,24" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                  <polyline points="0,120 60,112 120,108 180,98 240,92 300,82 360,76 420,68" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.75" />
+                </svg>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="principles">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Principles</p>
+                <h2>Design decisions</h2>
+              </div>
+              <p>Use these rules to keep the app private, financial, family-scale, monthly, and correctable.</p>
+            </div>
+            <div class="grid">
+              <article class="card principle">
+                <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg></span>
+                <div>
+                  <h3>Trust over decoration</h3>
+                  <p>Flat surfaces, subtle borders, stable controls, and no ornamental gradients inside authenticated workflows.</p>
+                </div>
+              </article>
+              <article class="card principle">
+                <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 5-7" /></svg></span>
+                <div>
+                  <h3>Dashboard first</h3>
+                  <p>Optimize for scanning, comparing, filtering, and correcting data before explanatory or promotional content.</p>
+                </div>
+              </article>
+              <article class="card principle">
+                <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9" /><path d="M12 7v5l3 3" /></svg></span>
+                <div>
+                  <h3>Data confidence</h3>
+                  <p>Values should reveal freshness, estimation, failure, manual edits, and pending refresh states.</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="tokens">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Tokens</p>
+                <h2>Color and type foundation</h2>
+              </div>
+              <p>Components should move from primitive color values to CSS variables to semantic Tailwind classes.</p>
+            </div>
+            <div class="tokens">
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#fafafa"></div>
+                <div class="token-body"><strong>Background</strong><code>#FAFAFA</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#ffffff"></div>
+                <div class="token-body"><strong>Card</strong><code>#FFFFFF</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#2563eb"></div>
+                <div class="token-body"><strong>Primary</strong><code>#2563EB</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#09090b"></div>
+                <div class="token-body"><strong>Foreground</strong><code>#09090B</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#ecfdf5"></div>
+                <div class="token-body"><strong>Success</strong><code>emerald</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#fffbeb"></div>
+                <div class="token-body"><strong>Pending</strong><code>amber</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#fff1f2"></div>
+                <div class="token-body"><strong>Failed</strong><code>rose</code></div>
+              </div>
+              <div class="token" tabindex="0">
+                <div class="swatch" style="background:#f0f9ff"></div>
+                <div class="token-body"><strong>Running</strong><code>sky</code></div>
+              </div>
+            </div>
+
+            <div class="grid two" style="margin-top:12px">
+              <div class="card">
+                <h3>Typography</h3>
+                <ul class="spec-list">
+                  <li><span>Page title</span><code>24/32 semibold</code></li>
+                  <li><span>Section title</span><code>20/28 semibold</code></li>
+                  <li><span>Body and tables</span><code>14/20 regular</code></li>
+                  <li><span>Numeric emphasis</span><code>20/28 tabular</code></li>
+                </ul>
+              </div>
+              <div class="card">
+                <h3>Shape and motion</h3>
+                <ul class="spec-list">
+                  <li><span>Cards</span><code>rounded-lg, shadow-sm</code></li>
+                  <li><span>Controls</span><code>rounded-md, h-9 min</code></li>
+                  <li><span>Hover</span><code>color/border only</code></li>
+                  <li><span>Transition</span><code>150-300ms</code></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="components">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Components</p>
+                <h2>Reusable app pieces</h2>
+              </div>
+              <p>Buttons, badges, tables, and cards should stay stable under hover and readable across light and dark modes.</p>
+            </div>
+            <div class="grid two">
+              <div class="card">
+                <h3>Buttons</h3>
+                <div class="component-row">
+                  <button class="button primary" type="button">Create balance</button>
+                  <button class="button" type="button">Filter</button>
+                  <button class="button" type="button" aria-label="More actions">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Status badges</h3>
+                <div class="badge-row">
+                  <span class="badge success">Fresh</span>
+                  <span class="badge warning">Estimated</span>
+                  <span class="badge danger">Failed</span>
+                  <span class="badge info">Running</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrap" style="margin-top:12px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Holding</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th style="text-align:right">Value</th>
+                    <th style="text-align:right">Month change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Brokerage account</td>
+                    <td><span class="badge success">Fresh</span></td>
+                    <td>Investment</td>
+                    <td class="number">$412,400</td>
+                    <td class="number">+2.4%</td>
+                  </tr>
+                  <tr>
+                    <td>Home mortgage</td>
+                    <td><span class="badge warning">Estimated</span></td>
+                    <td>Liability</td>
+                    <td class="number">-$286,200</td>
+                    <td class="number">-0.3%</td>
+                  </tr>
+                  <tr>
+                    <td>Cash reserve</td>
+                    <td><span class="badge info">Running</span></td>
+                    <td>Cash</td>
+                    <td class="number">$48,900</td>
+                    <td class="number">+0.8%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="section-header" style="margin-top:18px">
+              <div>
+                <p class="eyebrow">Component catalog</p>
+                <h3>Managed reusable code surfaces</h3>
+              </div>
+              <p>Reusable components are updated in code, Markdown, and this static reference together.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Layer</th>
+                    <th>Files</th>
+                    <th>Design-system role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>UI primitives</td>
+                    <td>
+                      <code>components/ui/button.tsx</code><br />
+                      <code>components/ui/card.tsx</code><br />
+                      <code>components/ui/table.tsx</code><br />
+                      <code>components/ui/form.tsx</code><br />
+                      <code>components/ui/input.tsx</code><br />
+                      <code>components/ui/label.tsx</code><br />
+                      <code>components/ui/select.tsx</code><br />
+                      <code>components/ui/dialog.tsx</code><br />
+                      <code>components/ui/dropdown-menu.tsx</code><br />
+                      <code>components/ui/popover.tsx</code><br />
+                      <code>components/ui/command.tsx</code><br />
+                      <code>components/ui/calendar.tsx</code><br />
+                      <code>components/ui/month-picker.tsx</code><br />
+                      <code>components/ui/chart.tsx</code><br />
+                      <code>components/ui/navigation-menu.tsx</code><br />
+                      <code>components/ui/scroll-area.tsx</code><br />
+                      <code>components/ui/separator.tsx</code><br />
+                      <code>components/ui/skeleton.tsx</code><br />
+                      <code>components/ui/tabs.tsx</code><br />
+                      <code>components/ui/textarea.tsx</code><br />
+                      <code>components/ui/loading-spinner.tsx</code>
+                    </td>
+                    <td>Generic shadcn/Radix primitives and token-backed visual foundations.</td>
+                  </tr>
+                  <tr>
+                    <td>Dashboard patterns</td>
+                    <td>
+                      <code>components/dashboard/summary-card.tsx</code><br />
+                      <code>components/dashboard/summary-section.tsx</code><br />
+                      <code>components/dashboard/chart-section.tsx</code><br />
+                      <code>components/dashboard/dashboard-line-chart.tsx</code><br />
+                      <code>components/dashboard/dashboard-pie-chart.tsx</code><br />
+                      <code>components/dashboard/category-selector.tsx</code>
+                    </td>
+                    <td>Finance metrics, chart panels, chart types, and bounded filter controls.</td>
+                  </tr>
+                  <tr>
+                    <td>Balance patterns</td>
+                    <td>
+                      <code>components/balance/balance-table.tsx</code><br />
+                      <code>components/balance/balance-table-toolbar.tsx</code><br />
+                      <code>components/balance/retry-failed-button.tsx</code>
+                    </td>
+                    <td>Review table, toolbar, and recoverable operation patterns.</td>
+                  </tr>
+                  <tr>
+                    <td>Status and shell patterns</td>
+                    <td>
+                      <code>components/monthly-refresh-status.tsx</code><br />
+                      <code>components/cron-health-alert.tsx</code><br />
+                      <code>components/search.tsx</code><br />
+                      <code>components/layouts/nav-links.tsx</code><br />
+                      <code>components/layouts/nav-menu.tsx</code>
+                    </td>
+                    <td>Data confidence, operational alerts, month navigation, and authenticated navigation.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="visualization">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Visualization</p>
+                <h2>Chart rules</h2>
+              </div>
+              <p>Use line charts for time, bars for comparison, and donut charts only for simple composition.</p>
+            </div>
+            <div class="grid">
+              <article class="card">
+                <h3>Net worth over time</h3>
+                <p>Line chart with readable currency tooltips and a table alternative for precise review.</p>
+              </article>
+              <article class="card">
+                <h3>Category comparison</h3>
+                <p>Bar chart for precision. Avoid pie charts when similar values need close comparison.</p>
+              </article>
+              <article class="card">
+                <h3>Refresh health</h3>
+                <p>Status list or segmented count cards. Pair color with labels and recovery actions.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="patterns">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Patterns</p>
+                <h2>App structure</h2>
+              </div>
+              <p>The authenticated product should feel like an operating surface, not a marketing site.</p>
+            </div>
+            <pre class="wireframe">(family-ledger
+  (root providers)
+  (auth shell
+    (top navigation
+      (brand)
+      (primary nav: dashboard, balance)
+      (account/settings menu))
+    (page content
+      (month context)
+      (summary cards)
+      (charts and tables)
+      (correction actions))))</pre>
+          </section>
+
+          <section class="section" id="checklist">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Checklist</p>
+                <h2>Pre-delivery review</h2>
+              </div>
+              <p>Use this quick pass before shipping UI changes in app and component surfaces.</p>
+            </div>
+            <div class="checklist">
+              <div class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" /></svg>
+                <span>Uses semantic tokens for surfaces, text, borders, and focus rings.</span>
+              </div>
+              <div class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" /></svg>
+                <span>Financial values are right-aligned and use tabular numerals.</span>
+              </div>
+              <div class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" /></svg>
+                <span>Status uses color plus text, icon, tooltip, or accessible label.</span>
+              </div>
+              <div class="check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" /></svg>
+                <span>Hover, focus, loading, empty, and error states are defined.</span>
+              </div>
+            </div>
+
+            <div class="source-strip" aria-label="Related documents">
+              <a href="./design-system.md">Markdown design system</a>
+              <a href="./design/design-consistency-conflicts.md">Consistency conflicts</a>
+              <a href="../scripts/design-check.mjs">Design check script</a>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const button = document.getElementById("themeToggle");
+      const storedTheme = localStorage.getItem("family-ledger-design-theme");
+      const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+      if (storedTheme === "dark" || (!storedTheme && preferredDark)) {
+        root.dataset.theme = "dark";
+      }
+
+      button.addEventListener("click", () => {
+        const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = nextTheme;
+        localStorage.setItem("family-ledger-design-theme", nextTheme);
+      });
+    </script>
+  </body>
+</html>

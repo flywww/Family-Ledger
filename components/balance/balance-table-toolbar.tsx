@@ -99,6 +99,9 @@ export default function BalanceTableToolbar({
                             </Button>
                         ))}
                     </div>
+                    <Button asChild className="w-full sm:hidden">
+                        <Link href={`/balance/create?month=${queryMonthKey}`}>New balance</Link>
+                    </Button>
                 </div>
                 <div className="ml-auto hidden items-center gap-2 sm:flex">
                     {currentMonthCreationState?.canCreateLaggedMonthBalance && (

@@ -19,11 +19,12 @@ export default function NavLinks(){
                         key={link.name}
                         href={link.href}
                         className={clsx(
-                            "flex items-center justify-start h-8 px-8 rounded-full text-foreground hover:text-opacity-80",
+                            "flex h-8 items-center justify-start rounded-full px-8 text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                             {
-                                'bg-foreground/10': pathname === link.href,
+                                'bg-accent text-accent-foreground': pathname === link.href,
                             },
                         )}
+                        aria-current={pathname === link.href ? "page" : undefined}
                     >
                         <p>{link.name}</p>
                     </Link>

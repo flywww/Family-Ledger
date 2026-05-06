@@ -65,7 +65,7 @@ export default async function Page(
   const currentMonthCreationState = session
     ? await fetchLaggedMonthBalanceCreationState(session.user.id, queryMonthKey)
     : undefined;
-  const flattedBalanceData = await Promise.all(balanceData?.map(async (balance) => ({
+  const flattedBalanceData = await Promise.all((balanceData ?? []).map(async (balance) => ({
       ...balance,
       price: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.price, balance.date),
       value: await getConvertedCurrency(balance.currency as currencyType, displayCurrency, balance.value, balance.date),
