@@ -65,6 +65,7 @@ const testing = requireFile("docs/testing-strategy.md");
 const agents = requireFile("AGENTS.md");
 const openspecConfig = requireFile("openspec/config.yaml");
 const validationHarness = requireFile("docs/validation-harness.md");
+const vercelConfig = requireFile("vercel.json");
 const packageJson = JSON.parse(requireFile("package.json") || "{}");
 
 const managedProductComponentFiles = [
@@ -142,6 +143,26 @@ if (openspecConfig) {
   }
 }
 
+if (vercelConfig) {
+  try {
+    const parsedVercelConfig = JSON.parse(vercelConfig);
+    const regions = parsedVercelConfig.regions;
+
+    if (!Array.isArray(regions) || regions.length !== 1 || regions[0] !== "sin1") {
+      failures.push({
+        rule: "vercel-production-region",
+        file: "vercel.json",
+        message: 'Production Vercel Functions must set project-level `regions` to exactly `["sin1"]`.',
+      });
+    }
+  } catch (error) {
+    failures.push({
+      rule: "vercel-json-parseable",
+      file: "vercel.json",
+      message: `vercel.json must be valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+    });
+  }
+}
 for (const changePath of listDirectories("openspec/changes")) {
   const proposalPath = path.join(changePath, "proposal.md");
   const designPath = path.join(changePath, "design.md");

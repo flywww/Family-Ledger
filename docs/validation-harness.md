@@ -52,6 +52,7 @@ The first version favors small, inspectable checks that one maintainer can under
 | Data model | Estimated, imported, refreshed, and manual values must remain distinguishable. | Monthly refresh tests and UI/status review. | `tests/monthly-refresh*.test.ts`, manual checklist | Partly | Existing partial coverage |
 | Testing | Changed behavior has focused tests. | OpenSpec task requirement and code review. | `npm run test:unit` or focused command | Partly | Existing convention |
 | Testing | Database-backed tests must not run through the direct unit-test command. | Static check that `npm run test:unit` excludes database-backed test files and database reset helpers include an isolated-schema guard. | `npm run docs:check` | Yes | Active |
+| Deployment | Production Vercel Functions run in `sin1` while Neon is hosted in Singapore. | Static parse of `vercel.json` for exactly `["sin1"]` plus post-deploy metadata review. | `npm run docs:check`, manual checklist | Partly | Active |
 | Testing | Important finance calculations have unit tests. | Vitest tests for pure helpers and calculation modules. | `npm run test:unit` | Partly | Active for balance analysis |
 | Testing | Important UI flows have integration or E2E tests. | Future Playwright smoke and authenticated flow setup. | Playwright plan | No | Planned |
 | Testing | Visual regression tests for stable key screens, if feasible. | Screenshot comparisons after page states stabilize. | Playwright `toHaveScreenshot()` | No | Planned |

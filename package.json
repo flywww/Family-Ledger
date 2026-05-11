@@ -14,7 +14,7 @@
     "docs:check": "node scripts/docs-check.mjs",
     "harness:check": "pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run design:check && pnpm run architecture:check && pnpm run docs:check",
     "test": "node scripts/run-tests.mjs",
-    "test:unit": "vitest run tests/balance-analysis.test.ts tests/monthly-refresh-route.test.ts"
+    "test:unit": "vitest run tests/balance-analysis.test.ts tests/monthly-refresh-route.test.ts tests/database-failures.test.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

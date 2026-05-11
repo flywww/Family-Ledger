@@ -41,6 +41,8 @@ Production monthly refresh depends on Vercel Cron invoking `/api/cron/monthly-re
 
 Required environment variables:
 
+- `DATABASE_URL`: production application runtime connection string. In Vercel production this must use the Neon pooled hostname that includes `-pooler`.
+- `POSTGRES_URL_NON_POOLING`: direct Neon connection string for Prisma CLI, migrations, and administrative database workflows. Do not use this for production application runtime traffic.
 - `CRON_SECRET`: shared secret used by the cron route authorization check
 - `APP_TIME_ZONE`: local month boundary and cron health timezone. Default is `Asia/Taipei`
 - `MONTHLY_REFRESH_DAILY_LIMIT`: optional per-run asset processing cap
@@ -48,14 +50,18 @@ Required environment variables:
 Current production schedule:
 
 - `vercel.json` runs the cron route once per day at `0 18 * * *`
+- `vercel.json` sets project-level Vercel Function `regions` to `["sin1"]`
 - In `Asia/Taipei`, that corresponds to local `02:00`
 - On Vercel Hobby, cron execution should be treated as daily and approximate rather than exact, so the app backfills missed months instead of relying on a single exact run
 
 Validation checklist:
 
 1. Confirm the project is deployed to production and the cron definition appears in Vercel.
-2. Confirm `CRON_SECRET` is configured in the production environment.
-3. Trigger the route manually:
+2. Confirm Vercel deployment metadata shows `regions: ["sin1"]`.
+3. Confirm production `DATABASE_URL` uses the Neon pooled `-pooler` hostname.
+4. Confirm `POSTGRES_URL_NON_POOLING` is the direct Neon connection used only for Prisma CLI, migrations, and administrative workflows.
+5. Confirm `CRON_SECRET` is configured in the production environment.
+6. Trigger the route manually:
 
 ```bash
 curl -i -X GET https://YOUR_DOMAIN/api/cron/monthly-refresh \
@@ -63,5 +69,5 @@ curl -i -X GET https://YOUR_DOMAIN/api/cron/monthly-refresh \
   -H "x-cron-trigger: manual_test"
 ```
 
-4. Check Vercel Runtime Logs for `monthly-refresh-cron-start`, `monthly-refresh-cron`, or `monthly-refresh-cron-rejected`.
-5. Check the Settings page for the latest cron health state and run logs.
+7. Check Vercel Runtime Logs for `monthly-refresh-cron-start`, `monthly-refresh-cron`, or `monthly-refresh-cron-rejected`.
+8. Check the Settings page for the latest cron health state and run logs.

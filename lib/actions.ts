@@ -65,6 +65,7 @@ import {
     fetchCryptoPriceFromAPI as fetchCryptoPrice,
     fetchListedStockPriceFromAPI as fetchListedStockPrice,
 } from "./pricing";
+import { logAndThrowCriticalDatabaseFailure } from "./database-failures";
 
 
 export async function fetchLastDateOfBalance(){
@@ -85,7 +86,7 @@ export async function fetchLastDateOfBalance(){
         })
         return lastDate[0].date
     } catch (error) {
-        console.log(`Fail to fetch last date of balance, error: ${error}`);
+        logAndThrowCriticalDatabaseFailure("last balance month", error);
     }
 }
 
@@ -150,7 +151,7 @@ export async function fetchMonthlyBalance( queryDate: Date  ){
         })
         return balances;
     } catch (error) {
-        console.error("Failed to fetch balance data:", error);
+        logAndThrowCriticalDatabaseFailure("monthly balance data", error);
     }
 }
 
@@ -314,7 +315,7 @@ export async function fetchValueData(){
         }
         return parsed.data
     } catch (error) {
-        console.log(`Fail to fetch valueData: ${error}`);
+        logAndThrowCriticalDatabaseFailure("dashboard value data", error);
     }
 }
 
@@ -324,7 +325,11 @@ export async function fetchMonthlyRefreshState(date: Date) {
     const session = await auth();
     if (!session) return;
 
-    return fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
+    try {
+        return await fetchMonthlyRefreshOverview(session.user.id, firstDateOfMonth(date));
+    } catch (error) {
+        logAndThrowCriticalDatabaseFailure("monthly refresh state", error);
+    }
 }
 
 export async function fetchBalanceMonthKeys(userId: string) {
@@ -1118,7 +1123,7 @@ export async function fetchCategories(){
         return categoryList;
 
     } catch (error) {
-        console.error("Failed to fetch categories", error)
+        logAndThrowCriticalDatabaseFailure("dashboard categories", error);
     }
 }
 
@@ -1158,7 +1163,7 @@ export async function fetchSetting( userId: string ){
         return parsed.data
 
     } catch (error) {
-        console.log(`Failed to fetch setting with id:${userId}, error: ${error}`);
+        logAndThrowCriticalDatabaseFailure("user settings", error);
     }
 }
 
