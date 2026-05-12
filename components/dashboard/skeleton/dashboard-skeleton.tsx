@@ -19,12 +19,13 @@ export default function DashboardSkeleton (){
                     <Skeleton className="hidden w-full h-36 sm:block"/>
                     <Skeleton className="hidden w-full h-36 sm:block" />
                 </div>
-                <div className="grid grid-cols-1 grid-rows-2 gap-3 w-full sm:grid-cols-3 sm:grid-rows-1">
+                <div className="grid grid-cols-1 gap-3 w-full sm:grid-cols-3">
                     <Skeleton className="w-full h-80 col-span-1 row-span-1 sm:col-span-2 sm:row-span-1"/>
-                    <Skeleton className="w-full h-80 col-span-1 row-span-2 sm:col-span-1 sm:row-span-1"/>
+                    <Skeleton className="w-full h-80 col-span-1 row-span-1 sm:col-span-1 sm:row-span-1"/>
+                    <Skeleton className="w-full h-80 col-span-1 row-span-1 sm:col-span-2 sm:row-span-1"/>
+                    <Skeleton className="w-full h-80 col-span-1 row-span-1 sm:col-span-1 sm:row-span-1"/>
                 </div>
             </div>
         </div>
     )
 }
-

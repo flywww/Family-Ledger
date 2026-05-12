@@ -140,8 +140,7 @@ Responsibilities:
 
 Rules:
 
-- Do not delete or reset production-like data as part of development helpers.
-- Demo/test seeding must be additive or isolated unless explicitly approved.
+- Database safety rules are owned by `docs/data-model-guide.md` and `docs/testing-strategy.md`.
 - Data semantics belong in `docs/data-model-guide.md`.
 
 ## Key Runtime Flows

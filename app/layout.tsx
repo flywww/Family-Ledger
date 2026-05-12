@@ -22,9 +22,9 @@ export default async function RootLayout({
 
   //BUG: get application error on vecel (possibility happened on session)
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <SessionProvider refetchInterval={5*30} refetchOnWindowFocus> 
+        <SessionProvider refetchOnWindowFocus={false}>
           <SettingProvider>
             <ThemeProvider
                 attribute="class"

@@ -28,93 +28,35 @@ The first version favors small, inspectable checks that one maintainer can under
 
 ## Validation matrix
 
-| Area | Source rule | Validation method | Tool/script | Automated? | Status |
-| --- | --- | --- | --- | --- | --- |
-| Design system | Semantic Tailwind tokens should be preferred over one-off palette utilities. | Static scan for suspicious direct palette utilities in `app/` and non-primitive `components/`. | `npm run design:check` | Yes | Active, high-signal only |
-| Design system | No hard-coded decorative colors in app/component source. | Static scan for hex colors in `.ts`, `.tsx`, `.js`, and `.jsx`. | `npm run design:check` | Yes | Active |
-| Design system | No unauthorized gradients in authenticated app UI. | Static scan for gradient utilities and purple/pink/fuchsia/violet gradient stops. | `npm run design:check` | Yes | Active |
-| Design system | No glassmorphism in authenticated app UI. | Static scan for `backdrop-blur`, blur utilities, and translucent white/black surfaces. | `npm run design:check` | Yes | Active |
-| Design system | shadcn/Radix primitives should be used before custom primitives. | Manual review during UI proposals and implementation. | Manual checklist | No | Manual-only for now |
-| Design system | Chart colors use `--chart-1` through `--chart-5`. | Static scan of chart files for raw `stroke`, `fill`, and `color` literals. | `npm run design:check` | Yes | Active |
-| Design system | Icon-only actions have accessible labels. | Static scan for `Button size="icon"` without `aria-label`, `title`, or `sr-only` text. | `npm run design:check` | Yes | Active, simple pattern |
-| Design system | Reusable component files must be managed in both the Markdown design system and static HTML reference. | Static check that managed reusable component paths appear in `docs/design-system.md` and `docs/design-system.html`. | `npm run docs:check` | Yes | Active |
-| Design system | Status is not communicated by color alone. | Manual review until component-level status patterns are standardized. | Manual checklist | No | Manual-only for now |
-| Design system | Mobile has no horizontal overflow. | Future viewport smoke checks. | Playwright plan | No | Planned |
-| Design system | Responsive checks at 320px, 375px, 1024px, and 1440px. | Future viewport smoke checks and targeted screenshots. | Playwright plan | No | Planned |
-| Architecture | UI must not import Prisma directly. | Static import-boundary scan. | `npm run architecture:check` | Yes | Active |
-| Architecture | Client components must not import server-only modules. | Static import-boundary scan for Prisma, provider modules, auth internals, filesystem/runtime APIs, and API route internals. | `npm run architecture:check` | Yes | Active, narrow rule set |
-| Architecture | Feature internals should not be imported across unrelated features. | Manual review because the repo does not currently have a formal `features/` structure. | Manual checklist | No | Manual-only for now |
-| Architecture | New dependencies require justification. | Proposal/design review; future dependency-cruiser or package diff check if churn grows. | Manual checklist | No | Manual-only for now |
-| Architecture | Shared abstractions require proven reuse. | Proposal/design review against current call sites. | Manual checklist | No | Manual-only for now |
-| Data model | Money, currency, and precision behavior must remain explicit and tested where calculations change. | Focused unit/integration tests for changed finance calculations. | `npm run test:unit` or focused Vitest tests | Partly | Existing tests cover selected flows |
-| Data model | Month format behavior should use month-key helpers, not ad hoc timestamp equality. | Existing tests plus focused tests for changed month logic. | Vitest, TypeScript | Partly | Existing tests cover monthly refresh and balance analysis |
-| Data model | Asset/liability value semantics must stay visible and correct. | Focused unit tests for balance analysis and UI review for status/label presentation. | `tests/balance-analysis.test.ts`, manual checklist | Partly | Existing partial coverage |
-| Data model | Estimated, imported, refreshed, and manual values must remain distinguishable. | Monthly refresh tests and UI/status review. | `tests/monthly-refresh*.test.ts`, manual checklist | Partly | Existing partial coverage |
-| Testing | Changed behavior has focused tests. | OpenSpec task requirement and code review. | `npm run test:unit` or focused command | Partly | Existing convention |
-| Testing | Database-backed tests must not run through the direct unit-test command. | Static check that `npm run test:unit` excludes database-backed test files and database reset helpers include an isolated-schema guard. | `npm run docs:check` | Yes | Active |
-| Deployment | Production Vercel Functions run in `sin1` while Neon is hosted in Singapore. | Static parse of `vercel.json` for exactly `["sin1"]` plus post-deploy metadata review. | `npm run docs:check`, manual checklist | Partly | Active |
-| Testing | Important finance calculations have unit tests. | Vitest tests for pure helpers and calculation modules. | `npm run test:unit` | Partly | Active for balance analysis |
-| Testing | Important UI flows have integration or E2E tests. | Future Playwright smoke and authenticated flow setup. | Playwright plan | No | Planned |
-| Testing | Visual regression tests for stable key screens, if feasible. | Screenshot comparisons after page states stabilize. | Playwright `toHaveScreenshot()` | No | Planned |
-| OpenSpec process | Proposal identifies affected areas. | OpenSpec config rule and docs drift check. | `openspec/config.yaml`, `npm run docs:check` | Partly | Active process rule |
-| OpenSpec process | UI/design changes classify visual impact and include an embedded Visual Review. | Active OpenSpec change scan for `Visual impact: none/small/medium/large`, `## Visual Review`, and visual validation notes. | `npm run docs:check` | Yes | Active for unfinished changes |
-| OpenSpec process | Medium and large visual changes use a reference-only prototype checkpoint before implementation. | Active OpenSpec change scan for `prototype/notes.md`, design link, and reference-only prototype contract. | `npm run docs:check` | Yes | Active for unfinished changes |
-| OpenSpec process | Tasks include relevant doc reading. | OpenSpec config rule and manual review of generated tasks. | `openspec/config.yaml` | Partly | Active process rule |
-| OpenSpec process | Tasks include validation commands. | OpenSpec config rule and harness script availability. | `openspec/config.yaml`, `npm run harness:check` | Partly | Active |
-| OpenSpec process | Change notes report skipped checks and manual-only rules. | OpenSpec config rule and manual review. | Manual checklist | No | Manual-only for now |
-| Docs/process | Source docs and OpenSpec config should not drift. | Required file checks, unsupported OpenSpec rule key scan, config routing checks, and matrix presence check. | `npm run docs:check` | Yes | Active |
-| Docs/process | Old report-style docs should not return as source-of-truth files. | Static check that `docs/architecture-design-report.md`, `docs/code-optimization-report.md`, and generic short names are absent. | `npm run docs:check` | Yes | Active |
-| Design system | Static HTML reference is generated/present when the design system exists. | Required file check and stale nested path check. | `npm run docs:check` | Yes | Active |
+| Area | Owner doc | Source rule | Validation method | Tool/script | Automated? | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| Design system | `docs/design-system.md` | Semantic tokens, restricted decorative styles, chart colors, accessible icon actions, reusable component catalog. | Static scans plus catalog presence checks. | `npm run design:check`, `npm run docs:check` | Yes | Active |
+| Design system | `docs/design-system.md` | shadcn/Radix primitives before custom primitives; status not communicated by color alone. | Manual UI review until shared APIs make this enforceable. | Manual checklist | No | Manual-only |
+| Design system | `docs/design-system.md` | Mobile overflow and responsive checks at 320px, 375px, 1024px, and 1440px. | Future viewport smoke and screenshot checks. | Playwright plan | No | Planned |
+| Architecture | `docs/architecture-guide.md` | UI/server import boundaries: no direct Prisma, provider, auth, filesystem, or API-route internals in client code. | Static import-boundary scan. | `npm run architecture:check` | Yes | Active |
+| Architecture | `docs/architecture-guide.md` | Feature-internal imports, dependency justification, and shared abstraction judgment. | Proposal/design review against existing call sites and module boundaries. | Manual checklist | No | Manual-only |
+| Data model | `docs/data-model-guide.md` | Money, month, value-source, asset/liability, refresh-state, and seed/test-data semantics. | Focused Vitest/database tests plus UI/status review where behavior changes. | `npm run test:unit`, `npm run test`, manual checklist | Partly | Active partial coverage |
+| Testing | `docs/testing-strategy.md` | Changed behavior has focused tests; DB-backed tests use the isolated test runner, not direct unit tests. | Script checks plus focused test execution. | `npm run docs:check`, `npm run test:unit`, `npm run test` | Partly | Active |
+| Testing | `docs/testing-strategy.md` | UI flow, smoke, and visual regression coverage. | Future deterministic Playwright setup. | Playwright plan | No | Planned |
+| Deployment | `openspec/changes/fix-production-db-connectivity/specs/production-db-connectivity/spec.md` | Production Vercel Functions run in `sin1` while Neon is hosted in Singapore. | Static parse of `vercel.json` for exactly `["sin1"]` plus post-deploy metadata review. | `npm run docs:check`, manual checklist | Partly | Active |
+| Deployment | `docs/testing-strategy.md`, `AGENTS.md` | Deployable OpenSpec changes are archived only after local validation, GitHub push, Vercel deployment success, and a deployed smoke check are recorded. | OpenSpec task review plus manual deployment checklist; docs/process drift checks keep the rule routed. | `npm run docs:check`, `npm run harness:check`, manual checklist | Partly | Active |
+| Deployment | `docs/testing-strategy.md`, `AGENTS.md` | Riskier changes prefer branch or worktree implementation, Vercel Preview verification, merge to `main`, and production verification before archive. | OpenSpec task review confirms branch/worktree path, Preview result, Production result, skipped checks, and manual-only rules. | Manual checklist | No | Manual-only |
+| OpenSpec process | `openspec/config.yaml` | Proposals identify affected areas, UI visual impact, reusable component impact, and validation impact. | OpenSpec review plus active-change scans. | `npm run docs:check` | Partly | Active |
+| OpenSpec process | `docs/design-system.md` | UI changes include Visual Review; medium/large changes include a reference-only prototype checkpoint. | Active OpenSpec change scan for required sections and prototype contract. | `npm run docs:check` | Yes | Active |
+| OpenSpec process | `openspec/config.yaml` | Tasks read relevant docs, run focused validation, and report skipped checks/manual-only rules. | OpenSpec review plus harness availability. | `npm run harness:check`, manual checklist | Partly | Active |
+| Docs/process | `docs/validation-harness.md` | Source docs, OpenSpec config, and validation matrix stay present and routed correctly. | Required-file, unsupported-key, routing, and stale-doc checks. | `npm run docs:check` | Yes | Active |
 
 ## Manual-only rules
 
-### shadcn/Radix primitives before custom primitives
-
-Why it is manual: a useful primitive decision depends on UX shape, accessibility behavior, and how close the existing shadcn component is to the need.
-
-How to review it: during proposal/design or code review, check whether a matching `components/ui/*` primitive or Radix primitive already exists before accepting a custom control.
-
-Should it become automated later: only if repeated drift appears. A script could flag new files under `components/ui/`, but it would still need human judgment.
-
-### Status is not communicated by color alone
-
-Why it is manual: static scans can find some color classes, but they cannot reliably prove whether nearby text, icon labels, tooltips, or `aria-label` text communicate the same state.
-
-How to review it: inspect changed status UI and confirm every color-coded state has readable text, an icon label, tooltip, or accessible name.
-
-Should it become automated later: partly. Shared status components could make this enforceable through component APIs.
-
-### Feature internals should not be imported across unrelated features
-
-Why it is manual: the repo does not yet have a formal `features/` directory or public/internal module convention.
-
-How to review it: when feature folders are introduced, require imports through public index files or shared `lib` modules.
-
-Should it become automated later: yes, once the folder structure exists. dependency-cruiser is a good fit then.
-
-### New dependencies require justification
-
-Why it is manual: package necessity depends on product value, bundle/runtime cost, security posture, and maintenance burden.
-
-How to review it: require the proposal or design to state why the dependency helps, what it replaces, and why a small local implementation is not enough.
-
-Should it become automated later: partly. CI can detect package changes, but justification quality remains a review task.
-
-### Shared abstractions require proven reuse
-
-Why it is manual: reuse is architectural judgment, not just call-site count.
-
-How to review it: ask whether the abstraction removes real duplication across at least two concrete callers or matches an established local pattern.
-
-Should it become automated later: no. Keep this as review judgment.
-
-### Responsive quality and visual polish
-
-Why it is manual: until Playwright fixtures and stable page states exist, automated screenshots would be brittle and expensive to maintain.
-
-How to review it: check changed screens at 320px, 375px, 1024px, and 1440px and record skipped viewports in change notes.
-
-Should it become automated later: yes. Start with smoke/overflow checks, then add screenshots for stable screens.
+| Rule | Review method | Automation future |
+| --- | --- | --- |
+| shadcn/Radix primitives before custom primitives | Check whether `components/ui/*` or Radix already fits before accepting a custom control. | Add a light new-primitive flag only if repeated drift appears. |
+| Status is not communicated by color alone | Confirm each color-coded state has readable text, an icon label, tooltip, or accessible name. | Partly enforce through shared status component APIs. |
+| Feature internals should not be imported across unrelated features | When feature folders exist, require public entrypoints or shared `lib` modules. | Add dependency-cruiser after feature boundaries stabilize. |
+| New dependencies require justification | Require proposal/design rationale: value, replacement, cost, and why local code is not enough. | Detect package diffs in CI; keep rationale as review judgment. |
+| Shared abstractions require proven reuse | Require concrete reuse or a clear local pattern before adding abstraction layers. | Keep manual. |
+| Responsive quality and visual polish | Check changed screens at 320px, 375px, 1024px, and 1440px; report skipped viewports. | Start with Playwright smoke/overflow checks, then stable screenshots. |
+| Deployed smoke check before OpenSpec archive | Confirm Vercel deployment success, load the deployed URL, smoke-check the touched route or workflow, and record skipped checks. | Add browser smoke tests after deterministic auth and deployment tooling exist. |
 
 ## Adoption phases
 

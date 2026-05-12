@@ -21,6 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { currencyType, currencySymbols } from "@/lib/definitions";
 import { SettingContext } from "@/context/settingContext";
+import { SIGN_OUT_REDIRECT_PATH } from "@/lib/auth-route-policy";
 
 export default function NavMenu(){
     const { theme, setTheme } = useTheme();
@@ -92,7 +93,7 @@ export default function NavMenu(){
                     Setting
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={ () => signOut()}>
+                <DropdownMenuItem onClick={ () => signOut({ redirectTo: SIGN_OUT_REDIRECT_PATH })}>
                     Sign out
                 </DropdownMenuItem>
             </DropdownMenuContent>

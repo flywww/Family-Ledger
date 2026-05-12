@@ -31,17 +31,33 @@ export default function CategorySelector ({
     const { updateDisplayCategories } = settingContext;
 
     useEffect(() => {
+        setSelectedCategories(queryCategories);
+    }, [queryCategories])
+
+    const applySelectedCategories = (nextSelectedCategories: Category[]) => {
         const params = new URLSearchParams(searchParams);
-        const categoryNames = selectedCategories.map(category => category.name).toString();
-        if (params.get('categories') === categoryNames) {
-            updateDisplayCategories(categoryNames);
+        const categoryNames = nextSelectedCategories.map(category => category.name).toString();
+
+        if (params.get('categories') !== categoryNames) {
+            params.set('categories', categoryNames);
+            replace(`${pathname}?${params.toString()}`);
+        }
+
+        updateDisplayCategories(categoryNames);
+    }
+
+    const handleCheckedChange = (category: Category, checked: boolean) => {
+        if (!checked && selectedCategories.length <= 1) {
             return;
         }
 
-        params.set('categories', categoryNames);
-        updateDisplayCategories(categoryNames);
-        replace(`${pathname}?${params.toString()}`); 
-    }, [pathname, replace, searchParams, selectedCategories, updateDisplayCategories])
+        const nextSelectedCategories = checked
+            ? [...selectedCategories, category]
+            : selectedCategories.filter(selectedCategory => selectedCategory.id !== category.id);
+
+        setSelectedCategories(nextSelectedCategories);
+        applySelectedCategories(nextSelectedCategories);
+    }
 
     return (
         <div>
@@ -58,10 +74,7 @@ export default function CategorySelector ({
                                 key={category.id}
                                 className="capitalize"
                                 checked={selectedCategories.some( selectedCategory => selectedCategory.id === category.id) }
-                                onCheckedChange={ checked => {
-                                        checked && setSelectedCategories([...selectedCategories, category])
-                                        !checked && selectedCategories.length > 1 && setSelectedCategories(selectedCategories.filter( selectedCategory => selectedCategory.id !== category.id ))
-                                }}  
+                                onCheckedChange={ checked => handleCheckedChange(category, checked)}
                             >
                                 {category.name}
                             </DropdownMenuCheckboxItem>

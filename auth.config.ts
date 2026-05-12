@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth'
+import { getAuthorizedRouteDecision } from './lib/auth-route-policy';
 
 export const authConfig = {
     pages: {
@@ -45,23 +46,7 @@ export const authConfig = {
         },
         authorized({ auth, request: { nextUrl} }){
             const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-            const isOnBalance = nextUrl.pathname.startsWith('/balance');
-            const isOnSetting = nextUrl.pathname.startsWith('/setting');
-            const isOnLogin = nextUrl.pathname.startsWith('/login');
-            const isOnRoot = nextUrl.pathname.endsWith('/');
-
-            if(isOnDashboard || isOnBalance || isOnSetting){
-                if(isLoggedIn) return true;
-                return false;
-            }else if(isLoggedIn && isOnLogin){
-                return Response.redirect(new URL('/dashboard', nextUrl));
-            }else if(isLoggedIn && isOnRoot){
-                return Response.redirect(new URL('/dashboard', nextUrl));
-            }else if(!isLoggedIn && isOnRoot){ 
-                return Response.redirect(new URL('/login', nextUrl));
-            }
-            return true;
+            return getAuthorizedRouteDecision({ isLoggedIn, nextUrl });
         },
     },
     providers: [] //list different login option

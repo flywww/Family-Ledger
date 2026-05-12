@@ -56,6 +56,12 @@ function isUiDesignChange(content) {
   return /\b(UI|design|visual|screen|layout|component|responsive|wireframe|prototype)\b/i.test(content);
 }
 
+function requireIncludes(content, needle, rule, file, message) {
+  if (!content.includes(needle)) {
+    failures.push({ rule, file, message });
+  }
+}
+
 const designSystem = requireFile("docs/design-system.md");
 const designSystemHtml = requireFile("docs/design-system.html");
 const conflicts = requireFile("docs/design/design-consistency-conflicts.md");
@@ -141,6 +147,22 @@ if (openspecConfig) {
       message: "OpenSpec config appears to duplicate design-system sections. Route to docs instead.",
     });
   }
+
+  requireIncludes(
+    openspecConfig,
+    "Durable-rule validation path",
+    "openspec-durable-rule-validation-gate",
+    "openspec/config.yaml",
+    "OpenSpec config must keep the durable-rule validation gate so new durable rules map to validation.",
+  );
+
+  requireIncludes(
+    openspecConfig,
+    "docs/validation-harness.md",
+    "openspec-validation-harness-routing",
+    "openspec/config.yaml",
+    "OpenSpec config must route durable-rule validation updates to docs/validation-harness.md.",
+  );
 }
 
 if (vercelConfig) {
@@ -163,6 +185,7 @@ if (vercelConfig) {
     });
   }
 }
+
 for (const changePath of listDirectories("openspec/changes")) {
   const proposalPath = path.join(changePath, "proposal.md");
   const designPath = path.join(changePath, "design.md");
@@ -297,7 +320,7 @@ if (validationHarness) {
     }
   }
 
-  if (!validationHarness.includes("| Area | Source rule | Validation method | Tool/script | Automated? | Status |")) {
+  if (!validationHarness.includes("| Area | Owner doc | Source rule | Validation method | Tool/script | Automated? | Status |")) {
     failures.push({
       rule: "validation-matrix-present",
       file: "docs/validation-harness.md",
@@ -431,6 +454,21 @@ if (agents && !agents.includes("# Family Ledger Repository Guide")) {
     file: "AGENTS.md",
     message: "Repository guide should be titled # Family Ledger Repository Guide.",
   });
+}
+
+if (agents) {
+  const requiredAgentContractPhrases = [
+    ["### MUST", "agent-contract-must-section", "AGENTS.md must keep a MUST section for non-negotiable repo operations."],
+    ["### ASK FIRST", "agent-contract-ask-first-section", "AGENTS.md must keep an ASK FIRST section for high-risk changes."],
+    ["### NEVER", "agent-contract-never-section", "AGENTS.md must keep a NEVER section for prohibited actions."],
+    ["Never delete or reset real database data unless the user explicitly asks.", "agent-contract-database-safety", "AGENTS.md must keep the real database deletion/reset prohibition."],
+    ["Keep durable rules mapped to a validation path in `docs/validation-harness.md`.", "agent-contract-validation-path", "AGENTS.md must keep the durable-rule validation-path requirement."],
+    ["Never edit `.env*` files into commits or expose secrets.", "agent-contract-env-safety", "AGENTS.md must keep the .env and secret-safety prohibition."],
+  ];
+
+  for (const [needle, rule, message] of requiredAgentContractPhrases) {
+    requireIncludes(agents, needle, rule, "AGENTS.md", message);
+  }
 }
 
 if (failures.length > 0) {

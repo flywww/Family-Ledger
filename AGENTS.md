@@ -52,15 +52,51 @@ Package manager note:
 - The repo has `pnpm-lock.yaml`, so use `pnpm` for installs and dev-server workflows.
 - Existing package scripts use `npm run` and are valid for validation commands.
 
-## Working Rules
+## Operating Contract
+
+### MUST
 
 - Preserve unrelated local changes.
-- Do not delete or reset the database unless the user explicitly asks.
-- Demo/test data must be additive or isolated.
-- No durable rule without a validation path.
-- If a source-of-truth doc changes, update `docs/validation-harness.md` with the validation method or manual review path.
-- OpenSpec config should route to docs; it should not duplicate full source-of-truth content.
-- Prefer small, focused harness checks before adding broad frameworks or dependencies.
+- Read only the source-of-truth docs relevant to the change before editing.
+- Keep durable rules mapped to a validation path in `docs/validation-harness.md`.
+- Use `pnpm` for installs and dev-server workflows.
+- Run the smallest relevant validation command set before completion.
+- For changes that ship through GitHub-to-Vercel deployment, archive OpenSpec only after local validation, GitHub push, Vercel deployment success, and a deployed smoke check are recorded.
+
+### ASK FIRST
+
+- Adding dependencies.
+- Changing Prisma schema, migrations, or database reset behavior.
+- Adding or changing environment variables.
+- Changing CI/CD, deployment, or production-like data workflows.
+- Running destructive commands or data cleanup outside isolated test data.
+
+### NEVER
+
+- Never delete or reset real database data unless the user explicitly asks.
+- Never edit `.env*` files into commits or expose secrets.
+- Never put full source-of-truth design, architecture, data, or testing content into `openspec/config.yaml`.
+- Never add broad frameworks or dependencies when a focused script/check is enough.
+
+Detailed design, architecture, data, and testing rules live in the source docs above. `openspec/config.yaml` is only the concise process gate that routes agents to those docs.
+
+## Deployment-Aware OpenSpec Lifecycle
+
+Default flow for deployable changes:
+
+```text
+openspec:propose
+  -> openspec:apply
+  -> local validation
+  -> commit and push
+  -> Vercel deployment
+  -> deployed smoke check
+  -> openspec:archive
+```
+
+Small, low-risk fixes can use direct `main` deployment when the maintainer intentionally accepts production auto-deploy. CI/CD, deployment, environment variable, authentication, database, migration, production-like data workflow, or large UI changes should prefer a branch or Git worktree with Vercel Preview verification before merge, followed by production verification after merge.
+
+Before archive, record the branch/worktree path used, local checks run, Vercel Preview or Production deployment result, deployed URL smoke check, and any skipped or manual-only checks.
 
 ## Validation Before Completion
 

@@ -29,6 +29,25 @@ flowchart TD
 | `npm run test:unit` | Non-database Vitest tests only. |
 | `npm run test` | Test runner that creates an isolated Prisma schema before Vitest. |
 
+## Deployment Validation Sequence
+
+For changes intended to ship through GitHub-to-Vercel deployment, testing continues past local commands:
+
+```text
+local validation
+  -> commit and push to GitHub
+  -> Vercel deployment completes
+  -> deployed URL loads
+  -> touched route or workflow passes a smoke check
+  -> OpenSpec archive
+```
+
+Use the smallest relevant local command set before pushing. For process and harness changes, that is `npm run docs:check` and `npm run harness:check`. For app behavior changes, use typecheck, lint, build, and focused tests; use `npm run test` for database-backed behavior when a Prisma-compatible isolated test database URL is available.
+
+Direct `main` deployment is acceptable for small, low-risk fixes when the maintainer intentionally accepts production auto-deploy. CI/CD, deployment, environment variable, authentication, database behavior, migrations, production-like data workflows, and large user-visible UI changes should prefer a branch or Git worktree with Vercel Preview verification before merge, then production verification after merge.
+
+Change tasks or notes should record local checks, Vercel deployment status, the preview or production URL smoke-checked, and any skipped checks or manual-only rules.
+
 ## What Requires Tests
 
 Add or update focused tests when changing:

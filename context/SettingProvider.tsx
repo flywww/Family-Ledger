@@ -3,7 +3,7 @@
 import { fetchSetting } from "@/lib/actions";
 import { Setting, SettingUpdateType } from "@/lib/definitions";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { updateSetting } from "@/lib/actions";
 import { SettingContext } from "./settingContext";
 
@@ -19,19 +19,19 @@ export const SettingProvider: React.FC<{children: React.ReactNode}> = ({children
         })();
     }, [session])
 
-    const updateUserSetting = async (setting: SettingUpdateType) => {
+    const updateUserSetting = useCallback(async (setting: SettingUpdateType) => {
         if(session){
             const newSetting = await updateSetting(session.user.id, setting);
             newSetting && setSetting(newSetting);
         }
-    }
+    }, [session])
 
-    const updateDisplayCategories = async (categories:string) => {
+    const updateDisplayCategories = useCallback(async (categories:string) => {
         if(session){
             const newSetting = await updateSetting(session.user.id, {displayCategories:categories});
             newSetting && setSetting(newSetting);
         }
-    }
+    }, [session])
 
 
     return (
