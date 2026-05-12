@@ -24,3 +24,12 @@
 - [x] 4.3 Run `npm run build`.
 - [x] 4.4 Run `npm run test:unit` or focused unit tests if data-shaping logic is extracted.
 - [x] 4.5 Report skipped checks, failing checks, manual-only visual review results, and deployment/archive readiness notes before completion.
+
+## 5. Deployment Evidence
+
+- [x] Local validation passed on 2026-05-12: `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:unit`, `npm run docs:check`, `npm run design:check`, and `npm run architecture:check`.
+- [x] Commit pushed to `origin/main`: `c7d7c9f` (`Add dashboard liability charts`).
+- [x] Vercel Production deployment succeeded: `dpl_8ovbHiyzo8Yyh29Q3ZocCfeKQSyM`, commit `c7d7c9fd8864f4760cadc0b9e5180dd418c8d28a`.
+- [x] Deployed smoke check passed on `https://family-ledger.stanley004.com/login` with HTTP 200 and login form content.
+- [x] Deployed smoke check passed on `https://family-ledger.stanley004.com/dashboard` with HTTP 200 and Dashboard content including `Liabilities` and `Liabilities ratio`.
+- [x] Direct deployment URL `https://family-ledger-ku7u9qfgi-flywwws-projects.vercel.app/dashboard` is Vercel Authentication protected; custom production domain smoke check was used.
