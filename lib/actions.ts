@@ -64,6 +64,7 @@ import {
 import {
     fetchCryptoPriceFromAPI as fetchCryptoPrice,
     fetchListedStockPriceFromAPI as fetchListedStockPrice,
+    fetchTaiwanListedStocksFromAPI,
 } from "./pricing";
 import { logAndThrowCriticalDatabaseFailure } from "./database-failures";
 
@@ -185,7 +186,7 @@ async function convertToValueData( balances: Balance[] ){
                     console.log(`USD ${value}`);  
                 }
                 //console.log(`[convertToValueData] key: ${key} \n valueData[key].value: ${valueData[key].value} (add value: ${value})`);
-                
+
             }else{
                 const addValue = await getConvertedCurrency(currency as currencyType, 'USD', value, date);
                 valueData[key].value += addValue;
@@ -654,12 +655,50 @@ export async function stopMonthlyRefreshCronTest() {
 //TODO: error handling sample
 export async function createBalance( balance: BalanceCreateType ){
     try {
-        const parsed = BalanceCreateSchema.safeParse(balance);
+        const session = await auth();
+        if(!session){
+            return {
+                message: "Unauthorized",
+            };
+        }
+        const balanceForUser = {
+            ...balance,
+            userId: session.user.id,
+        };
+        const parsed = BalanceCreateSchema.safeParse(balanceForUser);
         if(!parsed.success){
             return {
                 errors: parsed.error.flatten().fieldErrors,
                 message: `Missing Fields. Failed to Create balance: ${parsed.error}`,
             };
+        }
+        const submittedHolding = (balance as BalanceCreateType & {
+            holding?: {
+                category?: { id?: string | number };
+                categoryId?: string | number;
+                type?: string | number;
+                typeId?: string | number;
+            };
+        }).holding;
+        const selectedCategoryId = Number(submittedHolding?.categoryId ?? submittedHolding?.category?.id);
+        const selectedTypeId = Number(submittedHolding?.typeId ?? submittedHolding?.type);
+        if (
+            parsed.data.holdingId &&
+            Number.isFinite(selectedCategoryId) &&
+            selectedCategoryId > 0 &&
+            Number.isFinite(selectedTypeId) &&
+            selectedTypeId > 0
+        ) {
+            await prisma.holding.updateMany({
+                where: {
+                    id: parsed.data.holdingId,
+                    userId: session.user.id,
+                },
+                data: {
+                    categoryId: selectedCategoryId,
+                    typeId: selectedTypeId,
+                },
+            });
         }
         //TODO: update if it has same holding in current month
         const result = await prisma.balance.create({
@@ -896,10 +935,29 @@ export async function authenticate(
 //Holding
 export async function createHolding( holding: HoldingCreateType ){    
     try {
+        const session = await auth();
+        if(!session){
+            return {
+                message: "Unauthorized",
+            };
+        }
+        const holdingForUser = {
+            ...holding,
+            userId: session.user.id,
+        };
+        const parsedHolding = HoldingCreateSchema.safeParse(holdingForUser);
+        if(!parsedHolding.success){
+            return {
+                errors: parsedHolding.error.flatten().fieldErrors,
+                message: `Missing Fields. Failed to Create holding: ${parsedHolding.error}`,
+            };
+        }
+
         const data = await prisma.holding.findFirst({
             where:{
-                name: holding.name,
-                symbol: holding.symbol,
+                userId: session.user.id,
+                name: parsedHolding.data.name,
+                symbol: parsedHolding.data.symbol,
             },
             include:{
                 category: true,
@@ -909,16 +967,22 @@ export async function createHolding( holding: HoldingCreateType ){
 
         if(!data){
             await prisma.holding.create({
-                data: holding
+                data: parsedHolding.data
             })
         }else{
             const parsed = HoldingSchema.safeParse(data);
             if(parsed.success){
-                updateHolding(parsed.data.id, holding as HoldingUpdateType)
+                await updateHolding(parsed.data.id, parsedHolding.data as HoldingUpdateType)
             }
         }
+        return {
+            success: true,
+        };
     } catch (error) {
         console.error('Fail to create the Holding', error);
+        return {
+            message: "Database Error: Failed to Create holding.",
+        };
     }
 }
 
@@ -1071,32 +1135,45 @@ export async function fetchListedStocksFromAPI(query: string){
     const API_KEY = process.env.FMP_STOCK_API_KEY;
     const fetchURL = `https://financialmodelingprep.com/api/v3/search?`
 
-    if (!API_KEY) {
-        throw new Error("API key is missing");
-    }    
-    try {
-        const response = await fetch(`${fetchURL}query=${query}&limit=10&apikey=${API_KEY}`);
-        if(!response.ok){
-            console.log(`Using backup API to fetch listed stock list`);
-            // const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
-            return [];
-        }
-        const data = await response.json();
-        const listedStocks = data.map((stock: any) => ({
-            symbol: stock["symbol"],
-            name: stock["name"],
-            stockExchange: stock['stockExchange'],
-            sourceURL: fetchURL,
-            sourceId: stock["symbol"],
-            
-        })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
-        .map(({stockExchange, ...stock}: { stockExchange: any }) => stock)
+    const taiwanStocksPromise = fetchTaiwanListedStocksFromAPI(query).catch((error) => {
+        console.error("Failed to fetch Taiwan stocks data:", error);
+        return [];
+    });
 
-        return listedStocks;
+    try {
+        const listedStocksPromise = (async () => {
+            if (!API_KEY) {
+                console.error("FMP stock API key is missing; returning Taiwan listed-stock results only");
+                return [];
+            }
+
+            const response = await fetch(`${fetchURL}query=${query}&limit=10&apikey=${API_KEY}`);
+            if(!response.ok){
+                console.log(`Using backup API to fetch listed stock list`);
+                // const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
+                return [];
+            }
+            const data = await response.json();
+            return data.map((stock: any) => ({
+                symbol: stock["symbol"],
+                name: stock["name"],
+                stockExchange: stock['stockExchange'],
+                sourceURL: fetchURL,
+                sourceId: stock["symbol"],
+            })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
+            .map(({stockExchange, ...stock}: { stockExchange: any }) => stock);
+        })();
+
+        const [listedStocks, taiwanStocks] = await Promise.all([
+            listedStocksPromise,
+            taiwanStocksPromise,
+        ]);
+
+        return [...taiwanStocks, ...listedStocks].slice(0, 10);
     
     } catch (error) {
         console.error("Failed to fetch or parse stocks data:", error);
-        return [];    
+        return taiwanStocksPromise;
     }
 }
 

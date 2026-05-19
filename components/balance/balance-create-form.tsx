@@ -98,6 +98,17 @@ export default function CreateBalanceForm({
     const quantity = form.watch('quantity');
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
+    const getQuoteCurrency = (holding: Holding) => {
+        if (holding.sourceId?.startsWith("TWSE:") || holding.sourceId?.startsWith("TPEX:")) {
+            return "TWD";
+        }
+        if (holding.category?.name === "Cryptocurrency" || holding.category?.name === "Listed stock") {
+            return "USD";
+        }
+
+        return undefined;
+    }
+
     useEffect(() => {
         const getCategories = async () => {
             const categoryData = await fetchCategories();
@@ -112,6 +123,12 @@ export default function CreateBalanceForm({
     },[])
 
     useEffect(() => {
+        if(session?.user.id){
+            form.setValue("userId", session.user.id);
+        }
+    }, [form, session?.user.id])
+
+    useEffect(() => {
         if(holdingDBIsUpdated || categoryId){
             const getHoldings = async () => {
                 let holdingData;
@@ -120,12 +137,15 @@ export default function CreateBalanceForm({
                 }else{
                     holdingData = await fetchHoldings();
                 }
+                if(holdingData && selectedType){
+                    holdingData = holdingData.filter((holding) => holding.typeId === selectedType.id);
+                }
                 holdingData && setHoldingList(holdingData);
                 setHoldingDBIsUpdated(false)
             }
             getHoldings();
         }
-    },[holdingDBIsUpdated, categoryId])
+    },[holdingDBIsUpdated, categoryId, selectedType])
 
     useEffect(() => {
         form.setValue('value', price*quantity)
@@ -137,11 +157,13 @@ export default function CreateBalanceForm({
                 if(selectedCategory.name === 'Cryptocurrency'){
                     const price = await fetchCryptoPriceFromAPI(holding.sourceId.toString())
                     form.setValue('price', price);
+                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
                 }else if(selectedCategory.name === 'Listed stock'){
                     console.log(`get listed stock's price with: ${holding.sourceId.toString}`);
 
                     const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
                     form.setValue('price', price);
+                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
                 }
             } catch (error) {
                 console.error('Failed to fetch quote for holding', error);
@@ -180,7 +202,10 @@ export default function CreateBalanceForm({
                                 <Select
                                     onValueChange={(value) => {
                                         field.onChange(value);
-                                        setSelectedCategory(categoryList.find((category) => category.id.toString() === value));
+                                        const category = categoryList.find((category) => category.id.toString() === value);
+                                        setSelectedCategory(category);
+                                        form.setValue("holdingId", 0);
+                                        form.setValue("holding.name", "");
                                     }}
                                 >
                                     <FormControl>
@@ -214,6 +239,8 @@ export default function CreateBalanceForm({
                                         onValueChange={(value) => {
                                             field.onChange(value);
                                             setSelectedType(typeList.find((type) => value === type.id?.toString()));
+                                            form.setValue("holdingId", 0);
+                                            form.setValue("holding.name", "");
                                         }}
                                     >
                                         <FormControl>
@@ -373,7 +400,10 @@ export default function CreateBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Currency </FormLabel>
-                                    <Select {...field}>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                    >
                                         <FormControl>
                                             <SelectTrigger className="w-full sm:w-80">
                                                 <SelectValue/>

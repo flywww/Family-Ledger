@@ -101,18 +101,31 @@ export default function EditBalanceForm({
     //TODO: if it's float?
     const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
 
+    const getQuoteCurrency = (holding: Holding) => {
+        if (holding.sourceId?.startsWith("TWSE:") || holding.sourceId?.startsWith("TPEX:")) {
+            return "TWD";
+        }
+        if (holding.category?.name === "Cryptocurrency" || holding.category?.name === "Listed stock") {
+            return "USD";
+        }
+
+        return undefined;
+    }
+
     useEffect(() => {
         const getCategories = async () => {
             const categoryData = await fetchCategories();
             categoryData && setCategoryList(categoryData);
+            categoryData && setSelectedCategory(categoryData.find((category) => category.id === balance.holding?.category?.id));
         }
         const getTypes = async () => {
             const typeData = await fetchTypes();
             typeData && setTypeList(typeData);
+            typeData && setSelectedType(typeData.find((type) => type.id === balance.holding?.type?.id));
         }
         getCategories();
         getTypes();
-    },[])
+    },[balance.holding?.category?.id, balance.holding?.type?.id])
 
     useEffect(() => {
         if(holdingDBIsUpdated || categoryId){
@@ -123,12 +136,15 @@ export default function EditBalanceForm({
                 }else{
                     holdingData = await fetchHoldings();
                 }
+                if(holdingData && selectedType){
+                    holdingData = holdingData.filter((holding) => holding.typeId === selectedType.id);
+                }
                 holdingData && setHoldingList(holdingData);
                 setHoldingDBIsUpdated(false)
             }
             getHoldings();
         }
-    },[holdingDBIsUpdated, categoryId])
+    },[holdingDBIsUpdated, categoryId, selectedType])
 
     useEffect(() => {
         form.setValue('value', price*quantity)
@@ -140,9 +156,11 @@ export default function EditBalanceForm({
                 if(selectedCategory.name === 'Cryptocurrency'){
                     const price = await fetchCryptoPriceFromAPI(holding.sourceId)
                     form.setValue('price', price);
+                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
                 }else if(selectedCategory.name === 'Listed stock'){
                     const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
                     form.setValue('price', price);
+                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
                 }
             } catch (error) {
                 console.error('Failed to fetch quote for holding', error);
@@ -180,7 +198,9 @@ export default function EditBalanceForm({
                                     value={ field.value ? field.value.toString() : ""}
                                     onValueChange={(value) => {
                                         field.onChange(value);
-                                        setSelectedCategory(categoryList.find((category) => category.id.toString() === value));
+                                        const category = categoryList.find((category) => category.id.toString() === value);
+                                        setSelectedCategory(category);
+                                        form.setValue("holdingId", 0);
                                     }}
                                 >
                                     <FormControl>
@@ -216,6 +236,7 @@ export default function EditBalanceForm({
                                         onValueChange={(value) => {
                                             field.onChange(value);
                                             setSelectedType(typeList.find((type) => value === type.id?.toString()));
+                                            form.setValue("holdingId", 0);
                                         }}
                                     >
                                         <FormControl>
@@ -366,7 +387,10 @@ export default function EditBalanceForm({
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel> Currency </FormLabel>
-                                    <Select {...field}>
+                                    <Select
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                    >
                                         <FormControl>
                                             <SelectTrigger className="w-full sm:w-80">
                                                 <SelectValue/>

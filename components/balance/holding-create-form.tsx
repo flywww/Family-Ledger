@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
 import { Category, HoldingCreateType, HoldingCreateSchema, Type, Holding, HoldingsArray } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/lib/actions"
 import { cn } from "@/lib/utils"
@@ -72,6 +72,12 @@ export default function CreateHoldingForm({
         }
     })
 
+    useEffect(() => {
+        if(session?.user.id){
+            form.setValue("userId", session.user.id);
+        }
+    }, [form, session?.user.id])
+
     const handleSearch = useDebouncedCallback(async (query: string) => {
         let data: HoldingsArray;
         if(selectedCategory?.name === "Cryptocurrency"){
@@ -88,7 +94,11 @@ export default function CreateHoldingForm({
         setSubmitMessage(null);
         setSubmitSucceeded(false);
         try {
-            await createHolding(data);
+            const result = await createHolding(data);
+            if (result?.message) {
+                setSubmitMessage(result.message);
+                return;
+            }
             setHoldingDBIsUpdated(true);
             setSubmitSucceeded(true);
             setSubmitMessage("Holding saved. It is available in the holding list.");

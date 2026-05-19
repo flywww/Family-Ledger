@@ -300,6 +300,92 @@ async function seedManyCryptoSourceData(count: number) {
   };
 }
 
+async function seedTaiwanStockSourceData(sourceId = "TWSE:2330") {
+  const user = await prisma.user.create({
+    data: {
+      account: `taiwan-${sourceId.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+      password: "password123",
+    },
+  });
+
+  const assetType = await prisma.type.create({
+    data: {
+      name: "Assets",
+    },
+  });
+
+  const stockCategory = await prisma.category.create({
+    data: {
+      name: "Listed stock",
+      isHide: false,
+    },
+  });
+
+  await prisma.setting.create({
+    data: {
+      userId: user.id,
+      accountingDate: new Date("2026-02-01T00:00:00+08:00"),
+      displayCurrency: "TWD",
+      displayCategories: "Listed stock",
+    },
+  });
+
+  const holding = await prisma.holding.create({
+    data: {
+      name: sourceId.startsWith("TPEX") ? "元太" : "台積電",
+      symbol: sourceId.startsWith("TPEX") ? "8069.TWO" : "2330.TW",
+      typeId: assetType.id,
+      categoryId: stockCategory.id,
+      userId: user.id,
+      sourceId,
+      sourceURL: sourceId.startsWith("TPEX") ? "tpex" : "twse",
+    },
+  });
+
+  const previousMonth = new Date("2026-02-01T00:00:00+08:00");
+  await prisma.balance.create({
+    data: {
+      userId: user.id,
+      holdingId: holding.id,
+      date: previousMonth,
+      quantity: 2,
+      price: 800,
+      value: 1600,
+      currency: "TWD",
+      note: "",
+      priceStatus: "success",
+      priceFetchedAt: new Date("2026-03-01T02:00:00+08:00"),
+      priceSource: "seed",
+    },
+  });
+
+  const sourceBalances = await prisma.balance.findMany({
+    where: {
+      userId: user.id,
+      date: previousMonth,
+    },
+    include: {
+      holding: {
+        include: {
+          category: true,
+          type: true,
+        },
+      },
+      user: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+
+  return {
+    user,
+    previousMonth,
+    nextMonth: new Date("2026-03-01T00:00:00+08:00"),
+    sourceBalances,
+  };
+}
+
 beforeEach(async () => {
   fetchQuoteForSourceMock.mockReset();
   fetchCryptoQuotesBatchFromAPIMock.mockReset();
@@ -552,6 +638,184 @@ describe("monthly refresh workflow", () => {
     expect(finalStock?.price).toBe(245);
     expect(finalStock?.priceStatus).toBe("success");
   }, 40_000);
+
+  it("copies Taiwan stock balances as pending quote-backed assets", async () => {
+    const { user, nextMonth, sourceBalances } = await seedTaiwanStockSourceData("TWSE:2330");
+
+    await createMonthlyBalancesAndJob({
+      targetMonth: nextMonth,
+      userId: user.id,
+      sourceBalances: sourceBalances as any,
+    });
+
+    const copiedBalance = await prisma.balance.findFirst({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TWSE:2330",
+        },
+      },
+    });
+    const snapshot = await prisma.assetPriceSnapshot.findUnique({
+      where: {
+        userId_targetMonth_provider_sourceKey: {
+          userId: user.id,
+          targetMonth: nextMonth,
+          provider: "twse",
+          sourceKey: "2330",
+        },
+      },
+    });
+
+    expect(copiedBalance?.priceStatus).toBe("pending");
+    expect(copiedBalance?.priceSource).toBe("twse");
+    expect(snapshot?.status).toBe("pending");
+  });
+
+  it("refreshes Taiwan stock balances with TWD quotes and provider counts", async () => {
+    const { user, nextMonth, sourceBalances } = await seedTaiwanStockSourceData("TWSE:2330");
+
+    await createMonthlyBalancesAndJob({
+      targetMonth: nextMonth,
+      userId: user.id,
+      sourceBalances: sourceBalances as any,
+    });
+
+    const fetchedAt = new Date("2026-04-02T02:30:00+08:00");
+    fetchQuoteForSourceMock.mockImplementation(async (source) => ({
+      ...source,
+      price: 875,
+      currency: "TWD",
+      fetchedAt,
+    }));
+
+    const batch = await processMonthlyRefreshBatch(
+      new Date("2026-04-02T02:30:00+08:00"),
+      5,
+      {
+        userId: user.id,
+        targetMonth: nextMonth,
+      },
+    );
+
+    expect(batch.processedAssets).toBe(1);
+    expect(batch.providerCounts.twse).toBe(1);
+    expect(fetchQuoteForSourceMock).toHaveBeenCalledWith({
+      provider: "twse",
+      sourceKey: "2330",
+    });
+
+    const refreshedBalance = await prisma.balance.findFirst({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TWSE:2330",
+        },
+      },
+    });
+    const snapshot = await prisma.assetPriceSnapshot.findUnique({
+      where: {
+        userId_targetMonth_provider_sourceKey: {
+          userId: user.id,
+          targetMonth: nextMonth,
+          provider: "twse",
+          sourceKey: "2330",
+        },
+      },
+    });
+
+    expect(refreshedBalance?.price).toBe(875);
+    expect(refreshedBalance?.value).toBe(1750);
+    expect(refreshedBalance?.currency).toBe("TWD");
+    expect(refreshedBalance?.priceStatus).toBe("success");
+    expect(refreshedBalance?.priceFetchedAt?.toISOString()).toBe(fetchedAt.toISOString());
+    expect(refreshedBalance?.priceSource).toBe("twse");
+    expect(snapshot?.price).toBe(875);
+    expect(snapshot?.currency).toBe("TWD");
+    expect(snapshot?.status).toBe("success");
+    expect(snapshot?.fetchedAt?.toISOString()).toBe(fetchedAt.toISOString());
+  });
+
+  it("marks Taiwan stock quote failures as retryable provider errors", async () => {
+    const { user, nextMonth, sourceBalances } = await seedTaiwanStockSourceData("TPEX:8069");
+
+    await createMonthlyBalancesAndJob({
+      targetMonth: nextMonth,
+      userId: user.id,
+      sourceBalances: sourceBalances as any,
+    });
+
+    fetchQuoteForSourceMock.mockImplementation(async () => {
+      throw new Error("TPEX returned an invalid close price for 8069");
+    });
+
+    const batch = await processMonthlyRefreshBatch(
+      new Date("2026-04-02T02:30:00+08:00"),
+      5,
+      {
+        userId: user.id,
+        targetMonth: nextMonth,
+      },
+    );
+
+    expect(batch.providerCounts.tpex).toBe(1);
+    expect(batch.status).toBe("partial_complete");
+
+    const failedBalance = await prisma.balance.findFirst({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TPEX:8069",
+        },
+      },
+    });
+    const failedSnapshot = await prisma.assetPriceSnapshot.findUnique({
+      where: {
+        userId_targetMonth_provider_sourceKey: {
+          userId: user.id,
+          targetMonth: nextMonth,
+          provider: "tpex",
+          sourceKey: "8069",
+        },
+      },
+    });
+
+    expect(failedBalance?.priceStatus).toBe("failed");
+    expect(failedBalance?.priceError).toContain("TPEX returned an invalid close price");
+    expect(failedBalance?.priceSource).toBe("tpex");
+    expect(failedSnapshot?.status).toBe("failed");
+    expect(failedSnapshot?.error).toContain("TPEX returned an invalid close price");
+
+    await retryFailedMonthlyRefreshForMonth(user.id, nextMonth);
+
+    const retriedBalance = await prisma.balance.findFirst({
+      where: {
+        userId: user.id,
+        date: nextMonth,
+        holding: {
+          sourceId: "TPEX:8069",
+        },
+      },
+    });
+    const retriedSnapshot = await prisma.assetPriceSnapshot.findUnique({
+      where: {
+        userId_targetMonth_provider_sourceKey: {
+          userId: user.id,
+          targetMonth: nextMonth,
+          provider: "tpex",
+          sourceKey: "8069",
+        },
+      },
+    });
+
+    expect(retriedBalance?.priceStatus).toBe("pending");
+    expect(retriedBalance?.priceError).toBeNull();
+    expect(retriedSnapshot?.status).toBe("pending");
+    expect(retriedSnapshot?.error).toBeNull();
+  });
 
   it("manual retry still resets failed assets back to pending", async () => {
     const { user, nextMonth, sourceBalances } = await seedMonthlySourceData();

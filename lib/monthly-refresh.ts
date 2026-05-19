@@ -1164,7 +1164,10 @@ export async function processMonthlyRefreshBatch(
     (entry) => entry.source.provider === "coinmarketcap",
   );
   const stockEntries = batchEntries.filter(
-    (entry) => entry.source.provider === "financialmodelingprep",
+    (entry) =>
+      entry.source.provider === "financialmodelingprep" ||
+      entry.source.provider === "twse" ||
+      entry.source.provider === "tpex",
   );
 
   const cmcRequestsPerMinute = getConfiguredPositiveInteger(
