@@ -2,21 +2,11 @@
 
 ## Purpose
 
-This is the source of truth for working in the Family Ledger repository. Use it for repo navigation, commands, validation expectations, and agent workflow.
+This is the top-level repository contract and navigation entrypoint for agents working in Family Ledger. Use it for repo navigation, commands, validation expectations, and agent workflow.
 
 ## Project
 
-Family Ledger is a private family finance dashboard built with:
-
-- Next.js App Router
-- React Server Components
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Radix primitives
-- Recharts
-- Prisma
-- NextAuth
+Family Ledger is a private family finance dashboard built on Next.js App Router, React Server Components, TypeScript, Tailwind CSS, Prisma, and NextAuth.
 
 ## Source-Of-Truth Docs
 
@@ -28,9 +18,9 @@ Read the smallest relevant set before changing code:
 - Data model guide: `docs/data-model-guide.md`
 - Testing strategy: `docs/testing-strategy.md`
 - Validation harness: `docs/validation-harness.md`
+- Feature backlog: `docs/feature-backlog.md`
+- AI agent workflow: `docs/agent-development-workflow.md`
 - OpenSpec routing/process: `openspec/config.yaml`
-
-The design conflict backlog can be removed after the harness and design rules are fully enforced elsewhere.
 
 ## Commands
 
@@ -39,6 +29,7 @@ The design conflict backlog can be removed after the harness and design rules ar
 | `pnpm dev` | Start the Next dev server. |
 | `npm run typecheck` | Run TypeScript validation. |
 | `npm run lint` | Run ESLint with zero warnings. |
+| `npm run env:health` | Run read-only local environment and workflow readiness diagnostics without printing secrets. |
 | `npm run build` | Generate Prisma client and build Next. |
 | `npm run design:check` | Run design-system drift checks. |
 | `npm run architecture:check` | Run import-boundary checks. |
@@ -51,6 +42,10 @@ Package manager note:
 
 - The repo has `pnpm-lock.yaml`, so use `pnpm` for installs and dev-server workflows.
 - Existing package scripts use `npm run` and are valid for validation commands.
+
+Maintenance rule:
+
+- When commands, validation, deployment flow, or safety boundaries change, update this file and run `npm run docs:check`.
 
 ## Operating Contract
 
@@ -80,6 +75,14 @@ Package manager note:
 
 Detailed design, architecture, data, and testing rules live in the source docs above. `openspec/config.yaml` is only the concise process gate that routes agents to those docs.
 
+## Development Principles
+
+Use `docs/agent-development-workflow.md` for detailed agent behavior rules. In short:
+
+- Think before coding: state assumptions, surface ambiguity, and ask when evidence is insufficient.
+- Keep changes simple and surgical: solve the requested problem, match existing style, and avoid speculative abstractions.
+- Execute toward evidence: define success criteria, reproduce or test behavior when relevant, and validate before claiming completion.
+
 ## Deployment-Aware OpenSpec Lifecycle
 
 Default flow for deployable changes:
@@ -93,6 +96,19 @@ openspec:propose
   -> deployed smoke check
   -> openspec:archive
 ```
+
+### Agent-Led Gate Mode
+
+For deployable OpenSpec changes, the agent must lead the maintainer through each lifecycle gate instead of silently continuing across gates. After each gate completes, the agent should briefly report the evidence and ask the user to confirm the next gate before proceeding when the next gate changes repository or deployment state.
+
+Required checkpoints:
+
+- After local validation: ask before commit and push.
+- After commit and push: ask before waiting on or inspecting Vercel deployment when the user has not already requested CI/CD completion.
+- After Vercel deployment success: ask before smoke-checking protected or production URLs if credentials, bypass tokens, or production-side effects could be involved.
+- After deployed smoke check: ask before archiving.
+
+If the user asks to skip a required gate or archive early, the agent must explicitly warn which CI/CD step is being skipped, what evidence will be missing, and that the normal archive gate is being bypassed. Continue only after the user explicitly confirms the skip.
 
 Small, low-risk fixes can use direct `main` deployment when the maintainer intentionally accepts production auto-deploy. CI/CD, deployment, environment variable, authentication, database, migration, production-like data workflow, or large UI changes should prefer a branch or Git worktree with Vercel Preview verification before merge, followed by production verification after merge.
 

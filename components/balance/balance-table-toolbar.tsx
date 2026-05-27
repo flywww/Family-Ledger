@@ -142,8 +142,10 @@ export default function BalanceTableToolbar({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                                <Link href={`/balance/create?month=${queryMonthKey}`}> New balance </Link>
+                            <DropdownMenuItem asChild>
+                                <Link className="w-full" href={`/balance/create?month=${queryMonthKey}`}>
+                                    New balance
+                                </Link>
                             </DropdownMenuItem>
                             {refreshState && refreshState.status !== 'idle' && (
                                 <DropdownMenuItem disabled>

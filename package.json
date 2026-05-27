@@ -9,6 +9,7 @@
     "start": "next start",
     "typecheck": "tsc --project tsconfig.typecheck.json --noEmit",
     "lint": "eslint . --max-warnings=0",
+    "env:health": "node scripts/env-health.mjs",
     "design:check": "node scripts/design-check.mjs",
     "architecture:check": "node scripts/architecture-check.mjs",
     "docs:check": "node scripts/docs-check.mjs",

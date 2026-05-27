@@ -28,7 +28,7 @@ export function applyBalanceAnalysisView(
   const assetBalances = balances.filter((balance) => balance.holdingTypeName === "Assets");
   const filteredBalances =
     view === "all"
-      ? assetBalances
+      ? balances
       : assetBalances.filter(
           (balance) => balance.holdingCategoryName === BALANCE_ANALYSIS_CATEGORY_MAP[view],
         );

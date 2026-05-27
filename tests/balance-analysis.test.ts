@@ -61,7 +61,7 @@ describe("balance analysis helpers", () => {
     expect(resolveBalanceAnalysisView(undefined)).toBe("all");
   });
 
-  it("filters to asset rows and computes percentages for all view", () => {
+  it("includes asset and liability rows and computes percentages by type for all view", () => {
     const rows = [
       baseBalance({ id: 1, value: 100, holdingCategoryName: "Cash" }),
       baseBalance({ id: 2, value: 300, holdingCategoryName: "Cryptocurrency" }),
@@ -71,11 +71,12 @@ describe("balance analysis helpers", () => {
 
     const result = applyBalanceAnalysisView(rows, "all");
 
-    expect(result).toHaveLength(3);
-    expect(result.map((row) => row.id)).toEqual([1, 2, 3]);
+    expect(result).toHaveLength(4);
+    expect(result.map((row) => row.id)).toEqual([1, 2, 3, 4]);
     expect(result[0].percentage).toBeCloseTo(100 / 450);
     expect(result[1].percentage).toBeCloseTo(300 / 450);
     expect(result[2].percentage).toBeCloseTo(50 / 450);
+    expect(result[3].percentage).toBe(1);
   });
 
   it("filters category-specific views using the selected asset total", () => {

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Define the deployment-aware OpenSpec lifecycle for Family Ledger changes that ship through GitHub-to-Vercel deployment.
+
+## Requirements
 
 ### Requirement: OpenSpec archive requires deployment verification
 The Family Ledger change process SHALL verify the relevant Vercel deployment before archiving an OpenSpec change that is intended to ship through GitHub-to-Vercel deployment.
@@ -35,3 +38,14 @@ The Family Ledger CI/CD process SHALL map every durable deployment workflow rule
 #### Scenario: Source rule maps to validation
 - **WHEN** the deployment-aware OpenSpec process is implemented
 - **THEN** `docs/validation-harness.md` identifies the owner document, source rule, validation method, tool or manual checklist, automation status, and active status for the CI/CD deployment gate
+
+### Requirement: Agents lead deployment gates
+The Family Ledger change process SHALL require agents to lead maintainers through deployable OpenSpec lifecycle gates instead of silently skipping or reordering validation, push, deployment, smoke check, and archive steps.
+
+#### Scenario: Next gate changes repository or deployment state
+- **WHEN** an agent completes local validation, commit and push, Vercel deployment verification, deployed smoke check, or deployment evidence recording
+- **THEN** the agent reports the completed evidence and asks the maintainer to confirm the next gate before changing repository or deployment state unless the maintainer already requested the full CI/CD sequence
+
+#### Scenario: Maintainer skips a gate
+- **WHEN** the maintainer asks to skip local validation, commit and push, Vercel deployment verification, deployed smoke check, evidence recording, or archive order
+- **THEN** the agent warns which checkpoint is being skipped, states what evidence will be missing, and continues only after explicit confirmation
