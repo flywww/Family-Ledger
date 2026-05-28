@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Family Ledger - Agent Access MCP Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #fafafa;
+        --card: #ffffff;
+        --foreground: #09090b;
+        --muted: #f4f4f5;
+        --muted-foreground: #52525b;
+        --border: #e4e4e7;
+        --input: #d4d4d8;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-foreground: #ffffff;
+        --success: #047857;
+        --danger: #dc2626;
+        --warning-bg: #fff7ed;
+        --warning-border: #fed7aa;
+        --warning-text: #9a3412;
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        border-bottom: 1px solid var(--border);
+        background: var(--card);
+      }
+
+      .topbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 14px 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font-weight: 700;
+      }
+
+      .brand-text {
+        min-width: 0;
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .brand-subtitle {
+        margin: 0;
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      .page {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 24px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px 20px 48px;
+      }
+
+      .sidebar {
+        align-self: start;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 8px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted-foreground);
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .nav-item.active {
+        background: var(--muted);
+        color: var(--foreground);
+        font-weight: 600;
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 4px;
+        font-size: 24px;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        margin-bottom: 0;
+        color: var(--muted-foreground);
+        font-size: 14px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        box-shadow: 0 1px 2px rgb(9 9 11 / 4%);
+      }
+
+      .card-header {
+        padding: 20px 20px 8px;
+      }
+
+      .card-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .icon {
+        display: inline-grid;
+        width: 20px;
+        height: 20px;
+        place-items: center;
+        color: var(--primary);
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      .card-description {
+        margin: 4px 0 0;
+        color: var(--muted-foreground);
+        font-size: 14px;
+      }
+
+      .card-content {
+        padding: 12px 20px 20px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px auto;
+        gap: 12px;
+        align-items: end;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--foreground);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--input);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--foreground);
+        padding: 9px 10px;
+      }
+
+      textarea {
+        min-height: 170px;
+        resize: vertical;
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 38px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        padding: 8px 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background: var(--primary-hover);
+      }
+
+      .button.secondary {
+        border-color: var(--border);
+        background: var(--card);
+        color: var(--foreground);
+      }
+
+      .button.secondary:hover {
+        background: var(--muted);
+      }
+
+      .button.danger {
+        background: var(--danger);
+      }
+
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--muted);
+        padding: 12px;
+      }
+
+      .preset-grid p {
+        margin-bottom: 2px;
+        color: var(--muted-foreground);
+        font-size: 13px;
+      }
+
+      .preset-grid strong {
+        display: block;
+        color: var(--foreground);
+        font-size: 13px;
+      }
+
+      .mcp-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(280px, 1.15fr);
+        gap: 16px;
+      }
+
+      .warning {
+        border: 1px solid var(--warning-border);
+        border-radius: var(--radius);
+        background: var(--warning-bg);
+        color: var(--warning-text);
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 10px;
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        counter-increment: step;
+      }
+
+      .steps li::before {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--muted);
+        color: var(--foreground);
+        content: counter(step);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .steps strong {
+        display: block;
+        font-size: 13px;
+      }
+
+      .steps span {
+        display: block;
+        color: var(--muted-foreground);
+        font-size: 13px;
+      }
+
+      .prompt-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .status {
+        color: var(--muted-foreground);
+        font-size: 13px;
+      }
+
+      .key-row,
+      .activity-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+
+      .key-row + .key-row,
+      .activity-row + .activity-row {
+        margin-top: 10px;
+      }
+
+      .meta {
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      .token {
+        display: block;
+        overflow-x: auto;
+        color: var(--muted-foreground);
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+
+      .active-text {
+        color: var(--success);
+        font-size: 12px;
+      }
+
+      .mobile-note {
+        display: none;
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+
+      @media (max-width: 860px) {
+        .page {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          display: flex;
+          gap: 4px;
+          overflow-x: auto;
+        }
+
+        .nav-item {
+          white-space: nowrap;
+        }
+
+        .form-grid,
+        .mcp-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .topbar-inner,
+        .page {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .page-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .preset-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .key-row,
+        .activity-row {
+          grid-template-columns: 1fr;
+        }
+
+        .button {
+          width: 100%;
+        }
+
+        .mobile-note {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="brand-mark">FL</div>
+            <div class="brand-text">
+              <p class="brand-title">Family Ledger</p>
+              <p class="brand-subtitle">Settings prototype</p>
+            </div>
+          </div>
+          <button class="button secondary" type="button">demo@example.com</button>
+        </div>
+      </header>
+
+      <main class="page">
+        <nav class="sidebar" aria-label="Settings sections">
+          <button class="nav-item" type="button">Profile</button>
+          <button class="nav-item" type="button">Display</button>
+          <button class="nav-item" type="button">Refresh jobs</button>
+          <button class="nav-item active" type="button">Agent access</button>
+          <button class="nav-item" type="button">Danger zone</button>
+        </nav>
+
+        <section class="content" aria-labelledby="page-title">
+          <div class="page-header">
+            <div>
+              <h1 id="page-title">Agent access</h1>
+              <p class="lede">Create scoped keys and give trusted agents clear setup instructions.</p>
+            </div>
+          </div>
+
+          <div class="stack">
+            <article class="card">
+              <div class="card-header">
+                <div class="card-title-row">
+                  <span class="icon" aria-hidden="true">◇</span>
+                  <h2>Create agent key</h2>
+                </div>
+                <p class="card-description">Create dedicated API keys for trusted external agents.</p>
+              </div>
+              <div class="card-content">
+                <div class="form-grid">
+                  <div>
+                    <label for="agent-key-name">Key name</label>
+                    <input id="agent-key-name" value="Claude Desktop MCP" />
+                  </div>
+                  <div>
+                    <label for="preset">Preset</label>
+                    <select id="preset">
+                      <option>Read only</option>
+                      <option>Balance writer</option>
+                    </select>
+                  </div>
+                  <button class="button" type="button">+ Create key</button>
+                </div>
+
+                <div class="preset-grid" aria-label="Preset summary">
+                  <div>
+                    <strong>Read only</strong>
+                    <p>Holdings and balances read access.</p>
+                  </div>
+                  <div>
+                    <strong>Balance writer</strong>
+                    <p>Read access plus single-balance dry-run and apply.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card" aria-labelledby="mcp-title">
+              <div class="card-header">
+                <div class="card-title-row">
+                  <span class="icon" aria-hidden="true">⌁</span>
+                  <h2 id="mcp-title">MCP agent setup</h2>
+                </div>
+                <p class="card-description">Use this after creating a key. Paste tokens only into agents you trust.</p>
+              </div>
+              <div class="card-content">
+                <div class="mcp-layout">
+                  <div>
+                    <div class="warning">
+                      The bearer token can access Family Ledger data allowed by its preset. Treat it like a password.
+                    </div>
+                    <ol class="steps">
+                      <li>
+                        <div>
+                          <strong>Create an Agent API key</strong>
+                          <span>Choose Read only for lookup work or Balance writer for dry-run/apply balance changes.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div>
+                          <strong>Copy the token immediately</strong>
+                          <span>Family Ledger shows the full token only once after creation.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div>
+                          <strong>Configure your MCP-capable agent</strong>
+                          <span>Use the Family Ledger base URL and pass the token as a bearer token.</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div>
+                          <strong>Ask the agent to call existing tools</strong>
+                          <span>Use `/api/agent/tools/*` routes and stay within the key preset.</span>
+                        </div>
+                      </li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <label for="agent-prompt">Copy prompt for agent</label>
+                    <textarea id="agent-prompt" readonly>Use Family Ledger as a trusted MCP-accessible data source.
+
+Base URL: https://family-ledger.vercel.app
+Authorization: Bearer TOKEN_SHOWN_ONCE_AFTER_KEY_CREATION
+
+Use only the existing Family Ledger Agent API tool routes under /api/agent/tools/*.
+Allowed v1 tools: list_holdings, get_holding, list_balances, get_balance, create_balance_dry_run, create_balance_apply, update_balance_dry_run, update_balance_apply.
+
+Respect the selected key preset. If the key is Read only, do not attempt balance write dry-run or apply calls. If the key is Balance writer, dry-run every balance write before apply.
+
+Do not store or print the bearer token. Ask before making any write request.</textarea>
+                    <div class="prompt-actions">
+                      <button class="button" type="button" id="copy-prompt">Copy prompt</button>
+                      <span class="status" id="copy-status" role="status" aria-live="polite">Ready to copy.</span>
+                    </div>
+                    <p class="mobile-note">On mobile, review the full prompt before copying it into another app.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div class="card-title-row">
+                  <span class="icon" aria-hidden="true">□</span>
+                  <h2>API keys</h2>
+                </div>
+                <p class="card-description">1 active key</p>
+              </div>
+              <div class="card-content">
+                <div class="key-row">
+                  <div>
+                    <div>
+                      <strong>Claude Desktop MCP</strong>
+                      <span class="badge">Read only</span>
+                      <span class="active-text">active</span>
+                    </div>
+                    <code class="token">fl_agent_live_...7c91</code>
+                    <p class="meta">Created May 29, 10:18 AM · Last used Never</p>
+                  </div>
+                  <button class="button danger" type="button">Revoke</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div class="card-title-row">
+                  <span class="icon" aria-hidden="true">▦</span>
+                  <h2>Recent activity</h2>
+                </div>
+                <p class="card-description">Latest agent requests and key lifecycle events.</p>
+              </div>
+              <div class="card-content">
+                <div class="activity-row">
+                  <div>
+                    <strong>key_created · success</strong>
+                    <p class="meta">Claude Desktop MCP</p>
+                  </div>
+                  <p class="meta">May 29, 10:18 AM</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const button = document.querySelector("#copy-prompt");
+      const prompt = document.querySelector("#agent-prompt");
+      const status = document.querySelector("#copy-status");
+
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(prompt.value);
+          status.textContent = "Prompt copied.";
+        } catch (error) {
+          prompt.select();
+          status.textContent = "Select and copy the prompt manually.";
+        }
+      });
+    </script>
+  </body>
+</html>

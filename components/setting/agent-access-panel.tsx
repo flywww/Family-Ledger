@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Activity, Copy, KeyRound, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,28 @@ import {
   revokeAgentApiKeyAction,
 } from "@/lib/agent-api-actions";
 import type { AgentApiPreset } from "@/lib/agent-api";
+
+export const DEFAULT_AGENT_BASE_URL = "https://family-ledger.vercel.app";
+
+export function buildAgentMcpPrompt({
+  baseUrl,
+  token,
+}: {
+  baseUrl: string;
+  token: string | null;
+}) {
+  return `Use Family Ledger as a trusted MCP-accessible data source.
+
+Base URL: ${baseUrl}
+Authorization: Bearer ${token ?? "<create a key first, then use the one-time token shown by Family Ledger>"}
+
+Use only the existing Family Ledger Agent API tool routes under /api/agent/tools/*.
+Allowed v1 tools: list_holdings, get_holding, list_balances, get_balance, create_balance_dry_run, create_balance_apply, update_balance_dry_run, update_balance_apply.
+
+Respect the selected key preset. If the key is Read only, do not attempt balance write dry-run or apply calls. If the key is Balance writer, dry-run every balance write before apply.
+
+Paste the bearer token only into a trusted agent environment. Do not store or print the bearer token. Ask before making any write request.`;
+}
 
 export type AgentKey = {
   id: string;
@@ -97,10 +119,19 @@ export default function AgentAccessPanel({
   const [name, setName] = useState("");
   const [preset, setPreset] = useState<AgentApiPreset>("read_only");
   const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [agentBaseUrl, setAgentBaseUrl] = useState(DEFAULT_AGENT_BASE_URL);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const activeKeys = useMemo(() => keys.filter((key) => key.status === "active"), [keys]);
+  const agentPrompt = useMemo(
+    () => buildAgentMcpPrompt({ baseUrl: agentBaseUrl, token: createdToken }),
+    [agentBaseUrl, createdToken],
+  );
+
+  useEffect(() => {
+    setAgentBaseUrl(window.location.origin);
+  }, []);
 
   const createKey = () => {
     setMessage(null);
@@ -144,6 +175,13 @@ export default function AgentAccessPanel({
         setMessage("Agent API key revoked.");
       })();
     });
+  };
+
+  const copyAgentPrompt = () => {
+    void navigator.clipboard.writeText(agentPrompt).then(
+      () => setMessage("Agent prompt copied."),
+      () => setMessage("Agent prompt could not be copied."),
+    );
   };
 
   return (
@@ -228,6 +266,70 @@ export default function AgentAccessPanel({
                   {message}
                 </p>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-lg shadow-sm">
+            <CardHeader className="gap-1 p-5">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                <CardTitle className="text-lg">MCP agent setup</CardTitle>
+              </div>
+              <CardDescription>
+                Use this after creating a key. Paste tokens only into agents you trust.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 p-5 pt-0">
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                The bearer token can access Family Ledger data allowed by its preset. Treat it like a password.
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(280px,1.1fr)]">
+                <ol className="space-y-3 text-sm">
+                  {[
+                    {
+                      title: "Create an Agent API key",
+                      body: "Choose Read only for lookup work or Balance writer for dry-run/apply balance changes.",
+                    },
+                    {
+                      title: "Copy the token immediately",
+                      body: "Family Ledger shows the full token only once after creation.",
+                    },
+                    {
+                      title: "Configure your MCP-capable agent",
+                      body: "Use the Family Ledger base URL and pass the token as a bearer token.",
+                    },
+                    {
+                      title: "Ask the agent to call existing tools",
+                      body: "Use /api/agent/tools/* routes and stay within the key preset.",
+                    },
+                  ].map((step, index) => (
+                    <li key={step.title} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-medium text-foreground">{step.title}</span>
+                        <span className="text-muted-foreground">{step.body}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="space-y-2">
+                  <Label htmlFor="agent-mcp-prompt">Copy prompt for agent</Label>
+                  <textarea
+                    id="agent-mcp-prompt"
+                    value={agentPrompt}
+                    readOnly
+                    className="min-h-44 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-sm"
+                  />
+                  <Button type="button" variant="outline" onClick={copyAgentPrompt}>
+                    <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Copy prompt
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
