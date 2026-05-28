@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Family Ledger Agent API Key Prototype</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #fafafa;
+        --foreground: #09090b;
+        --card: #ffffff;
+        --muted: #f4f4f5;
+        --muted-foreground: #52525b;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-foreground: #f8fafc;
+        --border: #e4e4e7;
+        --input: #d4d4d8;
+        --success: #059669;
+        --success-bg: #ecfdf5;
+        --success-border: #a7f3d0;
+        --warning: #d97706;
+        --warning-bg: #fffbeb;
+        --warning-border: #fde68a;
+        --danger: #e11d48;
+        --danger-bg: #fff1f2;
+        --danger-border: #fecdd3;
+        --info: #0369a1;
+        --info-bg: #f0f9ff;
+        --info-border: #bae6fd;
+        --radius: 8px;
+        --shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      h2 {
+        font-size: 16px;
+        font-weight: 650;
+      }
+
+      h3 {
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        align-items: center;
+        background: color-mix(in srgb, var(--background) 94%, transparent);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+        padding: 14px 28px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .brand {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .nav {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
+      .nav a {
+        border-radius: 999px;
+        color: var(--foreground);
+        padding: 8px 18px;
+        text-decoration: none;
+      }
+
+      .nav a.active {
+        background: var(--muted);
+        font-weight: 600;
+      }
+
+      .page {
+        margin: 0 auto;
+        max-width: 1220px;
+        padding: 24px;
+      }
+
+      .page-header {
+        align-items: end;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .subtle {
+        color: var(--muted-foreground);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .tab {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--foreground);
+        padding: 8px 14px;
+      }
+
+      .tab.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--primary-foreground);
+        font-weight: 650;
+      }
+
+      .layout {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 280px minmax(0, 1fr);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        min-width: 0;
+      }
+
+      .card-header {
+        border-bottom: 1px solid var(--border);
+        padding: 16px;
+      }
+
+      .card-content {
+        padding: 16px;
+      }
+
+      .settings-nav {
+        padding: 8px;
+      }
+
+      .settings-nav a {
+        border-radius: 6px;
+        color: var(--foreground);
+        display: block;
+        padding: 9px 10px;
+        text-decoration: none;
+      }
+
+      .settings-nav a.active {
+        background: var(--muted);
+        font-weight: 650;
+      }
+
+      .settings-panel {
+        display: none;
+      }
+
+      .settings-panel.active {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .toolbar {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+      }
+
+      .button-row {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .btn {
+        align-items: center;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        cursor: default;
+        display: inline-flex;
+        font-weight: 600;
+        gap: 8px;
+        min-height: 38px;
+        padding: 8px 12px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+
+      .btn-outline {
+        background: var(--card);
+        border-color: var(--border);
+        color: var(--foreground);
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: #ffffff;
+      }
+
+      .status {
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 650;
+        gap: 6px;
+        padding: 3px 8px;
+        white-space: nowrap;
+      }
+
+      .status-success {
+        background: var(--success-bg);
+        border-color: var(--success-border);
+        color: var(--success);
+      }
+
+      .status-warning {
+        background: var(--warning-bg);
+        border-color: var(--warning-border);
+        color: var(--warning);
+      }
+
+      .status-danger {
+        background: var(--danger-bg);
+        border-color: var(--danger-border);
+        color: var(--danger);
+      }
+
+      .status-info {
+        background: var(--info-bg);
+        border-color: var(--info-border);
+        color: var(--info);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        min-width: 840px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 10px;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-size: 12px;
+        font-weight: 650;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 13px;
+      }
+
+      .mono {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace,
+          monospace;
+        font-size: 12px;
+      }
+
+      .scopes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .scope {
+        background: var(--muted);
+        border-radius: 999px;
+        color: var(--foreground);
+        font-size: 12px;
+        padding: 3px 8px;
+      }
+
+      .grid-2 {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 650;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select {
+        background: var(--card);
+        border: 1px solid var(--input);
+        border-radius: 6px;
+        min-height: 38px;
+        padding: 8px 10px;
+        width: 100%;
+      }
+
+      .check-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .check-row {
+        align-items: start;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 18px minmax(0, 1fr);
+        padding: 10px;
+      }
+
+      .check-row input {
+        min-height: auto;
+        margin-top: 3px;
+        width: auto;
+      }
+
+      .token-box {
+        align-items: center;
+        background: #09090b;
+        border-radius: 6px;
+        color: #fafafa;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        min-width: 0;
+        padding: 12px;
+      }
+
+      .token-box code {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .audit-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .audit-item {
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 10px;
+      }
+
+      .prototype,
+      .agent-panel {
+        display: none;
+      }
+
+      .prototype.active,
+      .agent-panel.active {
+        display: block;
+      }
+
+      .modal-frame {
+        background:
+          linear-gradient(rgb(9 9 11 / 0.52), rgb(9 9 11 / 0.52)),
+          var(--background);
+        border-radius: var(--radius);
+        padding: 28px;
+      }
+
+      .modal {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 18px 50px rgb(15 23 42 / 0.28);
+        margin: 0 auto;
+        max-width: 680px;
+      }
+
+      .callout {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px;
+      }
+
+      .callout-warning {
+        background: var(--warning-bg);
+        border-color: var(--warning-border);
+      }
+
+      @media (max-width: 860px) {
+        .topbar,
+        .page-header,
+        .toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .nav {
+          overflow-x: auto;
+          padding-bottom: 2px;
+          width: 100%;
+        }
+
+        .layout,
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+
+        .page {
+          padding: 16px;
+        }
+
+        .settings-nav {
+          display: flex;
+          gap: 6px;
+          overflow-x: auto;
+        }
+
+        .settings-nav a {
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">Family Ledger</div>
+        <nav class="nav" aria-label="Main navigation">
+          <a href="#">Dashboard</a>
+          <a href="#">Balance</a>
+          <a href="#">Refresh</a>
+          <a href="#" class="active">Settings</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <div class="page-header">
+          <div>
+            <h1 id="settings-title">Agent access</h1>
+            <p id="settings-subtitle" class="subtle">
+              Manage scoped API keys for trusted external agents.
+            </p>
+          </div>
+        </div>
+
+        <section id="prototype-a" class="prototype active">
+          <div class="layout">
+            <aside class="card">
+              <nav class="settings-nav" aria-label="Settings sections">
+                <a
+                  href="#"
+                  data-settings-target="settings-profile"
+                  data-settings-title="Profile"
+                  data-settings-subtitle="Manage account identity and password controls."
+                  >Profile</a
+                >
+                <a
+                  href="#"
+                  data-settings-target="settings-display"
+                  data-settings-title="Display"
+                  data-settings-subtitle="Choose dashboard currency and visible categories."
+                  >Display</a
+                >
+                <a
+                  href="#"
+                  data-settings-target="settings-refresh"
+                  data-settings-title="Refresh jobs"
+                  data-settings-subtitle="Review monthly price refresh behavior and job status."
+                  >Refresh jobs</a
+                >
+                <a
+                  href="#"
+                  class="active"
+                  data-settings-target="settings-agent"
+                  data-settings-title="Agent access"
+                  data-settings-subtitle="Manage scoped API keys for trusted external agents."
+                  >Agent access</a
+                >
+                <a
+                  href="#"
+                  data-settings-target="settings-danger"
+                  data-settings-title="Danger zone"
+                  data-settings-subtitle="Handle high-risk account and data operations."
+                  >Danger zone</a
+                >
+              </nav>
+            </aside>
+
+            <div class="stack">
+              <section
+                id="settings-agent"
+                class="settings-panel active"
+                aria-label="Agent access settings"
+              >
+                <div class="tabs" aria-label="Agent access views">
+                  <button class="tab active" data-agent-target="agent-settings-section">
+                    Settings section
+                  </button>
+                  <button class="tab" data-agent-target="agent-dedicated-page">
+                    Dedicated page
+                  </button>
+                  <button class="tab" data-agent-target="agent-create-revoke">
+                    Create and revoke
+                  </button>
+                </div>
+
+                <div
+                  id="agent-settings-section"
+                  class="agent-panel active stack"
+                  aria-label="Agent access settings section"
+                >
+                <div class="card">
+                  <div class="card-header toolbar">
+                    <div>
+                      <h2>API keys</h2>
+                      <p class="subtle">
+                        Keys are user-scoped and can be revoked at any time.
+                      </p>
+                    </div>
+                    <button class="btn btn-primary">Create key</button>
+                  </div>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Token</th>
+                          <th>Scopes</th>
+                          <th>Last used</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <strong>Claude Desktop</strong>
+                            <div class="subtle">Created May 25, 2026</div>
+                          </td>
+                          <td class="mono">fl_agent_...7c91</td>
+                          <td>
+                            <div class="scopes">
+                              <span class="scope">balances:read</span>
+                              <span class="scope">balances:write</span>
+                              <span class="scope">holdings:read</span>
+                            </div>
+                          </td>
+                          <td>Today 09:42</td>
+                          <td>
+                            <span class="status status-success">Active</span>
+                          </td>
+                          <td>
+                            <button class="btn btn-outline">Revoke</button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Workflow test key</strong>
+                            <div class="subtle">Created May 21, 2026</div>
+                          </td>
+                          <td class="mono">fl_agent_...2b18</td>
+                          <td>
+                            <div class="scopes">
+                              <span class="scope">balances:read</span>
+                            </div>
+                          </td>
+                          <td>May 24, 2026</td>
+                          <td>
+                            <span class="status status-warning">Read only</span>
+                          </td>
+                          <td>
+                            <button class="btn btn-outline">Revoke</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Write safeguards</h2>
+                    </div>
+                    <div class="card-content stack">
+                      <div class="audit-item">
+                        <div>
+                          <strong>Dry-run first</strong>
+                          <div class="subtle">
+                            All create, edit, and delete requests return a
+                            preview before execution.
+                          </div>
+                        </div>
+                        <span class="status status-success">On</span>
+                      </div>
+                      <div class="audit-item">
+                        <div>
+                          <strong>Confirmation tokens</strong>
+                          <div class="subtle">
+                            Required for deletes, bulk edits, and historical
+                            changes.
+                          </div>
+                        </div>
+                        <span class="status status-success">On</span>
+                      </div>
+                      <div class="audit-item">
+                        <div>
+                          <strong>Monthly mutation limit</strong>
+                          <div class="subtle">
+                            Maximum 25 write requests per day.
+                          </div>
+                        </div>
+                        <span class="status status-info">25/day</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h2>Recent agent activity</h2>
+                    </div>
+                    <div class="card-content audit-list">
+                      <div class="audit-item">
+                        <div>
+                          <strong>Dry-run balance update</strong>
+                          <div class="subtle">
+                            TSMC, 2026-05, quantity 15 -> 18
+                          </div>
+                        </div>
+                        <span class="status status-info">Preview</span>
+                      </div>
+                      <div class="audit-item">
+                        <div>
+                          <strong>Created cash balance</strong>
+                          <div class="subtle">Bank account, 2026-05, TWD</div>
+                        </div>
+                        <span class="status status-success">Applied</span>
+                      </div>
+                      <div class="audit-item">
+                        <div>
+                          <strong>Delete rejected</strong>
+                          <div class="subtle">
+                            Missing confirmation token for balance 188
+                          </div>
+                        </div>
+                        <span class="status status-danger">Blocked</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+
+                <div
+                  id="agent-dedicated-page"
+                  class="agent-panel stack"
+                  aria-label="Agent access dedicated page"
+                >
+                  <section class="grid-2">
+                    <div class="card">
+                      <div class="card-header">
+                        <h2>Agent API</h2>
+                        <p class="subtle">
+                          Network access for external tools that update Family
+                          Ledger on your behalf.
+                        </p>
+                      </div>
+                      <div class="card-content stack">
+                        <div class="audit-item">
+                          <div>
+                            <strong>Base URL</strong>
+                            <div class="mono subtle">
+                              https://family-ledger.vercel.app/api/agent
+                            </div>
+                          </div>
+                          <button class="btn btn-outline">Copy</button>
+                        </div>
+                        <div class="audit-item">
+                          <div>
+                            <strong>Authentication</strong>
+                            <div class="subtle">Bearer agent API key</div>
+                          </div>
+                          <span class="status status-success">Required</span>
+                        </div>
+                        <div class="audit-item">
+                          <div>
+                            <strong>Mutation mode</strong>
+                            <div class="subtle">Dry-run, then apply</div>
+                          </div>
+                          <span class="status status-warning">Guarded</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="card">
+                      <div class="card-header toolbar">
+                        <div>
+                          <h2>Active keys</h2>
+                          <p class="subtle">2 active, 1 revoked</p>
+                        </div>
+                        <button class="btn btn-primary">Create key</button>
+                      </div>
+                      <div class="card-content stack">
+                        <div class="audit-item">
+                          <div>
+                            <strong>Claude Desktop</strong>
+                            <div class="subtle">Write access, last used today</div>
+                          </div>
+                          <span class="status status-success">Active</span>
+                        </div>
+                        <div class="audit-item">
+                          <div>
+                            <strong>Workflow test key</strong>
+                            <div class="subtle">Read only, last used May 24</div>
+                          </div>
+                          <span class="status status-warning">Read only</span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="card">
+                    <div class="card-header toolbar">
+                      <div>
+                        <h2>Audit log</h2>
+                        <p class="subtle">
+                          Every agent request records key, scope, target,
+                          result, and timestamp.
+                        </p>
+                      </div>
+                      <button class="btn btn-outline">Export CSV</button>
+                    </div>
+                    <div class="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Time</th>
+                            <th>Key</th>
+                            <th>Action</th>
+                            <th>Target</th>
+                            <th>Result</th>
+                            <th>Request ID</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>09:42</td>
+                            <td>Claude Desktop</td>
+                            <td>update_balance.dry_run</td>
+                            <td>Balance 188</td>
+                            <td>
+                              <span class="status status-info">Preview</span>
+                            </td>
+                            <td class="mono">req_3J8W0</td>
+                          </tr>
+                          <tr>
+                            <td>09:41</td>
+                            <td>Claude Desktop</td>
+                            <td>create_balance.apply</td>
+                            <td>Bank account</td>
+                            <td>
+                              <span class="status status-success">Applied</span>
+                            </td>
+                            <td class="mono">req_3J8V9</td>
+                          </tr>
+                          <tr>
+                            <td>09:39</td>
+                            <td>Claude Desktop</td>
+                            <td>delete_balance.apply</td>
+                            <td>Balance 188</td>
+                            <td>
+                              <span class="status status-danger">Blocked</span>
+                            </td>
+                            <td class="mono">req_3J8V2</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                </div>
+
+                <div
+                  id="agent-create-revoke"
+                  class="agent-panel"
+                  aria-label="Create and revoke agent keys"
+                >
+                  <div class="grid-2">
+                    <section class="modal-frame">
+                      <div class="modal">
+                        <div class="card-header">
+                          <h2>Create agent API key</h2>
+                          <p class="subtle">
+                            The full token is shown once after creation.
+                          </p>
+                        </div>
+                        <div class="card-content form-grid">
+                          <div>
+                            <label for="agent-key-name">Key name</label>
+                            <input
+                              id="agent-key-name"
+                              value="Claude Desktop"
+                              aria-label="Key name"
+                            />
+                          </div>
+                          <div>
+                            <label for="agent-key-expires">Expiration</label>
+                            <select id="agent-key-expires" aria-label="Expiration">
+                              <option>90 days</option>
+                              <option>30 days</option>
+                              <option>No expiration</option>
+                            </select>
+                          </div>
+                          <div class="check-list">
+                            <label>Scopes</label>
+                            <div class="check-row">
+                              <input
+                                type="checkbox"
+                                checked
+                                aria-label="Read balances"
+                              />
+                              <div>
+                                <strong>balances:read</strong>
+                                <div class="subtle">
+                                  List and inspect monthly balances.
+                                </div>
+                              </div>
+                            </div>
+                            <div class="check-row">
+                              <input
+                                type="checkbox"
+                                checked
+                                aria-label="Write balances"
+                              />
+                              <div>
+                                <strong>balances:write</strong>
+                                <div class="subtle">
+                                  Create and edit balances after dry-run preview.
+                                </div>
+                              </div>
+                            </div>
+                            <div class="check-row">
+                              <input
+                                type="checkbox"
+                                checked
+                                aria-label="Read holdings"
+                              />
+                              <div>
+                                <strong>holdings:read</strong>
+                                <div class="subtle">
+                                  List asset and liability metadata.
+                                </div>
+                              </div>
+                            </div>
+                            <div class="check-row">
+                              <input type="checkbox" aria-label="Write holdings" />
+                              <div>
+                                <strong>holdings:write</strong>
+                                <div class="subtle">
+                                  Create or edit holding metadata with stricter
+                                  checks.
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="button-row">
+                            <button class="btn btn-primary">Create key</button>
+                            <button class="btn btn-outline">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section class="stack">
+                      <div class="card">
+                        <div class="card-header">
+                          <h2>Key created</h2>
+                          <p class="subtle">
+                            Copy this token now. It will not be shown again.
+                          </p>
+                        </div>
+                        <div class="card-content stack">
+                          <div class="token-box">
+                            <code class="mono">
+                              fl_agent_live_4Lq8vVj2Yp9nR0sKc6A1tMz
+                            </code>
+                            <button class="btn btn-outline">Copy</button>
+                          </div>
+                          <div class="callout callout-warning">
+                            Store this token in your agent client. Family Ledger
+                            stores only a hash and cannot recover the full token
+                            later.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="card">
+                        <div class="card-header">
+                          <h2>Revoke key</h2>
+                          <p class="subtle">
+                            Existing requests with this token will fail
+                            immediately.
+                          </p>
+                        </div>
+                        <div class="card-content form-grid">
+                          <div class="audit-item">
+                            <div>
+                              <strong>Claude Desktop</strong>
+                              <div class="subtle">
+                                scopes: balances:read, balances:write,
+                                holdings:read
+                              </div>
+                            </div>
+                            <span class="status status-success">Active</span>
+                          </div>
+                          <div>
+                            <label for="agent-confirm-name">
+                              Type key name to revoke
+                            </label>
+                            <input id="agent-confirm-name" value="Claude Desktop" />
+                          </div>
+                          <div class="button-row">
+                            <button class="btn btn-danger">Revoke key</button>
+                            <button class="btn btn-outline">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                id="settings-profile"
+                class="settings-panel"
+                aria-label="Profile settings"
+              >
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Profile</h2>
+                    <p class="subtle">
+                      Account identity used for Family Ledger ownership.
+                    </p>
+                  </div>
+                  <div class="card-content form-grid">
+                    <div>
+                      <label for="profile-account">Account</label>
+                      <input id="profile-account" value="demo" />
+                    </div>
+                    <div>
+                      <label for="profile-created">Created</label>
+                      <input id="profile-created" value="May 2026" readonly />
+                    </div>
+                    <div class="button-row">
+                      <button class="btn btn-primary">Save profile</button>
+                      <button class="btn btn-outline">Change password</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                id="settings-display"
+                class="settings-panel"
+                aria-label="Display settings"
+              >
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Display</h2>
+                    <p class="subtle">
+                      Default dashboard currency and visible categories.
+                    </p>
+                  </div>
+                  <div class="card-content form-grid">
+                    <div>
+                      <label for="display-currency">Display currency</label>
+                      <select id="display-currency">
+                        <option>TWD</option>
+                        <option>USD</option>
+                        <option>JPY</option>
+                      </select>
+                    </div>
+                    <div class="check-list">
+                      <label>Dashboard categories</label>
+                      <div class="check-row">
+                        <input type="checkbox" checked aria-label="Cash" />
+                        <div>
+                          <strong>Cash</strong>
+                          <div class="subtle">Bank and cash positions.</div>
+                        </div>
+                      </div>
+                      <div class="check-row">
+                        <input type="checkbox" checked aria-label="Listed stock" />
+                        <div>
+                          <strong>Listed stock</strong>
+                          <div class="subtle">Market-priced public equities.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary">Save display settings</button>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                id="settings-refresh"
+                class="settings-panel"
+                aria-label="Refresh job settings"
+              >
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Refresh jobs</h2>
+                    <p class="subtle">
+                      Monthly price refresh behavior and operational status.
+                    </p>
+                  </div>
+                  <div class="card-content stack">
+                    <div class="audit-item">
+                      <div>
+                        <strong>Target accounting month</strong>
+                        <div class="subtle">2026-05</div>
+                      </div>
+                      <span class="status status-info">Current</span>
+                    </div>
+                    <div class="audit-item">
+                      <div>
+                        <strong>Last refresh</strong>
+                        <div class="subtle">Completed today at 07:10</div>
+                      </div>
+                      <span class="status status-success">Completed</span>
+                    </div>
+                    <div class="button-row">
+                      <button class="btn btn-outline">Run test refresh</button>
+                      <button class="btn btn-outline">View logs</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                id="settings-danger"
+                class="settings-panel"
+                aria-label="Danger zone settings"
+              >
+                <div class="card">
+                  <div class="card-header">
+                    <h2>Danger zone</h2>
+                    <p class="subtle">
+                      High-risk account and data operations.
+                    </p>
+                  </div>
+                  <div class="card-content stack">
+                    <div class="callout callout-warning">
+                      These actions affect financial history. Keep destructive
+                      operations manual and separate from agent automation.
+                    </div>
+                    <div class="audit-item">
+                      <div>
+                        <strong>Export ledger data</strong>
+                        <div class="subtle">Download balances, holdings, and settings.</div>
+                      </div>
+                      <button class="btn btn-outline">Export</button>
+                    </div>
+                    <div class="audit-item">
+                      <div>
+                        <strong>Delete account data</strong>
+                        <div class="subtle">Requires explicit confirmation.</div>
+                      </div>
+                      <button class="btn btn-danger">Delete data</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const tabs = document.querySelectorAll("[data-target]");
+      const prototypes = document.querySelectorAll(".prototype");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((item) => item.classList.remove("active"));
+          prototypes.forEach((item) => item.classList.remove("active"));
+          tab.classList.add("active");
+          document.getElementById(tab.dataset.target).classList.add("active");
+        });
+      });
+
+      const agentTabs = document.querySelectorAll("[data-agent-target]");
+      const agentPanels = document.querySelectorAll(".agent-panel");
+
+      agentTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          agentTabs.forEach((item) => item.classList.remove("active"));
+          agentPanels.forEach((item) => item.classList.remove("active"));
+          tab.classList.add("active");
+          document.getElementById(tab.dataset.agentTarget).classList.add("active");
+        });
+      });
+
+      const settingsLinks = document.querySelectorAll("[data-settings-target]");
+      const settingsPanels = document.querySelectorAll(".settings-panel");
+      const settingsTitle = document.getElementById("settings-title");
+      const settingsSubtitle = document.getElementById("settings-subtitle");
+
+      settingsLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          settingsLinks.forEach((item) => item.classList.remove("active"));
+          settingsPanels.forEach((item) => item.classList.remove("active"));
+          link.classList.add("active");
+          document.getElementById(link.dataset.settingsTarget).classList.add("active");
+          settingsTitle.textContent = link.dataset.settingsTitle;
+          settingsSubtitle.textContent = link.dataset.settingsSubtitle;
+        });
+      });
+    </script>
+  </body>
+</html>

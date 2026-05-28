@@ -43,6 +43,31 @@ enum CronRunStatus {
   failed
 }
 
+enum AgentApiKeyPreset {
+  read_only
+  balance_writer
+}
+
+enum AgentApiKeyStatus {
+  active
+  revoked
+}
+
+enum AgentAuditStatus {
+  preview
+  applied
+  rejected
+  failed
+  idempotent_replay
+}
+
+enum AgentRateLimitKind {
+  read_hour
+  dry_run_hour
+  apply_day
+  project_day
+}
+
 model User {
   id        String        @id @default(cuid()) @db.VarChar(30)
   account   String        @unique
@@ -57,6 +82,8 @@ model User {
   refreshJobs   MonthlyRefreshJob[]
   priceSnapshots AssetPriceSnapshot[]
   cronRunLogs   CronRunLog[]
+  agentApiKeys  AgentApiKey[]
+  agentAuditLogs AgentAuditLog[]
 }
 
 model Balance {
@@ -219,4 +246,66 @@ model CronRunLog {
   job            MonthlyRefreshJob? @relation(fields: [jobId], references: [id])
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+}
+
+model AgentApiKey {
+  id           String             @id @default(cuid()) @db.VarChar(30)
+  name         String
+  preset       AgentApiKeyPreset
+  status       AgentApiKeyStatus  @default(active)
+  tokenHash    String             @unique
+  tokenPrefix  String
+  tokenLastFour String
+  scopes       String[]
+  revokedAt    DateTime?
+  lastUsedAt   DateTime?
+  userId       String             @db.VarChar(30)
+  user         User               @relation(fields: [userId], references: [id])
+  auditLogs    AgentAuditLog[]
+  rateLimits   AgentRateLimit[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([userId, status])
+}
+
+model AgentAuditLog {
+  id             String           @id @default(cuid()) @db.VarChar(30)
+  action         String
+  status         AgentAuditStatus
+  targetType     String?
+  targetId       String?
+  monthKey       String?
+  oldValues      Json?
+  newValues      Json?
+  errorCode      String?
+  previewId      String?          @unique
+  idempotencyKey String?
+  requestHash    String?
+  result         Json?
+  expiresAt      DateTime?
+  apiKeyId       String?          @db.VarChar(30)
+  apiKey         AgentApiKey?     @relation(fields: [apiKeyId], references: [id])
+  userId         String           @db.VarChar(30)
+  user           User             @relation(fields: [userId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([apiKeyId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([apiKeyId, action, createdAt])
+}
+
+model AgentRateLimit {
+  id           String             @id @default(cuid()) @db.VarChar(30)
+  kind         AgentRateLimitKind
+  windowStart  DateTime
+  count        Int                @default(0)
+  apiKeyId     String?            @db.VarChar(30)
+  apiKey       AgentApiKey?       @relation(fields: [apiKeyId], references: [id])
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([kind, windowStart, apiKeyId])
+  @@index([kind, windowStart])
 }

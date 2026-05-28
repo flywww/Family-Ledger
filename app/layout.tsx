@@ -23,7 +23,7 @@ export default async function RootLayout({
   //BUG: get application error on vecel (possibility happened on session)
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <SessionProvider refetchOnWindowFocus={false}>
           <SettingProvider>
             <ThemeProvider
