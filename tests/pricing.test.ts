@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  FMP_STOCK_SEARCH_URL,
+  FMP_STOCK_QUOTE_URL,
   TPEX_DAILY_CLOSE_URL,
   TPEX_PROFILE_URL,
   TWSE_DAILY_CLOSE_URL,
   TWSE_PROFILE_URL,
+  fetchFmpListedSecuritiesFromAPI,
   fetchListedStockPriceFromAPI,
   fetchQuoteForSource,
   fetchTaiwanListedStocksFromAPI,
@@ -22,6 +25,16 @@ function jsonResponse(data: unknown, ok = true) {
 }
 
 const twseQuoteRows = [
+  {
+    Code: "0050",
+    Name: "元大台灣50",
+    ClosingPrice: "62.40",
+  },
+  {
+    Code: "2308",
+    Name: "台達電",
+    ClosingPrice: "987.00",
+  },
   {
     Code: "2330",
     Name: "台積電",
@@ -44,6 +57,16 @@ const tpexQuoteRows = [
 
 const twseProfileRows = [
   {
+    公司代號: "0050",
+    公司簡稱: "元大台灣50",
+    英文簡稱: "YUANTA TAIWAN TOP 50 ETF",
+  },
+  {
+    公司代號: "2308",
+    公司簡稱: "台達電",
+    英文簡稱: "DELTA",
+  },
+  {
     公司代號: "2330",
     公司簡稱: "台積電",
     英文簡稱: "TSMC",
@@ -58,8 +81,47 @@ const tpexProfileRows = [
   },
 ];
 
+const fmpSearchRows = [
+  {
+    symbol: "AAPL",
+    name: "Apple Inc.",
+    exchange: "NASDAQ",
+  },
+  {
+    symbol: "VT",
+    name: "Vanguard Total World Stock ETF",
+    exchange: "AMEX",
+  },
+  {
+    symbol: "VOO",
+    name: "Vanguard S&P 500 ETF",
+    exchange: "AMEX",
+  },
+  {
+    symbol: "QQQ",
+    name: "Invesco QQQ Trust",
+    exchange: "NASDAQ",
+  },
+  {
+    symbol: "XLK",
+    name: "Technology Select Sector SPDR Fund",
+    exchange: "AMEX",
+  },
+  {
+    symbol: "TSLA",
+    name: "Tesla, Inc.",
+    exchange: "NASDAQ",
+  },
+  {
+    symbol: "SHOP.TO",
+    name: "Shopify Inc.",
+    exchange: "Toronto Stock Exchange",
+  },
+];
+
 beforeEach(() => {
   vi.restoreAllMocks();
+  vi.stubEnv("FMP_STOCK_API_KEY", "test-fmp-key");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string | URL | Request) => {
@@ -75,6 +137,17 @@ beforeEach(() => {
       }
       if (href === TPEX_PROFILE_URL) {
         return jsonResponse(tpexProfileRows);
+      }
+      if (href.startsWith(FMP_STOCK_SEARCH_URL)) {
+        return jsonResponse(fmpSearchRows);
+      }
+      if (href.startsWith(FMP_STOCK_QUOTE_URL)) {
+        return jsonResponse([
+          {
+            symbol: "TSLA",
+            price: 391,
+          },
+        ]);
       }
 
       return jsonResponse({ error: "unexpected URL" }, false);
@@ -150,8 +223,22 @@ describe("Taiwan stock pricing", () => {
   });
 });
 
+describe("US listed-stock pricing", () => {
+  it("fetches unprefixed FMP symbols from the current stable quote endpoint", async () => {
+    await expect(fetchListedStockPriceFromAPI("TSLA")).resolves.toBe(391);
+  });
+});
+
 describe("Taiwan listed-stock search", () => {
   it("matches by code, display symbol, Chinese name, and free official English abbreviation", async () => {
+    await expect(fetchTaiwanListedStocksFromAPI("0050")).resolves.toMatchObject([
+      {
+        name: "元大台灣50",
+        symbol: "0050.TW",
+        sourceId: "TWSE:0050",
+        sourceURL: TWSE_DAILY_CLOSE_URL,
+      },
+    ]);
     await expect(fetchTaiwanListedStocksFromAPI("2330")).resolves.toMatchObject([
       {
         name: "台積電",
@@ -163,6 +250,15 @@ describe("Taiwan listed-stock search", () => {
     await expect(fetchTaiwanListedStocksFromAPI("2330.TW")).resolves.toHaveLength(1);
     await expect(fetchTaiwanListedStocksFromAPI("台積電")).resolves.toHaveLength(1);
     await expect(fetchTaiwanListedStocksFromAPI("TSMC")).resolves.toHaveLength(1);
+    await expect(fetchTaiwanListedStocksFromAPI("台達電")).resolves.toMatchObject([
+      {
+        name: "台達電",
+        symbol: "2308.TW",
+        sourceId: "TWSE:2308",
+        sourceURL: TWSE_DAILY_CLOSE_URL,
+      },
+    ]);
+    await expect(fetchTaiwanListedStocksFromAPI("DELTA")).resolves.toHaveLength(1);
     await expect(fetchTaiwanListedStocksFromAPI("8069.TWO")).resolves.toMatchObject([
       {
         name: "元太",
@@ -178,5 +274,58 @@ describe("Taiwan listed-stock search", () => {
   it("does not use paid, web-search, scraping, or env-backed fallback for unavailable English matches", async () => {
     await expect(fetchTaiwanListedStocksFromAPI("Taiwan Semiconductor")).resolves.toEqual([]);
     expect(fetch).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe("Listed security search", () => {
+  it("returns supported US stock and ETF rows from recognized FMP exchange labels", async () => {
+    await expect(fetchFmpListedSecuritiesFromAPI("voo")).resolves.toEqual(
+      expect.arrayContaining([
+        {
+          name: "Apple Inc.",
+          symbol: "AAPL",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "AAPL",
+        },
+        {
+          name: "Vanguard Total World Stock ETF",
+          symbol: "VT",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "VT",
+        },
+        {
+          name: "Vanguard S&P 500 ETF",
+          symbol: "VOO",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "VOO",
+        },
+        {
+          name: "Invesco QQQ Trust",
+          symbol: "QQQ",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "QQQ",
+        },
+        {
+          name: "Technology Select Sector SPDR Fund",
+          symbol: "XLK",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "XLK",
+        },
+        {
+          name: "Tesla, Inc.",
+          symbol: "TSLA",
+          sourceURL: FMP_STOCK_SEARCH_URL,
+          sourceId: "TSLA",
+        },
+      ]),
+    );
+
+    await expect(fetchFmpListedSecuritiesFromAPI("voo")).resolves.not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          symbol: "SHOP.TO",
+        }),
+      ]),
+    );
   });
 });

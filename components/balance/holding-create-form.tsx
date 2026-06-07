@@ -34,15 +34,17 @@ import {
 } from "../ui/popover";
 import { Input } from "@/components/ui/input"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-import { Category, HoldingCreateType, HoldingCreateSchema, Type, Holding, HoldingsArray } from "@/lib/definitions"
+import { Category, HoldingCreateType, HoldingCreateSchema, Type } from "@/lib/definitions"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { fetchCryptosFromAPI, fetchListedStocksFromAPI, createHolding } from "@/lib/actions"
 import { cn } from "@/lib/utils"
 import { useDebouncedCallback} from 'use-debounce';
 import { DialogClose } from "@radix-ui/react-dialog"
 import { useSession } from "next-auth/react"
+
+type HoldingSearchResult = Pick<HoldingCreateType, "name" | "symbol" | "sourceId" | "sourceURL">;
 
 export default function CreateHoldingForm({
     holdingDBIsUpdated,
@@ -57,10 +59,12 @@ export default function CreateHoldingForm({
     selectedType: Type | undefined,
     isListedStockOrCrypto: boolean,
 }){
-    const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingCreateType[]>([]);
+    const [queriedHoldingList, setQueriedHoldingList] = useState<HoldingSearchResult[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false)
     const [submitMessage, setSubmitMessage] = useState<string | null>(null);
     const [submitSucceeded, setSubmitSucceeded] = useState(false);
+    const [isSearchingHoldings, setIsSearchingHoldings] = useState(false);
+    const searchRequestId = useRef(0);
     const { data: session } = useSession();
 
     const form = useForm<HoldingCreateType>({
@@ -79,15 +83,38 @@ export default function CreateHoldingForm({
     }, [form, session?.user.id])
 
     const handleSearch = useDebouncedCallback(async (query: string) => {
-        let data: HoldingsArray;
-        if(selectedCategory?.name === "Cryptocurrency"){
-            data = await fetchCryptosFromAPI(query);
-        }else if(selectedCategory?.name === "Listed stock"){
-            data = await fetchListedStocksFromAPI(query)
-        }else{
-            data = [];
+        const requestId = searchRequestId.current + 1;
+        searchRequestId.current = requestId;
+
+        if(!query.trim() || !isListedStockOrCrypto){
+            setQueriedHoldingList([]);
+            setIsSearchingHoldings(false);
+            return;
         }
-        setQueriedHoldingList(data);
+
+        setIsSearchingHoldings(true);
+        try {
+            let data: HoldingSearchResult[];
+            if(selectedCategory?.name === "Cryptocurrency"){
+                data = await fetchCryptosFromAPI(query);
+            }else if(selectedCategory?.name === "Listed stock"){
+                data = await fetchListedStocksFromAPI(query)
+            }else{
+                data = [];
+            }
+            if(searchRequestId.current === requestId){
+                setQueriedHoldingList(data);
+            }
+        } catch (error) {
+            console.error("Failed to search holdings", error);
+            if(searchRequestId.current === requestId){
+                setQueriedHoldingList([]);
+            }
+        } finally {
+            if(searchRequestId.current === requestId){
+                setIsSearchingHoldings(false);
+            }
+        }
     },300)
 
     const handleFormSubmit = async (data: HoldingCreateType) => {
@@ -166,6 +193,7 @@ export default function CreateHoldingForm({
                                                 <CommandInput
                                                     placeholder="Search holdings"
                                                     className="h-9"
+                                                    isLoading={isSearchingHoldings}
                                                     onValueChange={handleSearch}
                                                 />
                                                 <CommandList>

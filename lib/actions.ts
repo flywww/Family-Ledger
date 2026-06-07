@@ -62,6 +62,7 @@ import {
     retryFailedMonthlyRefreshForMonth,
 } from "./monthly-refresh";
 import {
+    fetchFmpListedSecuritiesFromAPI,
     fetchCryptoPriceFromAPI as fetchCryptoPrice,
     fetchListedStockPriceFromAPI as fetchListedStockPrice,
     fetchTaiwanListedStocksFromAPI,
@@ -1132,37 +1133,13 @@ export async function fetchCryptoPriceFromAPI(id: string){
 // }
 
 export async function fetchListedStocksFromAPI(query: string){
-    const API_KEY = process.env.FMP_STOCK_API_KEY;
-    const fetchURL = `https://financialmodelingprep.com/api/v3/search?`
-
     const taiwanStocksPromise = fetchTaiwanListedStocksFromAPI(query).catch((error) => {
         console.error("Failed to fetch Taiwan stocks data:", error);
         return [];
     });
 
     try {
-        const listedStocksPromise = (async () => {
-            if (!API_KEY) {
-                console.error("FMP stock API key is missing; returning Taiwan listed-stock results only");
-                return [];
-            }
-
-            const response = await fetch(`${fetchURL}query=${query}&limit=10&apikey=${API_KEY}`);
-            if(!response.ok){
-                console.log(`Using backup API to fetch listed stock list`);
-                // const backupFetchedData = await fetchListedStocksFromAVSAPI(query);
-                return [];
-            }
-            const data = await response.json();
-            return data.map((stock: any) => ({
-                symbol: stock["symbol"],
-                name: stock["name"],
-                stockExchange: stock['stockExchange'],
-                sourceURL: fetchURL,
-                sourceId: stock["symbol"],
-            })).filter((stock: any) => stock.stockExchange === 'NASDAQ Global Select')
-            .map(({stockExchange, ...stock}: { stockExchange: any }) => stock);
-        })();
+        const listedStocksPromise = fetchFmpListedSecuritiesFromAPI(query);
 
         const [listedStocks, taiwanStocks] = await Promise.all([
             listedStocksPromise,

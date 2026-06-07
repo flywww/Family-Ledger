@@ -19,6 +19,8 @@ export const TPEX_DAILY_CLOSE_URL =
   "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes";
 export const TWSE_PROFILE_URL = "https://openapi.twse.com.tw/v1/opendata/t187ap03_L";
 export const TPEX_PROFILE_URL = "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O";
+export const FMP_STOCK_SEARCH_URL = "https://financialmodelingprep.com/stable/search-symbol?";
+export const FMP_STOCK_QUOTE_URL = "https://financialmodelingprep.com/stable/quote?";
 
 export type TaiwanStockProvider = "twse" | "tpex";
 
@@ -28,6 +30,15 @@ type TaiwanStockQuoteRow = Record<string, unknown>;
 type TaiwanStockProfileRow = Record<string, unknown>;
 
 type TaiwanStockSearchResult = {
+  name: string;
+  symbol: string;
+  sourceURL: string;
+  sourceId: string;
+};
+
+type FmpSearchRow = Record<string, unknown>;
+
+export type ListedSecuritySearchResult = {
   name: string;
   symbol: string;
   sourceURL: string;
@@ -250,7 +261,7 @@ export async function fetchListedStockPriceFromAPI(symbol: string) {
   }
 
   const response = await fetch(
-    `https://financialmodelingprep.com/api/v3/otc/real-time-price/${symbol}?apikey=${apiKey}`,
+    `${FMP_STOCK_QUOTE_URL}symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
     {
       cache: "no-store",
     },
@@ -262,12 +273,77 @@ export async function fetchListedStockPriceFromAPI(symbol: string) {
   }
 
   const data = await response.json();
-  const price = Array.isArray(data) ? data[0]?.lastSalePrice : data?.lastSalePrice;
+  const price = Array.isArray(data) ? data[0]?.price : data?.price;
   if (typeof price !== "number") {
     throw new Error(`FMP returned an invalid price for ${symbol}`);
   }
 
   return price;
+}
+
+function isSupportedFmpUsExchange(exchange: string) {
+  const normalizedExchange = exchange.trim().toLowerCase();
+  if (!normalizedExchange) {
+    return false;
+  }
+
+  return [
+    "nasdaq",
+    "new york stock exchange",
+    "nyse",
+    "nyse arca",
+    "nyse american",
+    "american stock exchange",
+    "amex",
+    "cboe",
+    "bats",
+  ].some((label) => normalizedExchange.includes(label));
+}
+
+export function normalizeFmpListedSecuritySearchRows(
+  rows: FmpSearchRow[],
+): ListedSecuritySearchResult[] {
+  return rows.flatMap((stock) => {
+    const symbol = getStringField(stock, ["symbol"]);
+    const name = getStringField(stock, ["name"]);
+    const exchange = getStringField(stock, ["stockExchange", "exchange", "exchangeShortName"]);
+
+    if (!symbol || !name || !isSupportedFmpUsExchange(exchange)) {
+      return [];
+    }
+
+    return [
+      {
+        symbol,
+        name,
+        sourceURL: FMP_STOCK_SEARCH_URL,
+        sourceId: symbol,
+      },
+    ];
+  });
+}
+
+export async function fetchFmpListedSecuritiesFromAPI(
+  query: string,
+): Promise<ListedSecuritySearchResult[]> {
+  const apiKey = process.env.FMP_STOCK_API_KEY;
+  if (!apiKey) {
+    console.error("FMP stock API key is missing; returning Taiwan listed-stock results only");
+    return [];
+  }
+
+  const response = await fetch(`${FMP_STOCK_SEARCH_URL}query=${encodeURIComponent(query)}&apikey=${apiKey}`);
+  if (!response.ok) {
+    console.log("Using backup API to fetch listed stock list");
+    return [];
+  }
+
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return normalizeFmpListedSecuritySearchRows(data);
 }
 
 async function loadTaiwanStockSearchData(params: {
