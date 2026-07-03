@@ -53,15 +53,19 @@ The system SHALL fetch Taiwan stock prices from official free no-key TWSE and TP
 - **THEN** the system reports a provider error instead of silently using a zero or stale price
 
 ### Requirement: Existing listed asset workflows remain unchanged
-The system SHALL preserve the existing cryptocurrency and US listed-stock holding search, price fetch, and monthly refresh behavior while adding Taiwan stock support.
+The system SHALL preserve the existing cryptocurrency, Taiwan listed-stock, US listed-stock, and US-listed ETF holding search, price fetch, and monthly refresh behavior while adding Taiwan stock support and ETF price-prefill fallback behavior.
 
 #### Scenario: Existing cryptocurrency flow
-- **WHEN** a user searches, creates, or refreshes a cryptocurrency holding
+- **WHEN** a user searches, creates, selects, or refreshes a cryptocurrency holding
 - **THEN** the system continues using the existing CoinMarketCap behavior
 
 #### Scenario: Existing US listed stock flow
-- **WHEN** a user searches, creates, or refreshes an existing US listed-stock holding with an unprefixed stock source ID
+- **WHEN** a user searches, creates, selects, or refreshes an existing US listed-stock holding with an unprefixed stock source ID
 - **THEN** the system continues using the existing Financial Modeling Prep behavior
+
+#### Scenario: Existing US listed ETF flow
+- **WHEN** a user searches, creates, selects, or refreshes an existing US-listed ETF holding with an unprefixed ETF source ID
+- **THEN** the system uses Financial Modeling Prep listed-security behavior when available and falls back to a no-key Yahoo chart lookup when FMP blocks ETF quote access
 
 ### Requirement: Taiwan monthly refresh
 The system SHALL include Taiwan stock holdings in the existing quote-backed monthly refresh workflow.

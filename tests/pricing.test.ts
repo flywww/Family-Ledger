@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   FMP_STOCK_SEARCH_URL,
   FMP_STOCK_QUOTE_URL,
+  FMP_STOCK_QUOTE_SHORT_URL,
+  YAHOO_CHART_URL,
   TPEX_DAILY_CLOSE_URL,
   TPEX_PROFILE_URL,
   TWSE_DAILY_CLOSE_URL,
@@ -15,10 +17,10 @@ import {
   parseTaiwanStockSourceId,
 } from "../lib/pricing";
 
-function jsonResponse(data: unknown, ok = true) {
+function jsonResponse(data: unknown, ok = true, status = ok ? 200 : 500) {
   return {
     ok,
-    status: ok ? 200 : 500,
+    status,
     json: async () => data,
     text: async () => JSON.stringify(data),
   } as Response;
@@ -142,12 +144,75 @@ beforeEach(() => {
         return jsonResponse(fmpSearchRows);
       }
       if (href.startsWith(FMP_STOCK_QUOTE_URL)) {
+        const symbol = new URL(href).searchParams.get("symbol");
+        if (symbol === "XLK" || symbol === "VT") {
+          return jsonResponse(
+            {
+              "Error Message": "Premium Query Parameter",
+            },
+            false,
+            402,
+          );
+        }
+        if (symbol === "VOO") {
+          return jsonResponse([
+            {
+              symbol: "VOO",
+              price: 502.42,
+            },
+          ]);
+        }
+        if (symbol === "ZERO") {
+          return jsonResponse([
+            {
+              symbol: "ZERO",
+              price: 0,
+            },
+          ]);
+        }
         return jsonResponse([
           {
             symbol: "TSLA",
             price: 391,
           },
         ]);
+      }
+      if (href.startsWith(FMP_STOCK_QUOTE_SHORT_URL)) {
+        const symbol = new URL(href).searchParams.get("symbol");
+        if (symbol === "XLK") {
+          return jsonResponse(
+            {
+              "Error Message": "Premium Query Parameter",
+            },
+            false,
+            402,
+          );
+        }
+        if (symbol === "VT") {
+          return jsonResponse([
+            {
+              symbol: "VT",
+              price: 156.17,
+            },
+          ]);
+        }
+      }
+      if (href.startsWith(YAHOO_CHART_URL)) {
+        const symbol = decodeURIComponent(href.replace(YAHOO_CHART_URL, "").split("?")[0]);
+        if (symbol === "XLK") {
+          return jsonResponse({
+            chart: {
+              result: [
+                {
+                  meta: {
+                    currency: "USD",
+                    regularMarketPrice: 180.59,
+                  },
+                },
+              ],
+            },
+          });
+        }
       }
 
       return jsonResponse({ error: "unexpected URL" }, false);
@@ -226,6 +291,24 @@ describe("Taiwan stock pricing", () => {
 describe("US listed-stock pricing", () => {
   it("fetches unprefixed FMP symbols from the current stable quote endpoint", async () => {
     await expect(fetchListedStockPriceFromAPI("TSLA")).resolves.toBe(391);
+  });
+
+  it("fetches US ETF symbols from the same FMP listed-security quote endpoint", async () => {
+    await expect(fetchListedStockPriceFromAPI("VOO")).resolves.toBe(502.42);
+  });
+
+  it("falls back to Yahoo chart when FMP blocks ETF quote endpoints", async () => {
+    await expect(fetchListedStockPriceFromAPI("XLK")).resolves.toBe(180.59);
+  });
+
+  it("uses FMP quote-short when only the stable quote endpoint is blocked", async () => {
+    await expect(fetchListedStockPriceFromAPI("VT")).resolves.toBe(156.17);
+  });
+
+  it("rejects invalid FMP zero prices instead of treating them as market quotes", async () => {
+    await expect(fetchListedStockPriceFromAPI("ZERO")).rejects.toThrow(
+      "FMP returned an invalid price for ZERO",
+    );
   });
 });
 

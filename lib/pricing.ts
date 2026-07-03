@@ -21,6 +21,8 @@ export const TWSE_PROFILE_URL = "https://openapi.twse.com.tw/v1/opendata/t187ap0
 export const TPEX_PROFILE_URL = "https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O";
 export const FMP_STOCK_SEARCH_URL = "https://financialmodelingprep.com/stable/search-symbol?";
 export const FMP_STOCK_QUOTE_URL = "https://financialmodelingprep.com/stable/quote?";
+export const FMP_STOCK_QUOTE_SHORT_URL = "https://financialmodelingprep.com/stable/quote-short?";
+export const YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/";
 
 export type TaiwanStockProvider = "twse" | "tpex";
 
@@ -249,6 +251,80 @@ export async function fetchCryptoPriceFromAPI(id: string) {
   return price;
 }
 
+function parseFmpQuotePrice(data: unknown, symbol: string) {
+  const price = Array.isArray(data) ? data[0]?.price : (data as { price?: unknown })?.price;
+  if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
+    throw new Error(`FMP returned an invalid price for ${symbol}`);
+  }
+
+  return price;
+}
+
+function parseYahooChartPrice(data: unknown, symbol: string) {
+  const result = (data as { chart?: { result?: Array<{ meta?: { regularMarketPrice?: unknown; previousClose?: unknown; currency?: unknown } }> } })
+    ?.chart?.result?.[0];
+  const meta = result?.meta;
+  const price = meta?.regularMarketPrice ?? meta?.previousClose;
+  if (meta?.currency !== "USD" || typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
+    throw new Error(`Yahoo chart returned an invalid USD price for ${symbol}`);
+  }
+
+  return price;
+}
+
+async function fetchYahooListedSecurityPrice(symbol: string) {
+  const response = await fetch(
+    `${YAHOO_CHART_URL}${encodeURIComponent(symbol)}?range=1d&interval=1d`,
+    {
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Yahoo chart ${response.status}: ${errorText}`);
+  }
+
+  return parseYahooChartPrice(await response.json(), symbol);
+}
+
+async function fetchFmpListedSecurityPrice(symbol: string, apiKey: string) {
+  const quoteUrl = `${FMP_STOCK_QUOTE_URL}symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`;
+  const response = await fetch(quoteUrl, {
+    cache: "no-store",
+  });
+
+  if (response.ok) {
+    return parseFmpQuotePrice(await response.json(), symbol);
+  }
+
+  const errorText = await response.text();
+  if (response.status !== 402) {
+    throw new Error(`FMP ${response.status}: ${errorText}`);
+  }
+
+  const quoteShortResponse = await fetch(
+    `${FMP_STOCK_QUOTE_SHORT_URL}symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (!quoteShortResponse.ok) {
+    await quoteShortResponse.text();
+    return fetchYahooListedSecurityPrice(symbol);
+  }
+
+  try {
+    return parseFmpQuotePrice(await quoteShortResponse.json(), symbol);
+  } catch {
+    return fetchYahooListedSecurityPrice(symbol);
+  }
+}
+
 export async function fetchListedStockPriceFromAPI(symbol: string) {
   const taiwanSource = parseTaiwanStockSourceId(symbol);
   if (taiwanSource?.provider === "twse" || taiwanSource?.provider === "tpex") {
@@ -260,25 +336,7 @@ export async function fetchListedStockPriceFromAPI(symbol: string) {
     throw new Error("FMP stock API key is missing");
   }
 
-  const response = await fetch(
-    `${FMP_STOCK_QUOTE_URL}symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`FMP ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  const price = Array.isArray(data) ? data[0]?.price : data?.price;
-  if (typeof price !== "number") {
-    throw new Error(`FMP returned an invalid price for ${symbol}`);
-  }
-
-  return price;
+  return fetchFmpListedSecurityPrice(symbol, apiKey);
 }
 
 function isSupportedFmpUsExchange(exchange: string) {

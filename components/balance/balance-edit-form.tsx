@@ -62,6 +62,7 @@ import {
     fetchListedStockPriceFromAPI,
     updateBalance
 } from "@/lib/actions";
+import { getBalancePricePrefill, isQuoteBackedBalanceCategory } from "@/lib/balance-price-prefill";
 
 export default function EditBalanceForm({
     balance
@@ -99,18 +100,7 @@ export default function EditBalanceForm({
     const price = form.watch('price');
     const quantity = form.watch('quantity');
     //TODO: if it's float?
-    const isListedStockOrCrypto = selectedCategory?.name === "Cryptocurrency" || selectedCategory?.name === "Listed stock";
-
-    const getQuoteCurrency = (holding: Holding) => {
-        if (holding.sourceId?.startsWith("TWSE:") || holding.sourceId?.startsWith("TPEX:")) {
-            return "TWD";
-        }
-        if (holding.category?.name === "Cryptocurrency" || holding.category?.name === "Listed stock") {
-            return "USD";
-        }
-
-        return undefined;
-    }
+    const isListedStockOrCrypto = isQuoteBackedBalanceCategory(selectedCategory?.name);
 
     useEffect(() => {
         const getCategories = async () => {
@@ -151,16 +141,19 @@ export default function EditBalanceForm({
     }, [price, quantity, form])
 
     const fetchAndUpdatePrice = async (holding: Holding) => {
-        if(isListedStockOrCrypto && holding.sourceId){
+        const pricePrefill = getBalancePricePrefill(holding);
+        if(pricePrefill){
             try {
-                if(selectedCategory.name === 'Cryptocurrency'){
-                    const price = await fetchCryptoPriceFromAPI(holding.sourceId)
+                if(pricePrefill.kind === 'cryptocurrency'){
+                    const price = await fetchCryptoPriceFromAPI(pricePrefill.sourceId)
                     form.setValue('price', price);
-                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
-                }else if(selectedCategory.name === 'Listed stock'){
-                    const price = await fetchListedStockPriceFromAPI(holding.sourceId.toString())
-                    form.setValue('price', price);
-                    form.setValue('currency', getQuoteCurrency(holding) ?? "USD");
+                    form.setValue('currency', pricePrefill.currency);
+                }else if(pricePrefill.kind === 'listed-security'){
+                    const price = await fetchListedStockPriceFromAPI(pricePrefill.sourceId)
+                    if(typeof price === "number"){
+                        form.setValue('price', price);
+                        form.setValue('currency', pricePrefill.currency);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch quote for holding', error);

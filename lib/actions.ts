@@ -1155,7 +1155,12 @@ export async function fetchListedStocksFromAPI(query: string){
 }
 
 export async function fetchListedStockPriceFromAPI( symbol: string ){
-    return fetchListedStockPrice(symbol);
+    try {
+        return await fetchListedStockPrice(symbol);
+    } catch (error) {
+        console.error("Failed to fetch listed stock price", error);
+        return null;
+    }
 }
 
 //Category
