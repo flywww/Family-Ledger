@@ -3,6 +3,7 @@
 import prisma from "./prisma";
 import { 
     BalanceCreateType, 
+    BalanceCreateFormType,
     BalanceUpdateType, 
     Balance, 
     BalanceSchema, 
@@ -654,7 +655,7 @@ export async function stopMonthlyRefreshCronTest() {
 }
 
 //TODO: error handling sample
-export async function createBalance( balance: BalanceCreateType ){
+export async function createBalance( balance: BalanceCreateFormType ){
     try {
         const session = await auth();
         if(!session){

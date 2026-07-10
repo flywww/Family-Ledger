@@ -179,6 +179,9 @@ export const BalanceCreateSchema = BalanceSchema.omit({
     holding: true,
     user: true,
 })
+export const BalanceCreateFormSchema = BalanceCreateSchema.omit({
+    userId: true,
+})
 export const BalanceUpdateSchema = BalanceCreateSchema.partial().extend({ 
     id: z.number() 
 })
@@ -192,6 +195,7 @@ export const FlattedBalanceSchema = BalanceSchema.extend({
 
 export type Balance = z.infer<typeof BalanceSchema>
 export type BalanceCreateType = z.infer<typeof BalanceCreateSchema>
+export type BalanceCreateFormType = z.infer<typeof BalanceCreateFormSchema>
 export type BalanceUpdateType = z.infer<typeof BalanceUpdateSchema>
 export type FlattedBalanceType = z.infer<typeof FlattedBalanceSchema>
 

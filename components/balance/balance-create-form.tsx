@@ -1,12 +1,12 @@
 'use client'
 
 import {
-    BalanceCreateType,
+    BalanceCreateFormType,
     Balance,
     Category,
     Holding,
     Type,
-    BalanceCreateSchema}
+    BalanceCreateFormSchema}
 from "@/lib/definitions";
 import {
     Form,
@@ -61,7 +61,6 @@ import {
     fetchListedStockPriceFromAPI,
     createBalance
 } from "@/lib/actions";
-import { useSession } from "next-auth/react";
 import { getBalancePricePrefill, isQuoteBackedBalanceCategory } from "@/lib/balance-price-prefill";
 
 
@@ -74,16 +73,14 @@ export default function CreateBalanceForm({
     backURL: string
 }){
     const router = useRouter()
-    const { data: session } = useSession()
-    const form = useForm<Balance>({
-        resolver: zodResolver(BalanceCreateSchema),
+    const form = useForm<BalanceCreateFormType & Pick<Balance, "holding">>({
+        resolver: zodResolver(BalanceCreateFormSchema),
         defaultValues:{
             date: firstDateOfMonth(initialDate),
             quantity: 0,
             price: 0,
             value: 0,
             currency: 'USD',
-            userId: session?.user.id,
         },
     });
     const [categoryList, setCategoryList] = useState<Category[]>([]);
@@ -111,12 +108,6 @@ export default function CreateBalanceForm({
         getCategories();
         getTypes();
     },[])
-
-    useEffect(() => {
-        if(session?.user.id){
-            form.setValue("userId", session.user.id);
-        }
-    }, [form, session?.user.id])
 
     useEffect(() => {
         if(holdingDBIsUpdated || categoryId){
@@ -162,7 +153,7 @@ export default function CreateBalanceForm({
         }
     }
 
-    async function onSubmit(values: BalanceCreateType){
+    async function onSubmit(values: BalanceCreateFormType){
         setSubmitMessage(null);
         try {
             const result = await createBalance(values);
